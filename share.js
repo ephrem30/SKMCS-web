@@ -41,6 +41,26 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.setItem("registered_users", JSON.stringify(defaultMockUsers));
     }
 
+    // Automatically grant full admin authority to the user named "최우창"
+    const currentUsersStr = localStorage.getItem("registered_users");
+    if (currentUsersStr) {
+        try {
+            let users = JSON.parse(currentUsersStr);
+            let updated = false;
+            users.forEach(u => {
+                if (u.name === "최우창" && u.role !== "admin") {
+                    u.role = "admin";
+                    updated = true;
+                }
+            });
+            if (updated) {
+                localStorage.setItem("registered_users", JSON.stringify(users));
+            }
+        } catch (e) {
+            console.error("Error updating 최우창 user role:", e);
+        }
+    }
+
     let loggedInUserStr = localStorage.getItem("logged_in_user");
 
     if (loggedInUserStr) {
