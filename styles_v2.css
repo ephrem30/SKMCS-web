@@ -3296,3 +3296,366 @@ i.fa-angle-right:not(.divider) {
 .util-link i {
     margin-right: 0.2em !important;
 }
+
+/* ==========================================================================
+   Mobile & Tablet Responsive Adjustments (Unified Design System)
+   ========================================================================== */
+
+/* Breakpoint: <= 992px (Tablets and Large Mobile Devices) */
+@media (max-width: 992px) {
+    body {
+        padding-left: 0 !important; /* Prune fixed sidebar gap */
+    }
+    
+    .quick-sidebar {
+        display: none !important; /* Hide left vertical sidebar */
+    }
+    
+    .container {
+        padding: 0 20px !important; /* Narrower padding */
+    }
+    
+    /* Header layout modifications */
+    .header-container {
+        padding: 10px 0;
+        position: relative;
+    }
+    
+    .logo {
+        padding: 10px 0;
+        align-items: center;
+    }
+    
+    .logo-icon-img {
+        height: 90px;
+    }
+    
+    .logo-text h1 {
+        font-size: 1.35rem;
+    }
+    
+    .logo-text .logo-en {
+        font-size: 0.75rem;
+    }
+    
+    /* Hamburger toggle button */
+    .mobile-menu-toggle {
+        display: block;
+        background: none;
+        border: none;
+        font-size: 1.8rem;
+        color: var(--text-dark);
+        cursor: pointer;
+        padding: 10px;
+        z-index: 1002;
+        transition: color 0.2s;
+    }
+    
+    .mobile-menu-toggle:hover {
+        color: var(--color-red);
+    }
+    
+    .mobile-menu-toggle i {
+        margin: 0 !important;
+    }
+    
+    /* Responsive slide-out vertical menu */
+    .main-nav {
+        position: fixed;
+        top: 0;
+        right: -320px;
+        width: 300px;
+        height: 100vh;
+        background-color: white;
+        box-shadow: -5px 0 25px rgba(0,0,0,0.15);
+        z-index: 1001;
+        transition: right 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        padding: 80px 24px 40px 24px;
+        overflow-y: auto;
+        display: block;
+    }
+    
+    .main-nav.mobile-active {
+        right: 0;
+    }
+    
+    .main-nav ul {
+        flex-direction: column;
+        gap: 0;
+        height: auto;
+    }
+    
+    .nav-item {
+        align-items: flex-start;
+        padding: 15px 0;
+        border-bottom: 1px solid var(--border-color);
+        width: 100%;
+    }
+    
+    .nav-item a {
+        font-size: 1.1rem;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 4px 0;
+    }
+    
+    /* Suffix arrow indicators for menu items with sub-menus */
+    .nav-item.has-dropdown > a::after {
+        content: "\f107";
+        font-family: "Font Awesome 6 Free";
+        font-weight: 900;
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        transition: transform 0.2s;
+        margin-left: 10px;
+    }
+    
+    .nav-item.has-dropdown.mobile-open > a::after {
+        transform: rotate(180deg);
+        color: var(--color-red);
+    }
+    
+    .hover-bar {
+        display: none !important; /* Prune desktop hover bars */
+    }
+    
+    .sub-text {
+        position: static;
+        opacity: 1;
+        display: block;
+        margin-top: 4px;
+        font-size: 0.72rem;
+        color: var(--text-muted);
+    }
+    
+    /* Vertical mobile sub-menus (dropdowns) */
+    .main-nav .dropdown-menu {
+        position: static;
+        transform: none;
+        opacity: 1;
+        visibility: visible;
+        box-shadow: none;
+        border: none;
+        padding: 0;
+        display: none;
+        flex-direction: column;
+        align-items: flex-start;
+        width: 100%;
+        margin-top: 10px;
+        background: #fafaf9;
+        border-left: 3px solid var(--color-red);
+        padding-left: 15px;
+        gap: 0;
+    }
+    
+    .nav-item.mobile-open .dropdown-menu {
+        display: flex;
+    }
+    
+    .dropdown-menu::before, 
+    .dropdown-menu::after {
+        display: none !important;
+    }
+    
+    .dropdown-menu li {
+        width: 100%;
+        padding: 0 !important;
+    }
+    
+    .dropdown-menu li:not(:last-child)::after {
+        display: none;
+    }
+    
+    .dropdown-menu li a {
+        text-align: left;
+        font-size: 0.92rem;
+        padding: 10px 0;
+        color: var(--text-muted);
+        width: 100%;
+        display: block;
+    }
+    
+    .dropdown-menu li a:hover {
+        background: none;
+        color: var(--color-red);
+    }
+    
+    /* Subpage layout wrapping for tablet viewports */
+    .subpage-area {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .grid-container {
+        grid-template-columns: 1fr; /* Switch double column grids to single column */
+        gap: 20px;
+    }
+}
+
+/* Breakpoint: <= 768px (Mobile Viewports) */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 15px !important;
+    }
+    
+    /* Top utility bar stack */
+    .util-right {
+        flex-direction: column;
+        gap: 10px;
+        align-items: center;
+        width: 100%;
+    }
+    
+    .util-links {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .util-links .util-link:not(:last-child)::after {
+        display: none; /* Hide pipe separators on mobile wrapping */
+    }
+    
+    .top-search {
+        width: 100%;
+        max-width: 300px;
+        margin: 0 auto;
+    }
+    
+    .top-search input {
+        flex: 1;
+    }
+    
+    /* Even smaller logo heights */
+    .logo-icon-img {
+        height: 60px;
+    }
+    
+    .logo-text h1 {
+        font-size: 1.1rem;
+    }
+    
+    .logo-text .logo-en {
+        font-size: 0.55rem;
+    }
+    
+    /* Subpage banner & breadcrumbs styling */
+    .sub-visual {
+        height: 140px !important;
+    }
+    
+    .sub-visual h2 {
+        font-size: 1.6rem !important;
+    }
+    
+    .sub-util-row {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start !important;
+        padding: 12px 0 !important;
+    }
+    
+    .page-utils {
+        align-self: flex-end;
+    }
+    
+    /* General forms & grids */
+    .form-row-grid {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+    
+    .input-group-btn {
+        flex-wrap: wrap;
+        gap: 8px !important;
+    }
+    
+    .input-group-btn input {
+        width: 100% !important;
+        max-width: none !important;
+    }
+    
+    .input-group-btn button {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    /* Academic history timeline adaptation */
+    .timeline-container {
+        padding-left: 20px;
+    }
+    
+    .timeline-line {
+        left: 30px;
+    }
+    
+    .timeline-year-badge {
+        margin-left: 0;
+    }
+    
+    .timeline-item {
+        padding-left: 25px;
+    }
+    
+    .timeline-badge {
+        left: -11px;
+    }
+    
+    .timeline-content {
+        padding: 15px;
+    }
+    
+    .timeline-content::before, 
+    .timeline-content::after {
+        display: none; /* Hide visual speech bubble arrows */
+    }
+    
+    /* Organization chart adaptation */
+    .org-chart-wrap {
+        padding: 30px 15px;
+    }
+    
+    .org-row-side-by-side {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .org-row-side-by-side::before {
+        display: none;
+    }
+    
+    .org-row-split {
+        flex-direction: column;
+        align-items: center;
+        gap: 30px;
+        padding-top: 15px;
+    }
+    
+    .org-row-split::before {
+        display: none;
+    }
+    
+    .org-col {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .org-line-v {
+        height: 20px;
+    }
+    
+    /* Sitemap list stack */
+    .sitemap-row {
+        flex-direction: column !important;
+        gap: 25px !important;
+    }
+    
+    .sitemap-col {
+        width: 100% !important;
+    }
+}

@@ -192,6 +192,66 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
     });
+
+    // 5. Mobile Responsive Menu Controller
+    const headerContainer = document.querySelector(".header-container");
+    const mainNav = document.querySelector(".main-nav");
+    if (headerContainer && mainNav) {
+        // Create mobile menu toggle button if it doesn't exist
+        if (!document.querySelector(".mobile-menu-toggle")) {
+            const toggleBtn = document.createElement("button");
+            toggleBtn.className = "mobile-menu-toggle";
+            toggleBtn.type = "button";
+            toggleBtn.setAttribute("aria-label", "메뉴 열기");
+            toggleBtn.innerHTML = '<i class="fa-solid fa-bars"></i>';
+            headerContainer.appendChild(toggleBtn);
+            
+            toggleBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                mainNav.classList.toggle("mobile-active");
+                const icon = toggleBtn.querySelector("i");
+                if (mainNav.classList.contains("mobile-active")) {
+                    icon.className = "fa-solid fa-xmark";
+                } else {
+                    icon.className = "fa-solid fa-bars";
+                }
+            });
+            
+            // Close menu if clicking outside
+            document.addEventListener("click", (e) => {
+                if (mainNav.classList.contains("mobile-active") && !mainNav.contains(e.target) && !toggleBtn.contains(e.target)) {
+                    mainNav.classList.remove("mobile-active");
+                    toggleBtn.querySelector("i").className = "fa-solid fa-bars";
+                }
+            });
+        }
+
+        // Add 'has-dropdown' class to nav-items with dropdown menus
+        const navItems = mainNav.querySelectorAll(".nav-item");
+        navItems.forEach(item => {
+            const dropdown = item.querySelector(".dropdown-menu");
+            if (dropdown) {
+                item.classList.add("has-dropdown");
+                const link = item.querySelector("a");
+                
+                link.addEventListener("click", (e) => {
+                    if (window.innerWidth <= 992) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        // Close other dropdowns
+                        navItems.forEach(otherItem => {
+                            if (otherItem !== item) {
+                                otherItem.classList.remove("mobile-open");
+                            }
+                        });
+                        
+                        item.classList.toggle("mobile-open");
+                    }
+                });
+            }
+        });
+    }
 });
 
 function openShareModal() {
