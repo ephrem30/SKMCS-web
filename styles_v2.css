@@ -4119,4 +4119,53 @@ i.fa-angle-right:not(.divider) {
         padding: 6px 10px !important;
         font-size: 0.72rem !important;
     }
+    
+    /* [Mobile Override] Journal Subpage Issue Summary Box Sizing & Layout */
+    .issue-summary-box {
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center !important;
+        gap: 25px !important;
+        padding: 20px 15px !important;
+    }
+    
+    .issue-summary-box .issue-cover {
+        flex: 0 0 auto !important;
+        width: 100% !important;
+        max-width: 200px !important;
+        margin: 0 auto !important;
+    }
+    
+    .issue-summary-box .issue-meta {
+        width: 100% !important;
+        text-align: center !important;
+    }
+    
+    .issue-summary-box .vol-title {
+        font-size: 1.4rem !important;
+        margin-bottom: 8px !important;
+    }
+    
+    .issue-summary-box .vol-date {
+        font-size: 0.9rem !important;
+        margin-bottom: 15px !important;
+        padding-bottom: 15px !important;
+    }
+    
+    .issue-summary-box .vol-desc {
+        font-size: 0.9rem !important;
+        margin-bottom: 20px !important;
+        line-height: 1.5 !important;
+    }
+    
+    .issue-summary-box .vol-actions {
+        display: flex !important;
+        justify-content: center !important;
+    }
+    
+    .issue-summary-box .btn-apply {
+        width: 100% !important;
+        max-width: 240px !important;
+        justify-content: center !important;
+    }
 }
