@@ -3493,6 +3493,46 @@ i.fa-angle-right:not(.divider) {
         grid-template-columns: 1fr; /* Switch double column grids to single column */
         gap: 20px;
     }
+    
+    /* [Tablet Override] Balanced Layout Restructurings */
+    .notice-banner-row {
+        flex-direction: column;
+        gap: 30px;
+    }
+    
+    .banner-area {
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    .issue-layout {
+        flex-direction: column;
+        align-items: center;
+        gap: 30px;
+    }
+    
+    .issue-layout .issue-meta {
+        text-align: center;
+    }
+    
+    .issue-layout .vol-actions {
+        justify-content: center;
+    }
+    
+    .banner-content {
+        flex-direction: column-reverse;
+        gap: 30px;
+        align-items: center;
+    }
+    
+    .banner-text-box {
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    .cover-wrapper {
+        margin: 0 auto;
+    }
 }
 
 /* Breakpoint: <= 768px (Mobile Viewports) */
@@ -3657,5 +3697,230 @@ i.fa-angle-right:not(.divider) {
     
     .sitemap-col {
         width: 100% !important;
+    }
+    
+    /* [Mobile Override] Fine-tuned Balanced Styling */
+    
+    /* Notice List & Details Compression */
+    .notice-list li {
+        padding: 12px 5px !important;
+        gap: 12px !important;
+    }
+    
+    .notice-date {
+        min-width: 40px !important;
+        padding-right: 10px !important;
+    }
+    
+    .notice-date .year {
+        font-size: 1rem !important;
+    }
+    
+    .notice-date .md {
+        font-size: 0.75rem !important;
+    }
+    
+    .notice-text h4 {
+        font-size: 1rem !important;
+    }
+    
+    .notice-text p {
+        font-size: 0.85rem !important;
+    }
+    
+    /* Main Banner Scalability */
+    .banner-slide {
+        padding: 40px 0 !important;
+    }
+    
+    .banner-text-box {
+        padding: 20px !important;
+    }
+    
+    .banner-text-box h2 {
+        font-size: 1.6rem !important;
+        margin-bottom: 12px !important;
+    }
+    
+    .banner-desc {
+        font-size: 0.9rem !important;
+        margin-bottom: 25px !important;
+    }
+    
+    /* Greeting Page Optimization */
+    .greeting-wrap {
+        padding: 20px !important;
+    }
+    
+    .greeting-header {
+        margin-bottom: 30px !important;
+    }
+    
+    .greeting-header .greet-title {
+        font-size: 1.5rem !important;
+    }
+    
+    .greeting-header .greet-sub {
+        font-size: 0.95rem !important;
+    }
+    
+    .greeting-body {
+        gap: 20px !important;
+    }
+    
+    /* Main Search Bar Stack */
+    .search-bar-section {
+        height: auto !important;
+        flex-direction: column;
+        border: 1px solid var(--text-dark);
+    }
+    
+    .search-bar-section .pattern-box {
+        display: none;
+    }
+    
+    .search-input-wrap {
+        padding: 12px 15px !important;
+        border-bottom: 1px solid var(--border-color);
+        width: 100%;
+    }
+    
+    .search-input-wrap input {
+        font-size: 0.95rem !important;
+    }
+    
+    .btn-search-main {
+        width: 100%;
+        height: 44px !important;
+        margin-left: 0 !important;
+        border-radius: 0 !important;
+    }
+    
+    /* Depth 3 Sub Tabs Horizontal Scroll */
+    .sub-tabs {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        border-bottom: 1px solid var(--border-color) !important;
+        margin-bottom: 15px !important;
+        gap: 0 !important;
+        scrollbar-width: none; /* Firefox */
+    }
+    
+    .sub-tabs::-webkit-scrollbar {
+        display: none; /* Chrome, Safari */
+    }
+    
+    .tab-item {
+        padding: 10px 16px !important;
+        font-size: 0.9rem !important;
+        white-space: nowrap !important;
+        flex-shrink: 0 !important;
+        letter-spacing: 0.05em !important;
+    }
+    
+    /* Board Search Bar (Subpages) stack styling */
+    .board-search-box {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        padding: 15px !important;
+        gap: 12px !important;
+    }
+    
+    .filter-group, .search-group {
+        width: 100%;
+        display: flex;
+        gap: 8px !important;
+    }
+    
+    .filter-group select,
+    .search-group input,
+    .search-group button,
+    .search-group select {
+        flex: 1;
+        height: 38px !important;
+        font-size: 0.9rem !important;
+    }
+    
+    .board-search-box select {
+        min-width: 90px !important;
+    }
+    
+    .search-inner {
+        display: flex;
+        width: 100%;
+        gap: 8px;
+    }
+    
+    .search-inner select {
+        flex-shrink: 0;
+        width: 90px !important;
+        height: 38px !important;
+    }
+    
+    .search-inner input {
+        flex: 1;
+        height: 38px !important;
+    }
+    
+    .search-inner button {
+        flex-shrink: 0;
+        height: 38px !important;
+    }
+    
+    /* Board Tables Column Adaptive Hiding & Formatting */
+    .board-table th.col-num,
+    .board-table td.col-num,
+    .board-table th.col-cat,
+    .board-table td.col-cat,
+    .board-table th.col-file,
+    .board-table td.col-file {
+        display: none !important;
+    }
+    
+    /* Hide views (조회수) globally on mobile */
+    .board-table th.col-view,
+    .board-table td.col-view {
+        display: none !important;
+    }
+    
+    /* Exception: Keep 원문(PDF) col-view in archive/issue list where article-list-tbody resides */
+    #article-list-tbody td.col-view,
+    table:has(#article-list-tbody) th.col-view {
+        display: table-cell !important;
+        width: 60px !important;
+    }
+    
+    /* Table cells sizing and typography details */
+    .board-table th {
+        padding: 10px 5px !important;
+        font-size: 0.85rem !important;
+    }
+    
+    .board-table td {
+        padding: 12px 5px !important;
+        font-size: 0.85rem !important;
+    }
+    
+    .board-table td.col-title a {
+        font-size: 0.9rem !important;
+        line-height: 1.3 !important;
+        display: block;
+    }
+    
+    .article-en-title {
+        font-size: 0.72rem !important;
+        line-height: 1.2 !important;
+        margin-top: 2px;
+    }
+    
+    .board-table th.col-year,
+    .board-table td.col-year {
+        font-size: 0.8rem !important;
+        width: 70px !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 }
