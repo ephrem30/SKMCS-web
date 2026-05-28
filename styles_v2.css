@@ -44,6 +44,12 @@ a {
     color: inherit;
 }
 
+.layout-wrapper {
+    width: 100%;
+    overflow-x: hidden;
+    position: relative;
+}
+
 .container {
     max-width: 1320px; /* Increased by 20% from 1100px */
     margin: 0 auto;
@@ -1231,6 +1237,24 @@ a {
     border: 1px solid var(--border-color);
     border-radius: 8px;
     margin-bottom: 20px; /* Reduced from 40px */
+}
+
+.search-inner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.search-inner input {
+    flex: 1;
+}
+
+.search-inner select,
+.search-inner button {
+    flex-shrink: 0;
 }
 
 .filter-group, .search-group {
