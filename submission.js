@@ -4,29 +4,14 @@ const ADMIN_ROLES = ["admin", "secretary", "editor", "president"];
 function initRegisteredUsers() {
     const data = localStorage.getItem("registered_users");
     const mockUsers = [
-        { email: "admin@gmail.com", password: "admin123", name: "최고관리인", role: "admin", affiliation: "한국음악학회", phone: "010-1234-5678", birth: "1980-01-01" },
-        { email: "secretary@gmail.com", password: "sec123", name: "이간사", role: "secretary", affiliation: "한국음악학회", phone: "010-2345-6789", birth: "1985-05-15" },
-        { email: "reviewer@gmail.com", password: "rev123", name: "박심사", role: "reviewer", affiliation: "동국대학교", phone: "010-3456-7890", birth: "1975-08-20" },
-        { email: "editor@gmail.com", password: "edi123", name: "김편집", role: "editor", affiliation: "서울대학교", phone: "010-4567-8901", birth: "1972-11-30" },
-        { email: "president@gmail.com", password: "pre123", name: "최회장", role: "president", affiliation: "한국음악학회", phone: "010-5678-9012", birth: "1965-03-25" },
-        { email: "member@gmail.com", password: "mem123", name: "김회원", role: "member", affiliation: "한국음악대학", phone: "010-6789-0123", birth: "1990-07-07" },
-        { email: "woochang@gmail.com", password: "admin123", name: "최우창", role: "admin", affiliation: "한국음악학회", phone: "010-9999-8888", birth: "1995-01-01" }
+        { email: "admin@gmail.com", password: "admin123", name: "최고관리자", role: "admin", affiliation: "한국음악학회", phone: "010-1234-5678", birth: "1980-01-01" },
+        { email: "secretary@gmail.com", password: "sec123", name: "학회간사", role: "secretary", affiliation: "한국음악학회", phone: "010-2345-6789", birth: "1985-05-15" },
+        { email: "reviewer@gmail.com", password: "rev123", name: "심사위원", role: "reviewer", affiliation: "한국음악학회", phone: "010-3456-7890", birth: "1975-08-20" },
+        { email: "editor@gmail.com", password: "edi123", name: "편집위원장", role: "editor", affiliation: "한국음악학회", phone: "010-4567-8901", birth: "1972-11-30" },
+        { email: "president@gmail.com", password: "pre123", name: "학회회장", role: "president", affiliation: "한국음악학회", phone: "010-5678-9012", birth: "1965-03-25" }
     ];
     if (!data) {
         localStorage.setItem("registered_users", JSON.stringify(mockUsers));
-    } else {
-        try {
-            const users = JSON.parse(data);
-            const woochangUser = users.find(u => u.name === "최우창");
-            if (woochangUser) {
-                woochangUser.role = "admin";
-            } else {
-                users.push({ email: "woochang@gmail.com", password: "admin123", name: "최우창", role: "admin", affiliation: "한국음악학회", phone: "010-9999-8888", birth: "1995-01-01" });
-            }
-            localStorage.setItem("registered_users", JSON.stringify(users));
-        } catch (e) {
-            localStorage.setItem("registered_users", JSON.stringify(mockUsers));
-        }
     }
 }
 

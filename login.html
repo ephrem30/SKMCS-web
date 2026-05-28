@@ -752,33 +752,11 @@
                     pwInput.focus();
                     return;
                 }
-                role = matchedUser.name === "최우창" ? "admin" : matchedUser.role;
+                role = matchedUser.role;
                 name = matchedUser.name;
             } else {
-                // Check if user is trying to login with default mock credentials (which might not be in registered_users yet)
-                // Default fallback based on email keywords for test convenience
-                name = email.split('@')[0] || '회원';
-                if (emailLower.includes('woochang') || emailLower.includes('choiwoochang')) {
-                    role = 'admin';
-                    name = '최우창';
-                } else if (emailLower.includes('admin')) {
-                    role = 'admin';
-                    name = '관리인';
-                } else if (emailLower.includes('secretary') || emailLower.includes('gansa')) {
-                    role = 'secretary';
-                    name = '간사';
-                } else if (emailLower.includes('reviewer') || emailLower.includes('judge') || emailLower.includes('simsa')) {
-                    role = 'reviewer';
-                    name = '심사위원';
-                } else if (emailLower.includes('editor') || emailLower.includes('pyeonjib')) {
-                    role = 'editor';
-                    name = '편집장';
-                } else if (emailLower.includes('president') || emailLower.includes('hoejang')) {
-                    role = 'president';
-                    name = '회장';
-                } else {
-                    role = 'member';
-                }
+                alert("등록된 회원이 아니거나 비밀번호가 올바르지 않습니다.");
+                return;
             }
             
             btn.innerHTML = '<span class="spinner"></span> 로그인 중...';
