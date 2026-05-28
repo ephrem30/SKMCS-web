@@ -1065,20 +1065,21 @@ a {
 .designed-by {
     display: flex;
     align-items: center;
-    gap: 0px;
+    gap: 5px;
     font-family: 'Poppins', sans-serif;
-    font-size: 0.64rem;
-    font-style: italic;
-    color: #999;
+    font-size: 0.55rem;
+    font-style: normal;
+    color: #777;
+    white-space: nowrap;
 }
 
 .designer-logo {
     font-style: normal;
-    font-weight: 700;
-    color: #ddd;
+    font-weight: 600;
+    color: #aaa;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 3px;
 }
 
 .designer-img {
@@ -2940,23 +2941,26 @@ a {
 .main-footer .footer-right,
 .footer-bottom .footer-bottom-right {
     position: absolute;
-    right: 40px;
-    bottom: 15px;
+    right: 20px;
+    bottom: 8px;
     display: flex;
-    align-items: flex-end;
+    align-items: center;
+    justify-content: flex-end;
+    z-index: 10;
 }
 
 .main-footer .designed-by {
     display: flex;
     align-items: center;
-    font-size: 0.64rem;
+    font-size: 0.55rem;
     color: #777;
-    gap: 6px;
+    gap: 5px;
+    white-space: nowrap;
 }
 
 .main-footer .designer-logo {
     font-weight: 600;
-    color: #999;
+    color: #aaa;
 }
 
 .footer-logo-block {
@@ -3004,9 +3008,10 @@ a {
     
     .main-footer .footer-right,
     .footer-bottom .footer-bottom-right {
-        position: static;
-        align-items: flex-start;
-        margin-top: 15px;
+        position: absolute;
+        right: 20px;
+        bottom: 8px;
+        margin-top: 0;
     }
 }
 
@@ -4120,17 +4125,18 @@ i.fa-angle-right:not(.divider) {
     
     .main-footer .footer-right,
     .footer-bottom .footer-bottom-right {
-        position: static !important;
-        justify-content: center !important;
-        align-items: center !important;
-        width: 100% !important;
-        margin-top: 10px !important;
+        position: absolute !important;
+        right: 20px !important;
+        bottom: 8px !important;
+        width: auto !important;
+        margin-top: 0 !important;
+        justify-content: flex-end !important;
     }
     
     .main-footer .designed-by {
-        justify-content: center !important;
-        font-size: 0.6rem !important;
-        width: 100% !important;
+        justify-content: flex-end !important;
+        font-size: 0.55rem !important;
+        width: auto !important;
     }
     
     /* [Mobile Override] Subpage Wrappers Padding Optimization */
