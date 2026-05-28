@@ -2901,14 +2901,15 @@ a {
 }
 
 .main-footer .footer-address p {
-    font-size: 0.85rem;
-    line-height: 1.7;
+    font-size: 0.82rem;
+    line-height: 1.6;
     color: #bbb !important;
-    margin: 0 0 5px 0;
+    margin: 0 0 4px 0;
 }
 
 .main-footer .footer-address .copyright {
-    margin-top: 5px;
+    margin-top: 4px;
+    font-size: 0.76rem;
     color: #777 !important;
 }
 
@@ -4012,5 +4013,69 @@ i.fa-angle-right:not(.divider) {
     #pdf-modal-close {
         font-size: 1.3rem !important;
         padding: 4px 8px !important;
+    }
+    
+    /* [Mobile Override] Footer Sizing, Alignment, and Layout Balance */
+    .main-footer {
+        padding: 20px 0 25px 0 !important;
+    }
+    
+    .main-footer .footer-container {
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center !important;
+        gap: 15px !important;
+        padding: 0 15px !important;
+    }
+    
+    .main-footer .footer-left {
+        align-items: center !important;
+        text-align: center !important;
+        width: 100% !important;
+    }
+    
+    .footer-main-row {
+        flex-direction: column !important;
+        gap: 15px !important;
+        align-items: center !important;
+        width: 100% !important;
+    }
+    
+    .footer-vertical-divider {
+        display: none !important;
+    }
+    
+    .main-footer .footer-address {
+        text-align: center !important;
+        width: 100% !important;
+    }
+    
+    .main-footer .footer-address p {
+        font-size: 0.74rem !important;
+        line-height: 1.6 !important;
+        margin-bottom: 6px !important;
+        color: #b0b0b0 !important;
+        word-break: keep-all;
+    }
+    
+    .main-footer .footer-address .copyright {
+        font-size: 0.7rem !important;
+        margin-top: 8px !important;
+        color: #777777 !important;
+    }
+    
+    .main-footer .footer-right,
+    .footer-bottom .footer-bottom-right {
+        position: static !important;
+        justify-content: center !important;
+        align-items: center !important;
+        width: 100% !important;
+        margin-top: 10px !important;
+    }
+    
+    .main-footer .designed-by {
+        justify-content: center !important;
+        font-size: 0.6rem !important;
+        width: 100% !important;
     }
 }
