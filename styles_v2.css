@@ -4078,4 +4078,45 @@ i.fa-angle-right:not(.divider) {
         font-size: 0.6rem !important;
         width: 100% !important;
     }
+    
+    /* [Mobile Override] Subpage Wrappers Padding Optimization */
+    .greeting-wrap,
+    .rules-wrap,
+    .history-wrap,
+    .org-chart-wrap {
+        padding: 20px 15px !important;
+        margin-top: 15px !important;
+    }
+    
+    /* Rules Page Sticky Navigation bar wrap/flex tuning */
+    .rules-nav {
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        margin-bottom: 25px !important;
+        padding-bottom: 10px !important;
+        position: static !important; /* Prune sticky position on mobile for better scrolling flow */
+    }
+    
+    .rules-nav-btn {
+        padding: 8px 14px !important;
+        font-size: 0.85rem !important;
+    }
+    
+    /* Forms Table Mobile Adjustments */
+    .forms-table th:first-child,
+    .forms-table td:first-child {
+        display: none !important; /* Hide Number column */
+    }
+    
+    .forms-table th, 
+    .forms-table td {
+        padding: 12px 8px !important;
+        font-size: 0.85rem !important;
+    }
+    
+    .btn-download-form {
+        padding: 6px 10px !important;
+        font-size: 0.72rem !important;
+    }
 }
