@@ -3432,26 +3432,33 @@ i.fa-angle-right:not(.divider) {
     
     /* Vertical mobile sub-menus (dropdowns) */
     .main-nav .dropdown-menu {
-        position: static;
-        transform: none;
-        opacity: 1;
-        visibility: visible;
-        box-shadow: none;
-        border: none;
-        padding: 0;
-        display: none;
-        flex-direction: column;
-        align-items: flex-start;
-        width: 100%;
-        margin-top: 10px;
-        background: #fafaf9;
-        border-left: 3px solid var(--color-red);
-        padding-left: 15px;
-        gap: 0;
+        position: static !important;
+        transform: none !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        box-shadow: none !important;
+        border: none !important;
+        padding: 0 !important;
+        display: none !important; /* Default hidden */
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        width: 100% !important;
+        margin-top: 10px !important;
+        background: #fafaf9 !important;
+        border-left: 3px solid var(--color-red) !important;
+        padding-left: 15px !important;
+        gap: 0 !important;
     }
     
-    .nav-item.mobile-open .dropdown-menu {
-        display: flex;
+    /* Expand submenu strictly on .mobile-open class */
+    .nav-item.mobile-open .dropdown-menu,
+    .nav-item.mobile-open:hover .dropdown-menu {
+        display: flex !important;
+    }
+    
+    /* Disable Desktop Hover-to-Open display on Mobile/Tablet */
+    .main-nav .nav-item:not(.mobile-open):hover .dropdown-menu {
+        display: none !important;
     }
     
     .dropdown-menu::before, 
@@ -3922,5 +3929,88 @@ i.fa-angle-right:not(.divider) {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+    
+    /* Popups & Modals Mobile Optimization */
+    
+    /* 1. Share Modal (공유하기 팝업) */
+    .share-modal {
+        padding: 20px 15px !important;
+        width: 92% !important;
+    }
+    
+    .share-modal-header {
+        margin-bottom: 18px !important;
+        padding-bottom: 10px !important;
+    }
+    
+    .share-modal-header h3 {
+        font-size: 1.1rem !important;
+    }
+    
+    .share-sns-list {
+        gap: 6px !important;
+        margin-bottom: 20px !important;
+    }
+    
+    .share-sns-icon {
+        width: 40px !important;
+        height: 40px !important;
+        font-size: 1.1rem !important;
+    }
+    
+    .share-sns-item span {
+        font-size: 0.65rem !important;
+    }
+    
+    .share-link-copy-box {
+        padding: 4px !important;
+        gap: 6px !important;
+    }
+    
+    .share-link-input {
+        font-size: 0.75rem !important;
+    }
+    
+    .share-btn-copy {
+        padding: 8px 12px !important;
+        font-size: 0.75rem !important;
+    }
+    
+    /* 2. Address Search Modal (주소 검색 팝업) */
+    .addr-modal-card {
+        max-width: 95% !important;
+        margin: 0 auto;
+    }
+    
+    .addr-modal-header {
+        padding: 12px 15px !important;
+    }
+    
+    .addr-modal-header h3 {
+        font-size: 1rem !important;
+    }
+    
+    .addr-modal-body {
+        height: 360px !important;
+    }
+    
+    /* 3. PDF Viewer Modal (논문 PDF 뷰어 팝업) */
+    #pdf-modal > div {
+        width: 95% !important;
+        height: 85vh !important;
+    }
+    
+    #pdf-modal-title {
+        font-size: 0.8rem !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 70vw !important;
+    }
+    
+    #pdf-modal-close {
+        font-size: 1.3rem !important;
+        padding: 4px 8px !important;
     }
 }

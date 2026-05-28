@@ -233,9 +233,8 @@ document.addEventListener("DOMContentLoaded", () => {
             if (dropdown) {
                 item.classList.add("has-dropdown");
                 const link = item.querySelector("a");
-                
                 link.addEventListener("click", (e) => {
-                    if (window.innerWidth <= 992) {
+                    if (window.matchMedia("(max-width: 992px)").matches) {
                         e.preventDefault();
                         e.stopPropagation();
                         
