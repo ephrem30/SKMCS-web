@@ -161,6 +161,63 @@ document.addEventListener("DOMContentLoaded", () => {
                         sidebarNav.appendChild(adminSideLink);
                     }
                 }
+
+                // 3. Inject Member Management into Member Service dropdown menu (Admins only)
+                if (isAdmin) {
+                    const navItems = document.querySelectorAll(".main-nav > ul > li.nav-item");
+                    navItems.forEach(item => {
+                        const mainLink = item.querySelector("a");
+                        if (mainLink && (mainLink.getAttribute("href") === "admission.html" || mainLink.textContent.trim().replace(/\s+/g, '') === "회원서비스")) {
+                            const dropdown = item.querySelector(".dropdown-menu");
+                            if (dropdown && !dropdown.querySelector('a[href="member_admin.html"]')) {
+                                const memberAdminLi = document.createElement("li");
+                                memberAdminLi.innerHTML = `<a href="member_admin.html">회원관리</a>`;
+                                dropdown.appendChild(memberAdminLi);
+                            }
+                        }
+                    });
+
+                    // 4. Inject Member Management into Sitemap (Admins only)
+                    const sitemapCards = document.querySelectorAll(".sitemap-card");
+                    sitemapCards.forEach(card => {
+                        const h3 = card.querySelector(".sitemap-title-wrap h3");
+                        if (h3 && h3.textContent.trim().replace(/\s+/g, '') === "회원서비스") {
+                            const linksList = card.querySelector(".sitemap-links-list");
+                            if (linksList && !linksList.querySelector('a[href="member_admin.html"]')) {
+                                const memberAdminSitemapLi = document.createElement("li");
+                                memberAdminSitemapLi.className = "sitemap-link-item";
+                                memberAdminSitemapLi.innerHTML = `<a href="member_admin.html">회원관리 <i class="fa-solid fa-angle-right"></i></a>`;
+                                
+                                const loginLinkItem = Array.from(linksList.querySelectorAll("li")).find(li => {
+                                    const a = li.querySelector("a");
+                                    return a && (a.getAttribute("href") === "login.html" || a.textContent.includes("로그인"));
+                                });
+                                if (loginLinkItem) {
+                                    linksList.insertBefore(memberAdminSitemapLi, loginLinkItem);
+                                } else {
+                                    linksList.appendChild(memberAdminSitemapLi);
+                                }
+                            }
+                        }
+                    });
+
+                    // 5. Inject Member Management into sub-tabs (Admins only)
+                    const subTabs = document.querySelector(".sub-tabs");
+                    if (subTabs) {
+                        const hasAdmissionTab = subTabs.querySelector('a[href="admission.html"]');
+                        const hasFormsTab = subTabs.querySelector('a[href="forms.html"]');
+                        if ((hasAdmissionTab || hasFormsTab) && !subTabs.querySelector('a[href="member_admin.html"]')) {
+                            const memberAdminTab = document.createElement("a");
+                            memberAdminTab.href = "member_admin.html";
+                            memberAdminTab.className = "tab-item";
+                            if (window.location.pathname.endsWith("member_admin.html")) {
+                                memberAdminTab.className += " active";
+                            }
+                            memberAdminTab.textContent = "회원관리 (관리인)";
+                            subTabs.appendChild(memberAdminTab);
+                        }
+                    }
+                }
             }
         } catch (err) {
             console.error("Error parsing user session:", err);
