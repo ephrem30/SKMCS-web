@@ -3776,11 +3776,11 @@ i.fa-angle-right:not(.divider) {
         gap: 20px !important;
     }
     
-    /* Main Search Bar Stack */
+    /* Main Search Bar Horizontal Layout */
     .search-bar-section {
         height: auto !important;
-        flex-direction: column !important;
-        border: 1px solid var(--text-dark) !important;
+        flex-direction: row !important;
+        border: 2px solid var(--text-dark) !important;
         background: white !important;
     }
     
@@ -3790,37 +3790,44 @@ i.fa-angle-right:not(.divider) {
     
     .search-input-wrap {
         display: flex !important;
-        flex-direction: column !important;
-        align-items: stretch !important;
-        padding: 15px !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        padding: 8px 12px !important;
         width: 100% !important;
-        gap: 12px !important;
+        gap: 8px !important;
     }
     
     .search-icon {
-        display: none !important; /* Hide search icon to maximize input area */
+        display: inline-block !important;
+        font-size: 1rem !important;
+        color: var(--text-muted) !important;
+        margin-right: 2px !important;
     }
     
     .search-input-wrap input {
-        width: 100% !important;
-        font-size: 0.95rem !important;
-        height: 40px !important;
-        border: 1px solid var(--border-color) !important;
-        padding: 0 10px !important;
-        border-radius: 4px !important;
+        flex: 1 !important;
+        width: auto !important;
+        font-size: 0.9rem !important;
+        height: 38px !important;
+        border: none !important;
+        padding: 0 8px !important;
         outline: none !important;
         margin: 0 !important;
     }
     
     .btn-search-main {
-        width: 100% !important;
-        height: 40px !important;
+        flex-shrink: 0 !important;
+        width: auto !important;
+        min-width: 65px !important;
+        height: 36px !important;
         margin-left: 0 !important;
         border-radius: 4px !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        font-size: 0.9rem !important;
+        font-size: 0.82rem !important;
+        padding: 0 12px !important;
+        background-color: var(--bg-charcoal) !important;
     }
     
     /* Depth 3 Sub Tabs Horizontal Scroll */
