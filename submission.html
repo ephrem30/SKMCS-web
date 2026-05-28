@@ -1,0 +1,851 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>한국음악학회 - 논문투고</title>
+    <link rel="stylesheet" href="styles_v2.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="layout-wrapper">
+        
+        <!-- Left Vertical Quick Menu -->
+        <aside class="quick-sidebar">
+            <div class="sidebar-toggle">
+                <i class="fa-solid fa-bars"></i>
+                <span>Quick Menu</span>
+            </div>
+                                                <nav class="sidebar-nav">
+                <a href="news.html" class="side-link">
+                    <i class="fa-solid fa-bullhorn"></i>
+                    <span class="side-text">공지사항</span>
+                </a>
+                <a href="admission.html" class="side-link">
+                    <i class="fa-solid fa-user-plus"></i>
+                    <span class="side-text">입회안내</span>
+                </a>
+                <a href="submission.html" class="side-link">
+                    <i class="fa-solid fa-file-arrow-up"></i>
+                    <span class="side-text">논문 온라인투고</span>
+                </a>
+                <a href="activities.html" class="side-link">
+                    <i class="fa-solid fa-calendar-days"></i>
+                    <span class="side-text">학술대회 세미나</span>
+                </a>
+                <a href="forms.html" class="side-link">
+                    <i class="fa-solid fa-folder-open"></i>
+                    <span class="side-text">자료실</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Top Utility Bar -->
+        <div class="top-util-bar">
+            <div class="container">
+                <div class="util-right">
+                    <div class="util-links">
+                        <a href="login.html" class="util-link"><i class="fa-solid fa-right-to-bracket"></i> 로그인</a>
+                        <a href="#" class="util-link"><i class="fa-solid fa-user-plus"></i> 회원가입</a>
+                        <a href="#" class="util-link"><i class="fa-solid fa-sitemap"></i> 사이트맵</a>
+                    </div>
+                                        <form action="search.html" method="GET" class="top-search">
+                        <input type="text" name="query" placeholder="검색..." required>
+                        <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+                                                        <!-- Header Navigation -->
+        <header class="main-header">
+            <div class="container header-container">
+                <a href="index.html" class="logo">
+                    <img src="main_logo.png" alt="한국음악학회 로고 마크" class="logo-icon-img">
+                    <div class="logo-text">
+                        <h1>한국음악학회</h1>
+                        <div class="logo-divider"></div>
+                        <span class="logo-en">the society for korean music & culture studies</span>
+                    </div>
+                </a>
+
+                                                                <nav class="main-nav">
+                    <ul>
+                        <li class="nav-item">
+                            <a href="index.html">Home</a>
+                            <div class="hover-bar white"></div>
+                        </li>
+                        <li class="nav-item">
+                            <a href="about.html">학회소개</a>
+                            <div class="hover-bar red"></div>
+                            <span class="sub-text">about us</span>
+                            <ul class="dropdown-menu">
+                                <li><a href="about.html">인사말</a></li>
+                                <li><a href="organization.html">조직도/임원진</a></li>
+                                <li><a href="history.html">학회 연혁</a></li>
+                                <li><a href="rules.html">학회 정관</a></li>
+                                <li><a href="directions.html">오시는 길</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a href="news.html">학회소식</a>
+                            <div class="hover-bar black"></div>
+                            <span class="sub-text">news</span>
+                            <ul class="dropdown-menu">
+                                <li><a href="news.html?tab=notice">공지사항</a></li>
+                                <li><a href="news.html?tab=freeboard">자유게시판</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a href="issue.html">학회지</a>
+                            <div class="hover-bar green"></div>
+                            <span class="sub-text">journal</span>
+                            <ul class="dropdown-menu">
+                                <li><a href="issue.html">최신호</a></li>
+                                <li><a href="archive.html">지난호 (아카이브)</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a href="submission.html">논문투고</a>
+                            <div class="hover-bar yellow"></div>
+                            <span class="sub-text">submission</span>
+                            <ul class="dropdown-menu">
+                                <li><a href="submission.html">논문투고안내</a></li>
+                                <li><a href="submission_rules.html">논문투고규정</a></li>
+                                <li><a href="submission_review.html">심사규정</a></li>
+                                <li><a href="submission.html?tab=online">온라인 투고시스템</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a href="activities.html">학술활동</a>
+                            <div class="hover-bar grey"></div>
+                            <span class="sub-text">activities</span>
+                            <ul class="dropdown-menu">
+                                <li><a href="activities.html?tab=conference">학술대회 일정</a></li>
+                                <li><a href="activities.html?tab=seminar">연구모임/세미나</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a href="admission.html">회원서비스</a>
+                            <div class="hover-bar blue"></div>
+                            <span class="sub-text">member service</span>
+                            <ul class="dropdown-menu">
+                                <li><a href="admission.html">입회안내</a></li>
+                                <li><a href="#">마이페이지(수정중)</a></li>
+                                <li><a href="#">추천사이트</a></li>
+                                <li><a href="forms.html">양식모음</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </nav>
+
+
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <div class="sub-visual" style="background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('bg_submission.png');">
+            <div class="visual-text">
+                <h2>논문투고</h2>
+            </div>
+        </div>
+
+        <main class="content-area">
+            <div class="container subpage-area">
+                <!-- LNB / Breadcrumb & Utilities -->
+                <div class="sub-util-row">
+                    <div class="breadcrumb">
+                        <i class="fa-solid fa-house"></i>
+                        <span class="depth">논문투고</span>
+                        <i class="fa-solid fa-angle-right divider"></i>
+                        <span class="depth current" id="breadcrumb-sub-tab">투고 안내</span>
+                    </div>
+                    <div class="page-utils">
+                        <a href="#" title="인쇄"><i class="fa-solid fa-print"></i></a>
+                        <a href="#" title="공유"><i class="fa-solid fa-share-nodes"></i></a>
+                    </div>
+                </div>
+
+                <!-- Depth 3 Tabs -->
+                <div class="sub-tabs" id="submission-tabs">
+                    <a href="?tab=guidelines" class="tab-item active" data-tab="guidelines">투고 안내</a>
+                    <a href="?tab=online" class="tab-item" data-tab="online">온라인 투고</a>
+                    <a href="?tab=history" class="tab-item" data-tab="history">투고 내역</a>
+                    <a href="?tab=regulations" class="tab-item" data-tab="regulations">투고 규정</a>
+                    <a href="?tab=review" class="tab-item" data-tab="review">심사 규정</a>
+                    <a href="?tab=ethics" class="tab-item" data-tab="ethics">연구 윤리</a>
+                    <a href="?tab=reviewer-space" class="tab-item" data-tab="reviewer-space" id="tab-reviewer-space" style="display: none; background-color: rgba(43, 138, 126, 0.05); color: var(--color-green); font-weight: 700;">심사위원 공간</a>
+                    <a href="?tab=admin-space" class="tab-item" data-tab="admin-space" id="tab-admin-space" style="display: none; background-color: rgba(203, 60, 49, 0.05); color: var(--color-red); font-weight: 700;">관리인 공간</a>
+                </div>
+
+                <!-- Tab Contents -->
+                <!-- 1. Guidelines -->
+                <div id="section-guidelines" class="tab-section active">
+                    <div class="greeting-wrap" style="text-align:left;">
+                        <h3 style="margin-bottom:20px; font-size:1.5rem; color:var(--text-dark);">논문 투고 안내</h3>
+                        <p style="margin-bottom:15px; font-size:1.05rem; color:var(--text-muted);">한국음악학회지 『한국음악문화』에 귀하의 훌륭한 연구 논문을 투고해 주심을 환영합니다. 본 학회는 엄격하고 공정한 심사 과정을 거쳐 학술적 가치가 높은 논문을 선정하여 게재하고 있습니다.</p>
+                        
+                        <h4 style="margin:30px 0 10px 0; font-size:1.2rem; border-left:4px solid var(--color-red); padding-left:10px;">투고 자격</h4>
+                        <ul style="margin-left:20px; margin-bottom:20px; color:var(--text-muted); line-height:1.8;">
+                            <li>본 학회의 회원(정회원, 준회원)에 한하여 투고 가능합니다.</li>
+                            <li>비회원인 경우 학회에 먼저 가입하신 후 투고 절차를 진행해 주시기 바랍니다.</li>
+                        </ul>
+
+                        <h4 style="margin:30px 0 10px 0; font-size:1.2rem; border-left:4px solid var(--color-yellow); padding-left:10px;">원고 작성 지침</h4>
+                        <p style="margin-bottom:15px; color:var(--text-muted);">제출하시는 논문은 반드시 본 학회의 <a href="rules.html" style="color:var(--color-green); text-decoration:underline;">[논문 작성 규정 및 양식]</a>을 준수하여 작성되어야 합니다.</p>
+                        
+                        <div style="margin-top: 50px; text-align: center;">
+                            <a href="?tab=online" class="btn-solid" id="btn-go-submission" style="padding:15px 40px; font-size:1.2rem; border-radius:30px; display: inline-flex; align-items: center; gap: 0px;">온라인 투고 시스템 바로가기 <i class="fa-solid fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Submission Wizard Form -->
+                <div id="section-submit-form" class="tab-section" style="display: none;">
+                    <div class="submission-wizard">
+                        <div class="wizard-progress">
+                            <div class="progress-step active" id="step-indicator-1">
+                                <span class="step-num">1</span>
+                                <span class="step-title">서약 및 체크리스트</span>
+                            </div>
+                            <div class="progress-step" id="step-indicator-2">
+                                <span class="step-num">2</span>
+                                <span class="step-title">논문 기본 정보</span>
+                            </div>
+                            <div class="progress-step" id="step-indicator-3">
+                                <span class="step-num">3</span>
+                                <span class="step-title">저자 정보 입력</span>
+                            </div>
+                            <div class="progress-step" id="step-indicator-4">
+                                <span class="step-num">4</span>
+                                <span class="step-title">파일 업로드</span>
+                            </div>
+                        </div>
+
+                        <!-- Step 1 Content -->
+                        <div class="wizard-step-content active" id="step-content-1">
+                            <h3 class="form-section-title">투고 동의 및 자가 체크리스트</h3>
+                            
+                            <div class="agreement-box" style="margin-bottom: 25px; padding: 20px; background: #fafafa; border: 1px solid var(--border-color); border-radius: 6px;">
+                                <h4 style="margin: 0 0 10px 0; font-size: 1.05rem; color: var(--text-dark);">[필수] 연구 윤리 준수 서약서</h4>
+                                <div style="height: 120px; overflow-y: scroll; padding: 10px; background: white; border: 1px solid #e0e0e0; font-size: 0.85rem; color: #666; line-height: 1.6; margin-bottom: 12px; text-align: left;">
+                                    본인은 한국음악학회지 『한국음악문화』에 논문을 투고함에 있어 본 학회의 연구윤리규정을 충분히 이해하고 성실히 준수하였음을 서약합니다. 본 논문은 타 학술지에 게재되었거나 게재 신청 중인 원고가 아니며, 표절, 중복 게재, 위조, 변조 등 어떠한 학술적 부정이 개입되지 않은 독자적이고 독창적인 연구물임을 보증합니다.
+                                </div>
+                                <label style="display: flex; align-items: center; gap: 0px; font-weight: 600; font-size: 0.9rem; cursor: pointer; user-select: none;">
+                                    <input type="checkbox" id="check-ethics" style="width: 16px; height: 16px;"> 위 연구 윤리 서약에 동의합니다.
+                                </label>
+                            </div>
+
+                            <div class="agreement-box" style="margin-bottom: 25px; padding: 20px; background: #fafafa; border: 1px solid var(--border-color); border-radius: 6px;">
+                                <h4 style="margin: 0 0 10px 0; font-size: 1.05rem; color: var(--text-dark);">[필수] 저작권 양도 및 출판권 설정 합의</h4>
+                                <div style="height: 120px; overflow-y: scroll; padding: 10px; background: white; border: 1px solid #e0e0e0; font-size: 0.85rem; color: #666; line-height: 1.6; margin-bottom: 12px; text-align: left;">
+                                    투고 논문이 게재 승인될 경우, 논문의 전 세계적인 저작재산권(복제권, 공중송신권, 배포권 등 일체의 권리)은 한국음악학회로 양도되며, 학회는 논문을 학회지 및 온라인 데이터베이스(DB) 서비스 등에 수록, 발행 및 전송 배포할 출판권을 행사할 수 있음에 동의합니다.
+                                </div>
+                                <label style="display: flex; align-items: center; gap: 0px; font-weight: 600; font-size: 0.9rem; cursor: pointer; user-select: none;">
+                                    <input type="checkbox" id="check-copyright" style="width: 16px; height: 16px;"> 저작권 양도 및 출판권 동의서에 합의합니다.
+                                </label>
+                            </div>
+
+                            <div class="agreement-box" style="padding: 20px; background: #fafafa; border: 1px solid var(--border-color); border-radius: 6px;">
+                                <h4 style="margin: 0 0 10px 0; font-size: 1.05rem; color: var(--text-dark);">[필수] 원고 제출 자가 체크리스트</h4>
+                                <ul style="list-style: none; padding-left: 0; text-align: left; font-size: 0.9rem; color: var(--text-dark);">
+                                    <li style="margin-bottom: 10px; display: flex; align-items: flex-start; gap: 0px;">
+                                        <input type="checkbox" id="checklist-1" style="margin-top: 3px; width: 15px; height: 15px;">
+                                        <span>원고는 본 학회의 논문 작성 규정에 맞추어 글자 크기, 행간, 장평 등을 완벽히 편집하였습니까?</span>
+                                    </li>
+                                    <li style="margin-bottom: 10px; display: flex; align-items: flex-start; gap: 0px;">
+                                        <input type="checkbox" id="checklist-2" style="margin-top: 3px; width: 15px; height: 15px;">
+                                        <span>블라인드 심사(익명 심사)를 위해 원고 본문 중 저자의 이름, 소속기관, 감사 말씀 등 저자를 유추할 수 있는 모든 정보를 삭제하였습니까?</span>
+                                    </li>
+                                    <li style="display: flex; align-items: flex-start; gap: 0px;">
+                                        <input type="checkbox" id="checklist-3" style="margin-top: 3px; width: 15px; height: 15px;">
+                                        <span>국문 초록(500자 내외)과 국문 주제어, 영문 초록(Abstract, 200단어 내외) 및 영문 주제어(Keywords)가 원고에 모두 포함되었습니까?</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Step 2 Content -->
+                        <div class="wizard-step-content" id="step-content-2" style="display: none;">
+                            <h3 class="form-section-title">논문 기본 정보 입력</h3>
+                            
+                            <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: left; margin-bottom: 20px;">
+                                <div class="form-group">
+                                    <label class="form-label" style="display: block; font-weight: 700; margin-bottom: 8px;">투고 대상 학회지 <span style="color: var(--color-red);">*</span></label>
+                                    <select id="paper-journal" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; font-family: inherit; font-size: 0.95rem;">
+                                        <option value="한국음악문화">한국음악문화 (Journal of Korean Music Culture)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" style="display: block; font-weight: 700; margin-bottom: 8px;">연구 투고 분야 <span style="color: var(--color-red);">*</span></label>
+                                    <select id="paper-category" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; font-family: inherit; font-size: 0.95rem;">
+                                        <option value="문헌">문헌 (Historical Documents)</option>
+                                        <option value="사상">사상 (Musical Thought)</option>
+                                        <option value="역사">역사 (History)</option>
+                                        <option value="음악분석">음악분석 (Musical Analysis)</option>
+                                        <option value="창작">창작 (Composition)</option>
+                                        <option value="대중음악">대중음악 (Popular Music)</option>
+                                        <option value="기타">기타 (Others)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="text-align: left; margin-bottom: 20px;">
+                                <label class="form-label" style="display: block; font-weight: 700; margin-bottom: 8px;">논문 제목 (국문) <span style="color: var(--color-red);">*</span></label>
+                                <input type="text" id="paper-title-ko" placeholder="국문 논문 제목을 입력하십시오." style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; font-family: inherit; font-size: 0.95rem;">
+                            </div>
+
+                            <div class="form-group" style="text-align: left; margin-bottom: 20px;">
+                                <label class="form-label" style="display: block; font-weight: 700; margin-bottom: 8px;">논문 제목 (영문) <span style="color: var(--color-red);">*</span></label>
+                                <input type="text" id="paper-title-en" placeholder="영문 논문 제목을 입력하십시오. (English Title)" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; font-family: inherit; font-size: 0.95rem;">
+                            </div>
+
+                            <div class="form-group" style="text-align: left; margin-bottom: 20px;">
+                                <label class="form-label" style="display: block; font-weight: 700; margin-bottom: 8px;">국문 초록 <span style="color: var(--color-red);">*</span></label>
+                                <textarea id="paper-abstract-ko" rows="5" placeholder="국문 초록을 500자 내외로 기술해 주십시오." style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; font-family: inherit; font-size: 0.95rem; resize: vertical; line-height: 1.5;"></textarea>
+                            </div>
+
+                            <div class="form-group" style="text-align: left; margin-bottom: 20px;">
+                                <label class="form-label" style="display: block; font-weight: 700; margin-bottom: 8px;">영문 초록 (Abstract) <span style="color: var(--color-red);">*</span></label>
+                                <textarea id="paper-abstract-en" rows="5" placeholder="영문 초록을 200단어 내외로 기술해 주십시오. (English Abstract)" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; font-family: inherit; font-size: 0.95rem; resize: vertical; line-height: 1.5;"></textarea>
+                            </div>
+
+                            <div class="form-group" style="text-align: left;">
+                                <label class="form-label" style="display: block; font-weight: 700; margin-bottom: 8px;">주제어 / 키워드 (쉼표로 구분) <span style="color: var(--color-red);">*</span></label>
+                                <input type="text" id="paper-keywords" placeholder="예: 대금, 수제천, 한국음악, 악학궤범 (국문 및 영문 키워드를 혼용하여 입력 가능)" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; font-family: inherit; font-size: 0.95rem;">
+                            </div>
+                        </div>
+
+                        <!-- Step 3 Content -->
+                        <div class="wizard-step-content" id="step-content-3" style="display: none;">
+                            <h3 class="form-section-title">저자 정보 입력</h3>
+                            
+                            <div style="padding: 15px 20px; background: #f0f7f6; border-left: 4px solid var(--color-green); margin-bottom: 25px; text-align: left; font-size: 0.9rem; color: #444; border-radius: 0 4px 4px 0;">
+                                <i class="fa-solid fa-circle-info"></i> 첫 번째 저자는 주저자 및 제출 책임자로 회원 로그인 정보에 의해 자동으로 입력됩니다. 공동 저자가 있는 경우 하단 버튼을 통해 추가해 주십시오.
+                            </div>
+
+                            <!-- Primary Author Form -->
+                            <div class="author-card" style="border: 1px solid var(--border-color); border-radius: 6px; padding: 20px; margin-bottom: 25px; background: white; text-align: left;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                                    <h4 style="margin: 0; font-size: 1.05rem; color: var(--color-green);"><i class="fa-solid fa-user-pen"></i> 주저자 (제출자)</h4>
+                                </div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0px;">
+                                    <div class="form-group">
+                                        <label style="display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 5px;">성명</label>
+                                        <input type="text" id="author-name-1" readonly style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px; font-family: inherit; background: #f0f0f0;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label style="display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 5px;">소속 기관</label>
+                                        <input type="text" id="author-aff-1" placeholder="예: 동국대학교 한국음악과" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px; font-family: inherit;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label style="display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 5px;">이메일</label>
+                                        <input type="text" id="author-email-1" readonly style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px; font-family: inherit; background: #f0f0f0;">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Co-authors Container -->
+                            <div id="co-authors-container">
+                                <!-- Dynamic Co-authors Cards will go here -->
+                            </div>
+
+                            <button type="button" class="btn-outline" id="btn-add-author" style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px; font-size: 0.9rem; font-weight: 600;"><i class="fa-solid fa-plus"></i> 공동저자 추가</button>
+                        </div>
+
+                        <!-- Step 4 Content -->
+                        <div class="wizard-step-content" id="step-content-4" style="display: none;">
+                            <h3 class="form-section-title">논문 파일 및 구비 서류 업로드</h3>
+                            
+                            <div class="form-group" style="text-align: left; margin-bottom: 25px; padding: 20px; border: 2px dashed var(--border-color); border-radius: 6px; background: #fafafa;">
+                                <label style="display: block; font-weight: 700; margin-bottom: 8px; font-size: 1.05rem; color: var(--text-dark);">1. 심사용 본문 파일 업로드 <span style="color: var(--color-red);">*</span></label>
+                                <p style="margin: 0 0 15px 0; font-size: 0.85rem; color: var(--text-muted);">Hwp, Docx, Pdf 파일 형식만 지원합니다. 심사의 익명성 유지를 위해 저자 식별 정보가 지워진 상태여야 합니다.</p>
+                                
+                                <div style="display: flex; gap: 0px; align-items: center;">
+                                    <input type="file" id="file-manuscript" accept=".hwp,.docx,.pdf" style="display: none;">
+                                    <button type="button" class="btn-outline" onclick="document.getElementById('file-manuscript').click()" style="padding: 10px 20px; font-size: 0.9rem; font-weight: 600;"><i class="fa-solid fa-file-arrow-up"></i> 파일 선택</button>
+                                    <span id="manuscript-file-name" style="font-size: 0.9rem; color: #555;">선택된 파일 없음</span>
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="text-align: left; padding: 20px; border: 1px solid var(--border-color); border-radius: 6px; background: white;">
+                                <label style="display: block; font-weight: 700; margin-bottom: 8px; font-size: 1.05rem; color: var(--text-dark);">2. 연구윤리서약서 및 저작재산권양도동의서 서명본 업로드 (선택)</label>
+                                <p style="margin: 0 0 15px 0; font-size: 0.85rem; color: var(--text-muted);">자필 서명 후 스캔하여 PDF 또는 이미지 파일 형식(Jpg, Png)으로 제출하십시오. 미제출 시 게재 확정 전까지 서면 제출을 완료하여야 합니다.</p>
+                                
+                                <div style="display: flex; gap: 0px; align-items: center;">
+                                    <input type="file" id="file-agreement" accept=".pdf,.jpg,.jpeg,.png" style="display: none;">
+                                    <button type="button" class="btn-outline" onclick="document.getElementById('file-agreement').click()" style="padding: 10px 20px; font-size: 0.9rem; font-weight: 600;"><i class="fa-solid fa-file-arrow-up"></i> 파일 선택</button>
+                                    <span id="agreement-file-name" style="font-size: 0.9rem; color: #555;">선택된 파일 없음</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Wizard Navigation -->
+                        <div class="wizard-navigation" style="display: flex; justify-content: center; gap: 20px; margin-top: 40px; border-top: 1px solid var(--border-color); padding-top: 25px;">
+                            <button type="button" class="btn-outline" id="btn-prev" style="display: none; padding: 12px 30px; font-size: 1rem; font-weight: 600;"><i class="fa-solid fa-angle-left"></i> 이전</button>
+                            <button type="button" class="btn-solid" id="btn-next" style="padding: 12px 30px; font-size: 1rem; font-weight: 600;">다음 <i class="fa-solid fa-angle-right"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Submissions History Dashboard -->
+                <div id="section-history" class="tab-section" style="display: none;">
+                    <div class="submissions-history">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                            <div style="text-align: left;">
+                                <h3 style="margin: 0 0 5px 0; font-size: 1.5rem; color: var(--text-dark);">나의 논문 투고 내역</h3>
+                                <p style="margin: 0; color: var(--text-muted); font-size: 0.95rem;" id="history-desc">투고하신 논문의 심사 단계별 진행 현황을 실시간으로 확인하실 수 있습니다.</p>
+                            </div>
+                            <div id="admin-indicator" style="display: none; padding: 6px 12px; background: #faecea; border: 1px solid var(--color-red); color: var(--color-red); font-size: 0.85rem; font-weight: 700; border-radius: 4px; display: flex; align-items: center; gap: 6px;">
+                                <i class="fa-solid fa-user-shield"></i> 관리인(심사위원장) 모드
+                            </div>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="board-table history-table" style="width:100%; border-collapse: collapse; margin-bottom: 20px;">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 80px;">번호</th>
+                                        <th style="width: 150px;">투고 저널</th>
+                                        <th>논문 제목</th>
+                                        <th style="width: 130px; text-align: center;">제출일</th>
+                                        <th style="width: 120px; text-align: center;">진행 상태</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="history-table-body">
+                                    <!-- Dynamic rows from submission.js -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Regulations -->
+                <div id="section-regulations" class="tab-section" style="display: none;">
+                    <div class="greeting-wrap" style="text-align:left;">
+                        <h3 style="margin-bottom:20px; font-size:1.5rem; color:var(--text-dark);">논문 투고 규정</h3>
+                        <p style="margin-bottom:15px; font-size:1rem; color:var(--text-muted); line-height: 1.7;">
+                            <strong>제1조 (목적)</strong> 본 규정은 한국음악학회지 『한국음악문화』에 투고하는 논문과 원고의 작성 및 제출에 대한 규정을 정의하는 것을 목적으로 합니다.<br><br>
+                            <strong>제2조 (원고의 종류)</strong> 투고 가능한 논문은 독자적인 한국음악학 연구 학술논문으로서 타 기관이나 학술지에 발표되지 않은 창의적인 내용이어야 합니다.<br><br>
+                            <strong>제3조 (접수 시기)</strong> 논문 접수는 학회 정기 공고를 기반으로 항시 접수(수시 접수)를 수행하나, 호별 마감일(예: 매년 5월 31일, 11월 30일) 기준 접수분까지 당기 심사를 진행합니다.<br><br>
+                            <strong>제4조 (원고 집필)</strong> 원고는 한글 워드프로세서(Hwp) 또는 MS Word(Docx) 문서 작성을 기본으로 하며, 국문·영문 표기를 완벽히 갖추어야 합니다. 본문의 서지 정보와 인용 등은 학회의 스타일 지침을 완벽히 따라야 합니다.
+                        </p>
+                        <div style="margin-top: 30px; text-align: center;">
+                            <a href="submission_rules.html" class="btn-outline" style="padding:10px 25px; font-size:0.95rem; font-weight: 600;">상세 투고 규정 문서 보기 <i class="fa-solid fa-file-lines" style="margin-left:6px;"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. Ethics -->
+                <div id="section-ethics" class="tab-section" style="display: none;">
+                    <div class="greeting-wrap" style="text-align:left;">
+                        <h3 style="margin-bottom:20px; font-size:1.5rem; color:var(--text-dark);">연구 윤리 규정</h3>
+                        <p style="margin-bottom:15px; font-size:1rem; color:var(--text-muted); line-height: 1.7;">
+                            <strong>제1조 (목적)</strong> 본 규정은 한국음악학회가 발간하는 학술지에 투고하는 연구자들의 학문 연구 활동에 윤리성 확립을 목적으로 합니다.<br><br>
+                            <strong>제2조 (위조·변조·표절의 금지)</strong> 연구자는 존재하지 않은 자료나 허위 연구결과를 인위적으로 만들어내거나(위조), 연구 과정이나 결과를 인위적으로 조작(변조)해서는 안 되며, 타인의 아이디어, 논리, 결과 등을 정당한 출처 표기 없이 도용(표절)해서는 안 됩니다.<br><br>
+                            <strong>제3조 (중복게재 금지)</strong> 편집위원회의 승인 없이 타 학술지에 이미 출판되었거나 투고 심사 중인 동일 혹은 유사 연구물을 중복하여 게재 신청할 수 없습니다.<br><br>
+                            <strong>제4조 (윤리 심사)</strong> 윤리규정을 위반한 혐의가 발견될 경우 편집연구윤리위원회의 조사 심의 절차를 거치며, 위반으로 확정 시 게재 취소, 최소 3년간 투고 금지 등의 강력한 징계 조치를 적용합니다.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 6. Review Regulations Summary -->
+                <div id="section-review" class="tab-section" style="display: none;">
+                    <div class="greeting-wrap" style="text-align:left;">
+                        <h3 style="margin-bottom:20px; font-size:1.5rem; color:var(--text-dark);">논문 심사 규정</h3>
+                        <p style="margin-bottom:15px; font-size:1rem; color:var(--text-muted); line-height: 1.7;">
+                            <strong>제1조 (목적)</strong> 본 규정은 한국음악학회지 『한국음악문화』에 투고된 논문의 공정하고 엄격한 심사 및 게재 여부 판정에 관한 사항을 규정함을 목적으로 합니다.<br><br>
+                            <strong>제2조 (심사위원 배정)</strong> 투고된 각 논문에 대하여 편집위원회는 해당 분야의 전문 학자 3인을 심사위원으로 위촉하여 블라인드 교차 심사를 의뢰합니다.<br><br>
+                            <strong>제3조 (평가 항목)</strong> 심사는 논문의 일치성, 학회지 성격 부합성, 창의성, 연구방법의 합리성, 논증의 명료성, 선행연구 활용도, 학술적 기여도 등 7개 항목(총 100점 만점)을 기준으로 평가합니다.<br><br>
+                            <strong>제4조 (판정 기준)</strong> 심사위원 3인의 평점에 따라 게재 가(80점 이상), 수정 후 게재(70~79점), 수정 후 재심사(60~69점), 게재 불가(59점 이하)로 종합 판정합니다.
+                        </p>
+                        <div style="margin-top: 30px; text-align: center;">
+                            <a href="submission_review.html" class="btn-outline" style="padding:10px 25px; font-size:0.95rem; font-weight: 600;">상세 심사 규정 문서 보기 <i class="fa-solid fa-file-lines" style="margin-left:6px;"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 7. Reviewer Space -->
+                <div id="section-reviewer-space" class="tab-section" style="display: none;">
+                    <div class="greeting-wrap" style="text-align:left;">
+                        <h3 style="margin-bottom:20px; font-size:1.5rem; color:var(--color-green); display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-user-check"></i> 심사위원 전용 공간
+                        </h3>
+                        <p style="margin-bottom:20px; font-size:1rem; color:var(--text-muted); line-height: 1.6;">
+                            심사위원 및 편집진 권한으로 로그인하셨습니다. 배정된 논문 심사 대상 리스트를 확인하시고 논문 파일을 다운로드하여 검토를 진행해 주시기 바랍니다. 심사 후에는 상세 페이지에서 **심사의견서 및 평가 보고서 파일**을 업로드해 주십시오.
+                        </p>
+                        
+                        <!-- Reviewer Table -->
+                        <div class="board-top-info" style="margin-bottom: 15px;">
+                            <span class="total">심사 배정 논문: <strong id="reviewer-list-count">0</strong>건</span>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="board-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 80px;">번호</th>
+                                        <th style="width: 140px;">구분/저널</th>
+                                        <th>논문 제목(국문)</th>
+                                        <th style="width: 120px; text-align: center;">논문 다운로드</th>
+                                        <th style="width: 100px; text-align: center;">진행상태</th>
+                                        <th style="width: 150px; text-align: center;">심사의견 제출현황</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reviewer-list-tbody">
+                                    <!-- Populated dynamically via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 8. Admin Space -->
+                <div id="section-admin-space" class="tab-section" style="display: none;">
+                    <div class="greeting-wrap" style="text-align:left;">
+                        <h3 style="margin-bottom:20px; font-size:1.5rem; color:var(--color-red); display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-user-shield"></i> 학회 최고 관리인 시스템
+                        </h3>
+                        <p style="margin-bottom:20px; font-size:1rem; color:var(--text-muted); line-height: 1.6;">
+                            학회 최고 관리인 및 간사만 접근할 수 있는 공간입니다. 접수된 논문의 상태 관리, 회원 권한 제어, 게시판 클리닝, 학회 서식자료 업로드를 총괄적으로 처리할 수 있습니다.
+                        </p>
+
+                        <!-- Admin Sub Tabs -->
+                        <div class="admin-sub-tabs" style="display: flex; gap: 10px; margin-bottom: 25px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px;">
+                            <button class="admin-sub-tab-btn active" data-sub="papers" style="padding: 10px 20px; font-weight: 700; border: none; background: none; color: var(--text-muted); cursor: pointer; border-bottom: 3px solid transparent; font-family: inherit; font-size: 0.95rem;">
+                                <i class="fa-solid fa-file-invoice"></i> 논문 심사 관리
+                            </button>
+                            <button class="admin-sub-tab-btn" data-sub="users" style="padding: 10px 20px; font-weight: 700; border: none; background: none; color: var(--text-muted); cursor: pointer; border-bottom: 3px solid transparent; font-family: inherit; font-size: 0.95rem;">
+                                <i class="fa-solid fa-users-gear"></i> 회원 관리
+                            </button>
+                            <button class="admin-sub-tab-btn" data-sub="boards" style="padding: 10px 20px; font-weight: 700; border: none; background: none; color: var(--text-muted); cursor: pointer; border-bottom: 3px solid transparent; font-family: inherit; font-size: 0.95rem;">
+                                <i class="fa-solid fa-clipboard-list"></i> 게시판 관리
+                            </button>
+                            <button class="admin-sub-tab-btn" data-sub="uploads" style="padding: 10px 20px; font-weight: 700; border: none; background: none; color: var(--text-muted); cursor: pointer; border-bottom: 3px solid transparent; font-family: inherit; font-size: 0.95rem;">
+                                <i class="fa-solid fa-file-shield"></i> 자료 업로드 관리
+                            </button>
+                        </div>
+
+                        <!-- Style for active sub tabs -->
+                        <style>
+                            .admin-sub-tab-btn {
+                                transition: all 0.2s ease;
+                            }
+                            .admin-sub-tab-btn:hover {
+                                color: var(--color-red) !important;
+                            }
+                            .admin-sub-tab-btn.active {
+                                color: var(--color-red) !important;
+                                border-bottom-color: var(--color-red) !important;
+                            }
+                        </style>
+
+                        <!-- Sub-tab 1: 논문 심사 관리 -->
+                        <div id="admin-sub-papers" class="admin-sub-panel">
+                            <!-- Admin Dashboard Info Cards -->
+                            <div class="grid-container" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px;">
+                                <div class="grid-box" style="margin-bottom: 0; text-align: center; padding: 15px;">
+                                    <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 700;">전체 투고수</div>
+                                    <div id="admin-total-papers" style="font-size: 1.8rem; font-weight: 800; color: var(--text-dark); margin-top: 5px;">0</div>
+                                </div>
+                                <div class="grid-box" style="margin-bottom: 0; text-align: center; padding: 15px; border-left: 3px solid var(--color-yellow);">
+                                    <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 700;">심사 진행중</div>
+                                    <div id="admin-reviewing-papers" style="font-size: 1.8rem; font-weight: 800; color: var(--color-yellow); margin-top: 5px;">0</div>
+                                </div>
+                                <div class="grid-box" style="margin-bottom: 0; text-align: center; padding: 15px; border-left: 3px solid var(--color-green);">
+                                    <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 700;">게재 승인</div>
+                                    <div id="admin-accepted-papers" style="font-size: 1.8rem; font-weight: 800; color: var(--color-green); margin-top: 5px;">0</div>
+                                </div>
+                                <div class="grid-box" style="margin-bottom: 0; text-align: center; padding: 15px; border-left: 3px solid var(--color-red);">
+                                    <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 700;">반려/게재불가</div>
+                                    <div id="admin-rejected-papers" style="font-size: 1.8rem; font-weight: 800; color: var(--color-red); margin-top: 5px;">0</div>
+                                </div>
+                            </div>
+
+                            <div class="board-top-info" style="margin-bottom: 15px;">
+                                <span class="total">전체 심사대상 논문: <strong id="admin-list-count">0</strong>건</span>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="board-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 80px;">번호</th>
+                                            <th style="width: 140px;">구분/저널</th>
+                                            <th>논문 제목(국문)</th>
+                                            <th style="width: 140px;">투고자(주저자)</th>
+                                            <th style="width: 120px; text-align: center;">논문 다운로드</th>
+                                            <th style="width: 100px; text-align: center;">진행상태</th>
+                                            <th style="width: 130px; text-align: center;">심사의견/자료</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="admin-list-tbody">
+                                        <!-- Populated dynamically via JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Sub-tab 2: 회원 관리 (User Management) -->
+                        <div id="admin-sub-users" class="admin-sub-panel" style="display: none;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                <div style="font-size: 1.05rem; font-weight: 700; color: var(--text-dark);">
+                                    <i class="fa-solid fa-users"></i> 가입 회원 목록: <strong id="admin-users-count" style="color: var(--color-red);">0</strong>명
+                                </div>
+                                <div style="display: flex; gap: 8px;">
+                                    <input type="text" id="admin-users-search" placeholder="이름 또는 이메일 검색..." style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 4px; font-family: inherit; font-size: 0.9rem; width: 200px;">
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="board-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 70px;">번호</th>
+                                            <th>성명</th>
+                                            <th>이메일</th>
+                                            <th>연락처</th>
+                                            <th>소속기관</th>
+                                            <th style="width: 150px; text-align: center;">권한(역할)</th>
+                                            <th style="width: 100px; text-align: center;">작업</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="admin-users-tbody">
+                                        <!-- Populated dynamically via JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Sub-tab 3: 게시판 관리 (Board Management) -->
+                        <div id="admin-sub-boards" class="admin-sub-panel" style="display: none;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                <div style="display: flex; align-items: center; gap: 15px;">
+                                    <div style="font-size: 1.05rem; font-weight: 700; color: var(--text-dark);">
+                                        <i class="fa-regular fa-comment-dots"></i> 게시글 관리
+                                    </div>
+                                    <select id="admin-board-select" style="padding: 5px 12px; border: 1px solid var(--border-color); border-radius: 4px; font-family: inherit; font-size: 0.9rem; font-weight: 600; background: white;">
+                                        <option value="notice">공지사항 (Notice)</option>
+                                        <option value="freeboard">자유게시판 (Freeboard)</option>
+                                    </select>
+                                </div>
+                                <div style="font-size: 0.9rem; color: var(--text-muted);">
+                                    등록된 게시글 수: <strong id="admin-boards-count" style="color: var(--color-red);">0</strong>건
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="board-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 80px;">번호</th>
+                                            <th>제목</th>
+                                            <th style="width: 140px;">작성자</th>
+                                            <th style="width: 120px; text-align: center;">작성일</th>
+                                            <th style="width: 90px; text-align: center;">조회수</th>
+                                            <th style="width: 100px; text-align: center;">작업</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="admin-boards-tbody">
+                                        <!-- Populated dynamically via JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Sub-tab 4: 자료 업로드 관리 (Data Upload Management) -->
+                        <div id="admin-sub-uploads" class="admin-sub-panel" style="display: none;">
+                            <div style="display: grid; grid-template-columns: 320px 1fr; gap: 25px;">
+                                <!-- Left Column: Upload Simulation Form -->
+                                <div style="background: #fafafa; border: 1px solid var(--border-color); border-radius: 6px; padding: 20px;">
+                                    <h4 style="margin: 0 0 15px 0; font-size: 1rem; color: var(--color-red); font-weight: 800; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+                                        <i class="fa-solid fa-cloud-arrow-up"></i> 신규 자료 등록
+                                    </h4>
+                                    <form id="admin-upload-form" onsubmit="event.preventDefault();">
+                                        <div style="margin-bottom: 12px;">
+                                            <label style="display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 6px;">서식/자료명 *</label>
+                                            <input type="text" id="upload-material-name" placeholder="예: 정회원 입회신청서 양식" required style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px; font-family: inherit; font-size: 0.9rem;">
+                                        </div>
+                                        <div style="margin-bottom: 12px;">
+                                            <label style="display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 6px;">자료 분류 *</label>
+                                            <select id="upload-material-category" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px; font-family: inherit; font-size: 0.9rem; background: white;">
+                                                <option value="입회안내">입회안내</option>
+                                                <option value="논문투고">논문투고</option>
+                                                <option value="심사위원">심사위원</option>
+                                                <option value="기타자료">기타자료</option>
+                                            </select>
+                                        </div>
+                                        <div style="margin-bottom: 15px;">
+                                            <label style="display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 6px;">지원 파일 형식 (중복 선택 가능)</label>
+                                            <div style="display: flex; gap: 12px; font-size: 0.85rem;">
+                                                <label><input type="checkbox" id="upload-format-hwp" checked> HWP</label>
+                                                <label><input type="checkbox" id="upload-format-pdf" checked> PDF</label>
+                                                <label><input type="checkbox" id="upload-format-docx" checked> DOCX</label>
+                                            </div>
+                                        </div>
+                                        <div style="margin-bottom: 20px;">
+                                            <label style="display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 6px;">파일 선택 *</label>
+                                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                                <input type="file" id="upload-material-file" style="display: none;" required>
+                                                <button type="button" class="btn-outline" onclick="document.getElementById('upload-material-file').click()" style="padding: 8px 15px; font-size: 0.85rem; font-weight: 600; width: 100%;">
+                                                    <i class="fa-solid fa-file-lines"></i> 파일 선택
+                                                </button>
+                                                <span id="upload-material-file-name" style="font-size: 0.8rem; color: var(--text-muted); word-break: break-all;">선택된 파일 없음</span>
+                                            </div>
+                                        </div>
+                                        <button type="button" id="btn-submit-material" class="btn-solid" style="width: 100%; padding: 10px; font-size: 0.95rem; font-weight: 700; background-color: var(--color-red); border-color: var(--color-red);">자료 등록 완료</button>
+                                    </form>
+                                </div>
+                                <!-- Right Column: List of Uploaded Materials -->
+                                <div>
+                                    <div style="font-size: 1.05rem; font-weight: 700; color: var(--text-dark); margin-bottom: 15px;">
+                                        <i class="fa-solid fa-list-check"></i> 등록된 자료 및 서식 목록
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="board-table">
+                                            <thead>
+                                                <tr>
+                                                    <th style="width: 60px;">번호</th>
+                                                    <th>서식/자료명</th>
+                                                    <th style="width: 100px;">분류</th>
+                                                    <th>파일명</th>
+                                                    <th style="width: 90px; text-align: center;">형식</th>
+                                                    <th style="width: 80px; text-align: center;">작업</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="admin-uploads-tbody">
+                                                <!-- Populated dynamically via JS -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detail View / Moderation Modal Popup -->
+                <div class="share-modal-overlay" id="submission-detail-modal" style="display: none; justify-content: center; align-items: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; backdrop-filter: blur(4px);">
+                    <div class="share-modal" style="max-width: 750px; width: 90%; border-radius: 8px; border: 2px solid var(--text-dark); background: white; padding: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.18); position: relative; animation: modalZoom 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);">
+                        <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px;">
+                            <h3 style="margin: 0; font-size: 1.35rem; font-weight: 800; color: var(--text-dark);">논문 접수 상세 내역</h3>
+                            <button class="modal-close-btn" id="btn-close-modal" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); display: flex; align-items: center;"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                        
+                        <div class="modal-body" style="max-height: 460px; overflow-y: auto; text-align: left; padding-right: 8px;">
+                            <div class="detail-grid" style="display: grid; grid-template-columns: 140px 1fr; gap: 0px; margin-bottom: 20px; font-size: 0.95rem; line-height: 1.5;">
+                                <div style="font-weight: 700; color: var(--color-green);">접수 번호</div>
+                                <div id="detail-id" style="font-family: 'Poppins', sans-serif; font-weight: 600;">-</div>
+                                
+                                <div style="font-weight: 700; color: var(--color-green);">투고 저널</div>
+                                <div id="detail-journal">-</div>
+                                
+                                <div style="font-weight: 700; color: var(--color-green);">투고 분야</div>
+                                <div id="detail-category">-</div>
+                                
+                                <div style="font-weight: 700; color: var(--color-green);">논문 제목(국문)</div>
+                                <div id="detail-title-ko" style="font-weight: 700; color: var(--text-dark);">-</div>
+                                
+                                <div style="font-weight: 700; color: var(--color-green);">논문 제목(영문)</div>
+                                <div id="detail-title-en" style="font-family: 'Poppins', sans-serif;">-</div>
+                                
+                                <div style="font-weight: 700; color: var(--color-green);">초록(국문)</div>
+                                <div id="detail-abstract-ko" style="white-space: pre-wrap; color: #555; font-size: 0.9rem;">-</div>
+                                
+                                <div style="font-weight: 700; color: var(--color-green);">초록(영문)</div>
+                                <div id="detail-abstract-en" style="white-space: pre-wrap; color: #555; font-size: 0.9rem; font-family: 'Poppins', sans-serif;">-</div>
+                                
+                                <div style="font-weight: 700; color: var(--color-green);">주제어(키워드)</div>
+                                <div id="detail-keywords" style="font-weight: 500;">-</div>
+                                
+                                <div style="font-weight: 700; color: var(--color-green);">저자 명단</div>
+                                <div id="detail-authors">-</div>
+                                
+                                <div style="font-weight: 700; color: var(--color-green);">심사용 논문 파일</div>
+                                <div id="detail-file" style="font-weight: 600; color: var(--color-blue);"><i class="fa-solid fa-file-arrow-down"></i> -</div>
+                                
+                                <div style="font-weight: 700; color: var(--color-green);">투고 일자</div>
+                                <div id="detail-date" style="font-family: 'Poppins', sans-serif;">-</div>
+                                
+                                <div style="font-weight: 700; color: var(--color-green);">진행 상태</div>
+                                <div id="detail-status">-</div>
+                            </div>
+
+                            <!-- Review & Evaluation Files Upload Box (For Admins/Reviewers/etc.) -->
+                            <div id="admin-upload-box" style="display: none; border-top: 1px dashed var(--border-color); padding-top: 15px; margin-top: 15px;">
+                                <h4 style="margin: 0 0 10px 0; color: var(--color-green); font-size: 0.95rem; font-weight: 700; display: flex; align-items: center; gap: 5px;">
+                                    <i class="fa-solid fa-file-shield"></i> 심사 위원회 평가 자료 및 첨부 파일 업로드
+                                </h4>
+                                <div style="display: flex; flex-direction: column; gap: 10px;">
+                                    <div id="admin-uploaded-files-list" style="font-size: 0.85rem; color: #555; background: #fafafa; border: 1px solid #e0e0e0; border-radius: 4px; padding: 10px; min-height: 40px; display: flex; flex-direction: column; gap: 5px;">
+                                        <!-- List of uploaded review reports -->
+                                    </div>
+                                    <div style="display: flex; gap: 10px; align-items: center;">
+                                        <input type="file" id="admin-review-file-input" style="display: none;">
+                                        <button type="button" class="btn-outline" onclick="document.getElementById('admin-review-file-input').click()" style="padding: 6px 15px; font-size: 0.85rem; font-weight: 600;">
+                                            <i class="fa-solid fa-cloud-arrow-up"></i> 심사의견서/보고서 선택
+                                        </button>
+                                        <span id="admin-selected-file-name" style="font-size: 0.85rem; color: var(--text-muted);">선택된 파일 없음</span>
+                                        <button type="button" class="btn-solid" id="btn-upload-admin-file" style="padding: 6px 15px; font-size: 0.85rem; font-weight: 700; background-color: var(--color-green); border-color: var(--color-green); display: none;">업로드</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Admin Status Control Section -->
+                            <div id="admin-status-control-box" style="display: none; border-top: 2px solid var(--text-dark); padding-top: 20px; margin-top: 20px;">
+                                <h4 style="margin: 0 0 12px 0; color: var(--color-red); font-size: 1rem; font-weight: 800; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-user-shield"></i> 관리인 권한: 심사 진행 상태 변경</h4>
+                                <div style="display: flex; gap: 0px; align-items: center;">
+                                    <select id="admin-status-select" style="padding: 10px 15px; font-size: 0.9rem; border: 2px solid var(--text-dark); border-radius: 4px; font-family: inherit; font-weight: 600; background: white;">
+                                        <option value="접수완료">접수완료</option>
+                                        <option value="심사중">심사중</option>
+                                        <option value="게재확정">게재확정</option>
+                                        <option value="반려">반려</option>
+                                    </select>
+                                    <button class="btn-solid" id="btn-save-status" style="padding: 10px 25px; font-size: 0.9rem; font-weight: 700;">상태 변경 저장</button>
+                                    <button id="btn-delete-submission" style="padding: 10px 25px; font-size: 0.9rem; font-weight: 700; background-color: #cb3c31; border: 2px solid #cb3c31; color: white; border-radius: 4px; cursor: pointer; margin-left: 10px; font-family: inherit; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#b03228'; this.style.borderColor='#b03228';" onmouseout="this.style.backgroundColor='#cb3c31'; this.style.borderColor='#cb3c31';"><i class="fa-solid fa-trash-can"></i> 투고 내역 삭제</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Main Footer -->
+        <footer class="main-footer">
+            <div class="container footer-container">
+                <div class="footer-left">
+                    <div class="footer-main-row" style="display: flex; align-items: center; gap: 30px; margin-bottom: 12px;">
+                        <a href="index.html" class="footer-logo-block" style="display: flex; align-items: flex-end; gap: 0px; text-decoration: none; color: inherit; flex-shrink: 0;  text-decoration: none; color: inherit;">
+                        <img src="main_logo_white.png" alt="한국음악학회 로고" style="height: 65px; width: auto; object-fit: contain;">
+                        <div class="logo-text-footer" style="text-align: left; padding-bottom: 2px;">
+                            <h4 style="font-size: 1.15rem; font-weight: 800; letter-spacing: 0.05em; margin: 0; color: white; font-family: 'Pretendard', sans-serif; line-height: 1.1;">한국음악학회</h4>
+                            <div class="logo-divider" style="margin: 2px 0;"></div>
+                            <span class="logo-en" style="font-size: 0.55rem; font-weight: 500; text-transform: uppercase; color: rgba(255,255,255,0.6); display: block; font-family: 'Poppins', sans-serif; letter-spacing: 0.03em; margin-top: 1px; line-height: 1.1;">the society for korean music &amp; culture studies</span>
+                        </div>
+                    </a>
+                        <div class="footer-vertical-divider" style="width: 1px; height: 35px; background: rgba(255,255,255,0.15); flex-shrink: 0;"></div>
+                                                <div class="footer-address" style="text-align: left; font-size: 0.82rem; line-height: 1.6; color: #bbb;">
+                            <p style="margin: 0;">주소: (04620) 서울특별시 중구 필동로 1길 30 동국대학교 문화관 (한국음악과 내 학회사무국) &nbsp;&nbsp;|&nbsp;&nbsp; E-mail: skmcs@dgu.ac.kr</p>
+                            <p class="copyright" style="margin: 2px 0 0 0; color: #777;">Copyright &copy; 2026 The Society for Korean Music &amp; Culture Studies. All Rights Reserved.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer-right">
+                    <div class="designed-by">
+                        <span>Designed by</span>
+                        <span class="designer-logo"><i class="fa-solid fa-fire" style="color:#e65100"></i> Woochang Choi</span>
+                    </div>
+                </div>
+            </div>
+            <a href="#" class="btn-top"><i class="fa-solid fa-chevron-up"></i></a>
+        </footer>
+    </div>
+    <script src="share.js"></script>
+    <script src="submission.js"></script>
+</body>
+</html>
+
+
+
+
+

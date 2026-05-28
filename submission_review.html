@@ -1,0 +1,500 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>한국음악학회 - 논문 심사 규정</title>
+    <link rel="stylesheet" href="styles_v2.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="layout-wrapper">
+        
+        <!-- Left Vertical Quick Menu -->
+        <aside class="quick-sidebar">
+            <div class="sidebar-toggle">
+                <i class="fa-solid fa-bars"></i>
+                <span>Quick Menu</span>
+            </div>
+                                                <nav class="sidebar-nav">
+                <a href="news.html" class="side-link">
+                    <i class="fa-solid fa-bullhorn"></i>
+                    <span class="side-text">공지사항</span>
+                </a>
+                <a href="admission.html" class="side-link">
+                    <i class="fa-solid fa-user-plus"></i>
+                    <span class="side-text">입회안내</span>
+                </a>
+                <a href="submission.html" class="side-link">
+                    <i class="fa-solid fa-file-arrow-up"></i>
+                    <span class="side-text">논문 온라인투고</span>
+                </a>
+                <a href="activities.html" class="side-link">
+                    <i class="fa-solid fa-calendar-days"></i>
+                    <span class="side-text">학술대회 세미나</span>
+                </a>
+                <a href="forms.html" class="side-link">
+                    <i class="fa-solid fa-folder-open"></i>
+                    <span class="side-text">자료실</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Top Utility Bar -->
+        <div class="top-util-bar">
+            <div class="container">
+                <div class="util-right">
+                    <div class="util-links">
+                        <a href="login.html" class="util-link"><i class="fa-solid fa-right-to-bracket"></i> 로그인</a>
+                        <a href="#" class="util-link"><i class="fa-solid fa-user-plus"></i> 회원가입</a>
+                        <a href="#" class="util-link"><i class="fa-solid fa-sitemap"></i> 사이트맵</a>
+                    </div>
+                                        <form action="search.html" method="GET" class="top-search">
+                        <input type="text" name="query" placeholder="검색..." required>
+                        <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Header Navigation -->
+        <header class="main-header">
+            <div class="container header-container">
+                <a href="index.html" class="logo">
+                    <img src="main_logo.png" alt="한국음악학회 로고 마크" class="logo-icon-img">
+                    <div class="logo-text">
+                        <h1>한국음악학회</h1>
+                        <div class="logo-divider"></div>
+                        <span class="logo-en">the society for korean music & culture studies</span>
+                    </div>
+                </a>
+
+                                                                <nav class="main-nav">
+                    <ul>
+                        <li class="nav-item">
+                            <a href="index.html">Home</a>
+                            <div class="hover-bar white"></div>
+                        </li>
+                        <li class="nav-item">
+                            <a href="about.html">학회소개</a>
+                            <div class="hover-bar red"></div>
+                            <span class="sub-text">about us</span>
+                            <ul class="dropdown-menu">
+                                <li><a href="about.html">인사말</a></li>
+                                <li><a href="organization.html">조직도/임원진</a></li>
+                                <li><a href="history.html">학회 연혁</a></li>
+                                <li><a href="rules.html">학회 정관</a></li>
+                                <li><a href="directions.html">오시는 길</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a href="news.html">학회소식</a>
+                            <div class="hover-bar black"></div>
+                            <span class="sub-text">news</span>
+                            <ul class="dropdown-menu">
+                                <li><a href="news.html?tab=notice">공지사항</a></li>
+                                <li><a href="news.html?tab=freeboard">자유게시판</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a href="issue.html">학회지</a>
+                            <div class="hover-bar green"></div>
+                            <span class="sub-text">journal</span>
+                            <ul class="dropdown-menu">
+                                <li><a href="issue.html">최신호</a></li>
+                                <li><a href="archive.html">지난호 (아카이브)</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a href="submission.html">논문투고</a>
+                            <div class="hover-bar yellow"></div>
+                            <span class="sub-text">submission</span>
+                            <ul class="dropdown-menu">
+                                <li><a href="submission.html">논문투고안내</a></li>
+                                <li><a href="submission_rules.html">논문투고규정</a></li>
+                                <li><a href="submission_review.html">심사규정</a></li>
+                                <li><a href="submission.html?tab=online">온라인 투고시스템</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a href="activities.html">학술활동</a>
+                            <div class="hover-bar grey"></div>
+                            <span class="sub-text">activities</span>
+                            <ul class="dropdown-menu">
+                                <li><a href="activities.html?tab=conference">학술대회 일정</a></li>
+                                <li><a href="activities.html?tab=seminar">연구모임/세미나</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a href="admission.html">회원서비스</a>
+                            <div class="hover-bar blue"></div>
+                            <span class="sub-text">member service</span>
+                            <ul class="dropdown-menu">
+                                <li><a href="admission.html">입회안내</a></li>
+                                <li><a href="#">마이페이지(수정중)</a></li>
+                                <li><a href="#">추천사이트</a></li>
+                                <li><a href="forms.html">양식모음</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </nav>
+
+
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <div class="sub-visual" style="background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('bg_submission.png');">
+            <div class="visual-text">
+                <h2>논문투고</h2>
+            </div>
+        </div>
+
+        <main class="content-area">
+            <div class="container subpage-area">
+                <!-- LNB / Breadcrumb & Utilities -->
+                <div class="sub-util-row">
+                    <div class="breadcrumb">
+                        <i class="fa-solid fa-house"></i>
+                        <span class="depth">논문투고</span>
+                        <i class="fa-solid fa-angle-right divider"></i>
+                        <span class="depth current">심사규정</span>
+                    </div>
+                    <div class="page-utils">
+                        <a href="#" title="인쇄"><i class="fa-solid fa-print"></i></a>
+                        <a href="#" title="공유"><i class="fa-solid fa-share-nodes"></i></a>
+                    </div>
+                </div>
+
+                <!-- Depth 3 Tabs -->
+                <div class="sub-tabs">
+                    <a href="submission.html" class="tab-item">논문투고안내</a>
+                    <a href="submission_rules.html" class="tab-item">논문투고규정</a>
+                    <a href="submission_review.html" class="tab-item active">심사규정</a>
+                    <a href="submission.html?tab=online" class="tab-item">온라인 투고시스템</a>
+                </div>
+
+                <!-- Rules Content -->
+                <div class="rules-wrap">
+                    <!-- Anchor Navigation for Quick Access -->
+                    <div class="rules-nav">
+                        <a href="#ethics" class="rules-nav-btn active"><i class="fa-solid fa-user-check"></i> 심사위원 윤리</a>
+                        <a href="#process" class="rules-nav-btn"><i class="fa-solid fa-arrows-spin"></i> 심사 프로세스</a>
+                        <a href="#evaluation" class="rules-nav-btn"><i class="fa-solid fa-star-half-stroke"></i> 심사항목 및 배점</a>
+                        <a href="#standard" class="rules-nav-btn"><i class="fa-solid fa-gavel"></i> 판정 기준 및 주의사항</a>
+                    </div>
+
+                    <!-- Section 1: 심사위원 윤리 규약 -->
+                    <section id="ethics" class="rules-section">
+                        <div class="section-title-box">
+                            <span class="section-num">Ⅰ</span>
+                            <h3 class="section-title">『한국음악문화』 심사위원 윤리 강령</h3>
+                            <span class="update-date"><i class="fa-solid fa-circle-info"></i> 심사의 공정성과 객관성을 위한 기본 의무</span>
+                        </div>
+                        <div class="section-content">
+                            <p class="intro-text">
+                                한국음악학회지 『한국음악문화』의 논문 심사를 담당하는 심사위원은 학술지 발전과 엄격한 학문 검증을 위해 아래의 제반 윤리 규정을 충실히 이행해야 합니다.
+                            </p>
+                            
+                            <div class="articles-list">
+                                <div class="article-item">
+                                    <h4 class="article-title">제 1 조 (성실한 평가 및 적임성 통보)</h4>
+                                    <p>심사위원은 학술지의 편집위원회가 의뢰하는 논문을 심사규정이 정한 기간 내에 성실하게 평가하고 평가 결과를 편집위원회에게 통보해 주어야 합니다. 만약 자신이 논문의 내용을 평가하기에 적임자가 아니라고 판단될 경우에는 편집위원회에게 지체 없이 그 사실을 통보하고 심사를 양도합니다.</p>
+                                </div>
+                                <div class="article-item">
+                                    <h4 class="article-title">제 2 조 (공정한 평가 의무)</h4>
+                                    <p>심사위원은 논문을 개인적인 학술적 신념이나 저자와의 사적인 친분 관계를 떠나 객관적 기준에 의해 공정하게 평가하여야 합니다. 충분한 학술적 근거를 명시하지 않은 채 논문을 탈락시키거나, 심사자 본인의 관점이나 해석과 상충된다는 지극히 사적인 이유로 논문을 탈락시켜서는 안 되며, 심사 대상 논문을 성실하게 정독하지 않은 채 평가해서도 안 됩니다.</p>
+                                </div>
+                                <div class="article-item">
+                                    <h4 class="article-title">제 3 조 (저자의 인격 존중 및 의견 기재)</h4>
+                                    <p>심사위원은 전문 지식인으로서 저자의 인격과 학자로서의 독립성을 존중하여야 합니다. 평가 의견서에는 논문에 대한 명확한 판단을 밝히되, 수정 및 보완이 필요하다고 생각되는 부분에 대해서는 그 이유와 세부 수정 방향을 상세하게 설명해야 합니다. 가급적 정중하고 부드러운 어투를 사용하며 저자를 비하하거나 모욕적인 어투의 표현은 엄격히 삼가야 합니다.</p>
+                                </div>
+                                <div class="article-item">
+                                    <h4 class="article-title">제 4 조 (비밀 엄수 및 저작권 존중)</h4>
+                                    <p>심사위원은 심사 대상 논문에 대한 철저한 비밀을 지켜야 합니다. 논문 평가를 위해 특별히 다른 전문가에게 조언을 구하는 극히 이례적인 경우가 아니라면 논문을 다른 사람에게 보여주거나 논문 내용을 화두로 의견을 나누는 등의 논의는 바람직하지 않습니다. 또한 논문이 게재된 학술지가 최종 출판되기 전에 저자의 서면 동의 없이 논문 내용을 사전 인용하거나 참고해서는 절대 안 됩니다.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Section 2: 심사 프로세스 -->
+                    <section id="process" class="rules-section">
+                        <div class="section-title-box">
+                            <span class="section-num">Ⅱ</span>
+                            <h3 class="section-title">논문 심사 절차 (Process)</h3>
+                            <span class="update-date"><i class="fa-solid fa-arrows-spin"></i> 투고부터 게재 확정까지의 5단계 심사 체계</span>
+                        </div>
+                        <div class="section-content">
+                            <div class="full-box" style="margin-bottom: 25px;">
+                                <h4><i class="fa-solid fa-network-wired"></i> 심사 단계별 업무 연계망</h4>
+                                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; text-align: center; margin-top: 15px;">
+                                    <div style="background: var(--bg-offwhite); border: 2px solid var(--text-dark); padding: 15px 5px; border-radius: 6px;">
+                                        <div style="font-weight: 800; font-size: 0.8rem; color: var(--color-red); margin-bottom: 5px;">Step 1</div>
+                                        <div style="font-weight: 700; font-size: 0.95rem;">투고 신청</div>
+                                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 5px;">공고 확인 &<br>온라인 접수</div>
+                                    </div>
+                                    <div style="background: var(--bg-offwhite); border: 2px solid var(--text-dark); padding: 15px 5px; border-radius: 6px;">
+                                        <div style="font-weight: 800; font-size: 0.8rem; color: var(--color-green); margin-bottom: 5px;">Step 2</div>
+                                        <div style="font-weight: 700; font-size: 0.95rem;">위원 선정</div>
+                                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 5px;">편집위원회<br>1차 심의</div>
+                                    </div>
+                                    <div style="background: var(--bg-offwhite); border: 2px solid var(--text-dark); padding: 15px 5px; border-radius: 6px;">
+                                        <div style="font-weight: 800; font-size: 0.8rem; color: var(--color-yellow); margin-bottom: 5px;">Step 3</div>
+                                        <div style="font-weight: 700; font-size: 0.95rem;">3인 심사</div>
+                                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 5px;">논문당 3인의<br>전문위원 배정</div>
+                                    </div>
+                                    <div style="background: var(--bg-offwhite); border: 2px solid var(--text-dark); padding: 15px 5px; border-radius: 6px;">
+                                        <div style="font-weight: 800; font-size: 0.8rem; color: var(--text-dark); margin-bottom: 5px;">Step 4</div>
+                                        <div style="font-weight: 700; font-size: 0.95rem;">종합 검토</div>
+                                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 5px;">편집위원회<br>2차 교차 심의</div>
+                                    </div>
+                                    <div style="background: var(--bg-offwhite); border: 2px solid var(--text-dark); padding: 15px 5px; border-radius: 6px;">
+                                        <div style="font-weight: 800; font-size: 0.8rem; color: var(--color-blue); margin-bottom: 5px;">Step 5</div>
+                                        <div style="font-weight: 700; font-size: 0.95rem;">게재 결정</div>
+                                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 5px;">최종 게재 공고<br>& 논문 인쇄</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <table class="board-table" style="width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 180px;">단계</th>
+                                        <th>주요 세부 업무 내용</th>
+                                        <th style="width: 150px;">주관 주체</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>1. 투고 및 접수</strong></td>
+                                        <td style="text-align: left;">투고 신청 공고를 기반으로 한 원고 접수 및 투고규정/연구윤리 준수 1차 자가 진단 수행</td>
+                                        <td>동국한국음악학회</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>2. 1차 위원 선정 회의</strong></td>
+                                        <td style="text-align: left;">접수된 각 논문의 전공 세부 분야 분석 및 전문 심사위원 추천/선정 회의 개최</td>
+                                        <td>동국한국음악학회 편집위원회</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>3. 논문 심사의뢰 및 배정</strong></td>
+                                        <td style="text-align: left;"><strong>각 원고 당 전문 심사위원 3인을 배정</strong>하여 블라인드 교차 심사(심사위원 신분 및 투고자 인적사항 절대 비밀 보장) 의뢰 및 심사료 지급</td>
+                                        <td>각 논문별 심사위원 3인</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>4. 2차 검토 회의</strong></td>
+                                        <td style="text-align: left;">심사위원이 제출한 심사결과 보고서를 취합 및 교차 검토. 특히 '수정 후 재심사' 또는 의견 불일치 논문의 재배정 심의 수행</td>
+                                        <td>편집위원회 재심 소위원회</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>5. 최종 게재 결정</strong></td>
+                                        <td style="text-align: left;">최종 심사를 통과한 논문의 게재 확정 및 『한국음악문화』 학술지 발간, 저작권 양도 계약 서명, 온라인 KCI 공시 서비스 연동</td>
+                                        <td>동국한국음악학회</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                    <!-- Section 3: 심사 항목 및 배점 -->
+                    <section id="evaluation" class="rules-section">
+                        <div class="section-title-box">
+                            <span class="section-num">Ⅲ</span>
+                            <h3 class="section-title">논문 심사 평가 항목 및 배점 기준</h3>
+                            <span class="update-date"><i class="fa-solid fa-star-half-stroke"></i> 총 7개 항목, 100점 만점 기준 계량 평가표</span>
+                        </div>
+                        <div class="section-content">
+                            <p style="font-size: 0.95rem; line-height: 1.6; margin-bottom: 20px; color: var(--text-dark);">
+                                심사위원은 편집위원회 규정에 준하여 투고 논문에 대해 아래 7가지의 객관적 계량 지표를 바탕으로 평점을 부여하고 종합 평가 점수를 산출합니다.
+                            </p>
+                            
+                            <table class="board-table" style="width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 80px;">번호</th>
+                                        <th>평가 항목 (Evaluation Criteria)</th>
+                                        <th style="width: 120px;">배점 한도</th>
+                                        <th style="width: 250px;">세부 평정 관점</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>1</strong></td>
+                                        <td style="text-align: left; font-weight: 700;">논문 제목과 본문 내용의 일치성</td>
+                                        <td><strong>10점</strong></td>
+                                        <td style="text-align: left; font-size: 0.85rem;">논제(제목)가 논문이 담고 있는 연구의 핵심 내용과 범위를 정확히 대변하는가?</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>2</strong></td>
+                                        <td style="text-align: left; font-weight: 700;">학회지 성격과의 부합성</td>
+                                        <td><strong>10점</strong></td>
+                                        <td style="text-align: left; font-size: 0.85rem;">연구 주제와 영역이 『한국음악문화』 학술지가 지향하는 학문적 범주와 합치되는가?</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>3</strong></td>
+                                        <td style="text-align: left; font-weight: 700;">주제의 창의성 및 독자성</td>
+                                        <td><strong>20점</strong></td>
+                                        <td style="text-align: left; font-size: 0.85rem;">기존 학계에 보고되지 않은 새로운 아이디어나 관점을 포함하고 있는가?</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>4</strong></td>
+                                        <td style="text-align: left; font-weight: 700;">연구 방법의 합리성 및 객관성</td>
+                                        <td><strong>20점</strong></td>
+                                        <td style="text-align: left; font-size: 0.85rem;">논리를 도출하기 위해 사용된 방법론이나 실증 분석 기법이 타당하며 신뢰할 만한가?</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>5</strong></td>
+                                        <td style="text-align: left; font-weight: 700;">논지의 명확성 및 논증의 명료성</td>
+                                        <td><strong>20점</strong></td>
+                                        <td style="text-align: left; font-size: 0.85rem;">핵심 연구 주장이 논리적으로 전개되며, 문장의 호응 및 전달이 명료한가?</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>6</strong></td>
+                                        <td style="text-align: left; font-weight: 700;">선행연구 및 참고문헌의 활용도</td>
+                                        <td><strong>10점</strong></td>
+                                        <td style="text-align: left; font-size: 0.85rem;">관련 선행 학술 자료를 충분히 검토하고, 올바른 방식으로 인용 및 분석하였는가?</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>7</strong></td>
+                                        <td style="text-align: left; font-weight: 700;">한국음악학과 문화에 대한 기여도</td>
+                                        <td><strong>10점</strong></td>
+                                        <td style="text-align: left; font-size: 0.85rem;">본 연구를 통해 한국음악학 분야 또는 문화 발전에 미칠 학술적·실천적 효과는 어떠한가?</td>
+                                    </tr>
+                                    <tr style="background-color: rgba(45, 122, 115, 0.05); font-weight: bold;">
+                                        <td colspan="2" style="text-align: right;"><strong>종합 평가 총점 한도</strong></td>
+                                        <td><strong>100점</strong></td>
+                                        <td>-</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                    <!-- Section 4: 심사 결과 판정 및 주의사항 -->
+                    <section id="standard" class="rules-section">
+                        <div class="section-title-box">
+                            <span class="section-num">Ⅳ</span>
+                            <h3 class="section-title">심사 결과 판정 기준 및 무효 처분 지침</h3>
+                            <span class="update-date"><i class="fa-solid fa-gavel"></i> 평점별 종합 게재 평가 기준 및 심사 무효 사유</span>
+                        </div>
+                        <div class="section-content">
+                            <h4 style="font-size: 1.15rem; font-weight: 700; color: var(--text-dark); margin-bottom: 12px;"><i class="fa-solid fa-list-check"></i> 1. 종합 평가에 따른 게재 승인 기준</h4>
+                            <div class="grid-container" style="gap: 15px; margin-bottom: 25px;">
+                                <div class="grid-box" style="border-left: 4px solid var(--color-green); margin-bottom: 0;">
+                                    <span class="status-badge accepted" style="margin-bottom: 8px;">게재 가</span>
+                                    <h5 style="margin: 0 0 5px 0;"><strong>평점: 80점 이상</strong></h5>
+                                    <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">학술적 가치가 탁월하며 그대로 게재하기에 충분하다고 인정되는 논문</p>
+                                </div>
+                                <div class="grid-box" style="border-left: 4px solid var(--color-blue); margin-bottom: 0;">
+                                    <span class="status-badge reviewing" style="margin-bottom: 8px; background-color: var(--color-blue);">수정 후 게재</span>
+                                    <h5 style="margin: 0 0 5px 0;"><strong>평점: 70점 ~ 79점</strong></h5>
+                                    <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">부분적인 지적사항이 있으나, 저자의 수정 완료 확인 후 별도의 재심 없이 편집장 승인 하에 게재하는 논문</p>
+                                </div>
+                                <div class="grid-box" style="border-left: 4px solid var(--color-yellow); margin-bottom: 0;">
+                                    <span class="status-badge reviewing" style="margin-bottom: 8px;">수정 후 재심사</span>
+                                    <h5 style="margin: 0 0 5px 0;"><strong>평점: 60점 ~ 69점</strong></h5>
+                                    <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">논문에 핵심적인 보완/수정이 필요하여, 수정본 접수 후 동일한 심사위원에게 재심사를 의뢰하여 게재를 결정하는 논문</p>
+                                </div>
+                                <div class="grid-box" style="border-left: 4px solid var(--color-red); margin-bottom: 0;">
+                                    <span class="status-badge rejected" style="margin-bottom: 8px;">게재 불가</span>
+                                    <h5 style="margin: 0 0 5px 0;"><strong>평점: 59점 이하</strong></h5>
+                                    <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">연구 방법론적 결함이 크거나 주제의 독창성이 부족하여 본 학술지에 게재할 수 없다고 최종 판단된 논문</p>
+                                </div>
+                            </div>
+                            
+                            <div class="full-box" style="border-left-color: var(--color-red); background-color: rgba(203, 60, 49, 0.03); margin-top: 20px;">
+                                <h4><i class="fa-solid fa-ban"></i> 2. 심사 무효화 및 재심사 반려 조건 (중요)</h4>
+                                <p style="font-size: 0.95rem; margin-bottom: 12px; font-weight: 700; color: var(--color-red);">
+                                    심사위원은 정해진 규정을 준수하여 객관적으로 심사하여야 합니다. 다음 세 항목 중 하나에 해당되는 내용이 발견될 경우, 해당 심사는 무효화되며 편집위원회 심의에 의해 재심사 처리됩니다.
+                                </p>
+                                <ul class="business-list" style="line-height: 1.8; font-size: 0.92rem;">
+                                    <li><strong>인격적 모독 또는 감정적 서술</strong>: 투고자에 대한 인격적인 모독이나 연구 역량을 비하/무시하는 듯한 감정적인 어투로 작성된 평가</li>
+                                    <li><strong>근거가 결여된 단정적 판정</strong>: 탈락 또는 대폭 수정 등의 판정은 단정적으로 서술한 데 반해, 그렇게 판단하는 학술적 이유나 합당한 근거 제시가 전혀 없는 평가</li>
+                                    <li><strong>소략한 심사의견</strong>: 종합 판정 점수나 등급과는 별개로 심사의견 및 보완 요구사항의 구체적인 진술 내용이 너무나 소략하여 저자가 보완하기 불가능한 경우</li>
+                                </ul>
+                                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px; font-style: italic;">
+                                    * '수정 후 재심사'에 해당하는 경우, 전체 심사 내용 및 제출된 소명서를 편집위원회에서 철저히 검토한 뒤 최종 게재 여부를 수렴 결정합니다.
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </main>
+
+        <!-- Main Footer -->
+        <footer class="main-footer">
+            <div class="container footer-container">
+                <div class="footer-left">
+                    <div class="footer-main-row" style="display: flex; align-items: center; gap: 30px; margin-bottom: 12px;">
+                        <a href="index.html" class="footer-logo-block" style="display: flex; align-items: flex-end; gap: 0px; text-decoration: none; color: inherit; flex-shrink: 0;">
+                            <img src="main_logo_white.png" alt="한국음악학회 로고" style="height: 65px; width: auto; object-fit: contain;">
+                            <div class="logo-text-footer" style="text-align: left; padding-bottom: 2px;">
+                                <h4 style="font-size: 1.15rem; font-weight: 800; letter-spacing: 0.05em; margin: 0; color: white; font-family: 'Pretendard', sans-serif; line-height: 1.1;">한국음악학회</h4>
+                                <div class="logo-divider" style="margin: 2px 0;"></div>
+                                <span class="logo-en" style="font-size: 0.55rem; font-weight: 500; text-transform: uppercase; color: rgba(255,255,255,0.6); display: block; font-family: 'Poppins', sans-serif; letter-spacing: 0.03em; margin-top: 1px; line-height: 1.1;">the society for korean music &amp; culture studies</span>
+                            </div>
+                        </a>
+                        <div class="footer-vertical-divider" style="width: 1px; height: 35px; background: rgba(255,255,255,0.15); flex-shrink: 0;"></div>
+                        <div class="footer-address" style="text-align: left; font-size: 0.82rem; line-height: 1.6; color: #bbb;">
+                            <p style="margin: 0;">주소: (04620) 서울특별시 중구 필동로 1길 30 동국대학교 문화관 (한국음악과 내 학회사무국) &nbsp;&nbsp;|&nbsp;&nbsp; E-mail: skmcs@dgu.ac.kr</p>
+                            <p class="copyright" style="margin: 2px 0 0 0; color: #777;">Copyright &copy; 2026 The Society for Korean Music &amp; Culture Studies. All Rights Reserved.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer-right">
+                    <div class="designed-by">
+                        <span>Designed by</span>
+                        <span class="designer-logo"><i class="fa-solid fa-fire" style="color:#e65100"></i> Woochang Choi</span>
+                    </div>
+                </div>
+            </div>
+            <a href="#" class="btn-top"><i class="fa-solid fa-chevron-up"></i></a>
+        </footer>
+    </div>
+    
+    <!-- User Session & Share Manager -->
+    <script src="share.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // Anchor scroll highlight behavior
+            const navButtons = document.querySelectorAll(".rules-nav-btn");
+            const sections = document.querySelectorAll(".rules-section");
+            
+            navButtons.forEach(btn => {
+                btn.addEventListener("click", (e) => {
+                    navButtons.forEach(b => b.classList.remove("active"));
+                    btn.classList.add("active");
+                });
+            });
+
+            // Auto highlight tab button depending on viewport scroll
+            window.addEventListener("scroll", () => {
+                let currentSec = "";
+                sections.forEach(sec => {
+                    const secTop = sec.offsetTop;
+                    if (pageYOffset >= secTop - 250) {
+                        currentSec = sec.getAttribute("id");
+                    }
+                });
+
+                if (currentSec) {
+                    navButtons.forEach(btn => {
+                        btn.classList.remove("active");
+                        if (btn.getAttribute("href") === "#" + currentSec) {
+                            btn.classList.add("active");
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+

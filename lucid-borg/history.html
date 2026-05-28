@@ -1,0 +1,490 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>한국음악학회 - 학회 연혁</title>
+    <link rel="stylesheet" href="styles_v2.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="layout-wrapper">
+        
+        <!-- Left Vertical Quick Menu -->
+        <aside class="quick-sidebar">
+            <div class="sidebar-toggle">
+                <i class="fa-solid fa-bars"></i>
+                <span>Quick Menu</span>
+            </div>
+                                                <nav class="sidebar-nav">
+                <a href="news.html" class="side-link">
+                    <i class="fa-solid fa-bullhorn"></i>
+                    <span class="side-text">공지사항</span>
+                </a>
+                <a href="admission.html" class="side-link">
+                    <i class="fa-solid fa-user-plus"></i>
+                    <span class="side-text">입회안내</span>
+                </a>
+                <a href="submission.html" class="side-link">
+                    <i class="fa-solid fa-file-arrow-up"></i>
+                    <span class="side-text">논문 온라인투고</span>
+                </a>
+                <a href="activities.html" class="side-link">
+                    <i class="fa-solid fa-calendar-days"></i>
+                    <span class="side-text">학술대회 세미나</span>
+                </a>
+                <a href="forms.html" class="side-link">
+                    <i class="fa-solid fa-folder-open"></i>
+                    <span class="side-text">자료실</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Top Utility Bar -->
+        <div class="top-util-bar">
+            <div class="container">
+                <div class="util-right">
+                    <div class="util-links">
+                        <a href="login.html" class="util-link"><i class="fa-solid fa-right-to-bracket"></i> 로그인</a>
+                        <a href="#" class="util-link"><i class="fa-solid fa-user-plus"></i> 회원가입</a>
+                        <a href="#" class="util-link"><i class="fa-solid fa-sitemap"></i> 사이트맵</a>
+                    </div>
+                                        <form action="search.html" method="GET" class="top-search">
+                        <input type="text" name="query" placeholder="검색..." required>
+                        <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+                                                        <!-- Header Navigation -->
+        <header class="main-header">
+            <div class="container header-container">
+                <a href="index.html" class="logo">
+                    <img src="main_logo.png" alt="한국음악학회 로고 마크" class="logo-icon-img">
+                    <div class="logo-text">
+                        <h1>한국음악학회</h1>
+                        <div class="logo-divider"></div>
+                        <span class="logo-en">the society for korean music & culture studies</span>
+                    </div>
+                </a>
+
+                                                                <nav class="main-nav">
+                    <ul>
+                        <li class="nav-item">
+                            <a href="index.html">Home</a>
+                            <div class="hover-bar white"></div>
+                        </li>
+                        <li class="nav-item">
+                            <a href="about.html">학회소개</a>
+                            <div class="hover-bar red"></div>
+                            <span class="sub-text">about us</span>
+                            <ul class="dropdown-menu">
+                                <li><a href="about.html">인사말</a></li>
+                                <li><a href="organization.html">조직도/임원진</a></li>
+                                <li><a href="history.html">학회 연혁</a></li>
+                                <li><a href="rules.html">학회 정관</a></li>
+                                <li><a href="directions.html">오시는 길</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a href="news.html">학회소식</a>
+                            <div class="hover-bar black"></div>
+                            <span class="sub-text">news</span>
+                            <ul class="dropdown-menu">
+                                <li><a href="news.html?tab=notice">공지사항</a></li>
+                                <li><a href="news.html?tab=freeboard">자유게시판</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a href="issue.html">학회지</a>
+                            <div class="hover-bar green"></div>
+                            <span class="sub-text">journal</span>
+                            <ul class="dropdown-menu">
+                                <li><a href="issue.html">최신호</a></li>
+                                <li><a href="archive.html">지난호 (아카이브)</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a href="submission.html">논문투고</a>
+                            <div class="hover-bar yellow"></div>
+                            <span class="sub-text">submission</span>
+                            <ul class="dropdown-menu">
+                                <li><a href="submission.html">논문투고안내</a></li>
+                                <li><a href="submission_rules.html">논문투고규정</a></li>
+                                <li><a href="submission_review.html">심사규정</a></li>
+                                <li><a href="submission.html?tab=online">온라인 투고시스템</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a href="activities.html">학술활동</a>
+                            <div class="hover-bar grey"></div>
+                            <span class="sub-text">activities</span>
+                            <ul class="dropdown-menu">
+                                <li><a href="activities.html?tab=conference">학술대회 일정</a></li>
+                                <li><a href="activities.html?tab=seminar">연구모임/세미나</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a href="admission.html">회원서비스</a>
+                            <div class="hover-bar blue"></div>
+                            <span class="sub-text">member service</span>
+                            <ul class="dropdown-menu">
+                                <li><a href="admission.html">입회안내</a></li>
+                                <li><a href="#">마이페이지(수정중)</a></li>
+                                <li><a href="#">추천사이트</a></li>
+                                <li><a href="forms.html">양식모음</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </nav>
+
+
+            </div>
+        </header>
+
+
+
+
+
+        <!-- Main Content Area -->
+        <div class="sub-visual" style="background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('bg_about.png');">
+            <div class="visual-text">
+                <h2>학회소개</h2>
+            </div>
+        </div>
+
+        <main class="content-area">
+            <div class="container subpage-area">
+                <!-- LNB / Breadcrumb & Utilities -->
+                <div class="sub-util-row">
+                    <div class="breadcrumb">
+                        <i class="fa-solid fa-house"></i>
+                        <span class="depth">학회소개</span>
+                        <i class="fa-solid fa-angle-right divider"></i>
+                        <span class="depth current">학회 연혁</span>
+                    </div>
+                    <div class="page-utils">
+                        <a href="#" title="인쇄"><i class="fa-solid fa-print"></i></a>
+                        <a href="#" title="공유"><i class="fa-solid fa-share-nodes"></i></a>
+                    </div>
+                </div>
+
+                <!-- Depth 3 Tabs -->
+                <div class="sub-tabs">
+                    <a href="about.html" class="tab-item">인사말</a>
+                    <a href="organization.html" class="tab-item">조직도/임원진</a>
+                    <a href="history.html" class="tab-item active">학회 연혁</a>
+                    <a href="rules.html" class="tab-item">학회 정관</a>
+                    <a href="directions.html" class="tab-item">오시는 길</a>
+                </div>
+
+                <!-- History Content -->
+                <div class="history-wrap">
+                    <div class="history-header" style="text-align: center; margin-bottom: 50px;">
+                        <h3 class="history-title" style="font-size: 2.2rem; font-weight: 800; color: var(--text-dark); margin-bottom: 15px;">한국음악학회 연혁</h3>
+                        <p class="history-sub" style="font-size: 1.2rem; color: var(--color-green); font-weight: 500;">전통을 이어 학문의 지평을 넓혀온 한국음악학회의 발자취입니다.</p>
+                    </div>
+
+                    <!-- Vertical Timeline Container -->
+                    <div class="timeline-container">
+                        <!-- Timeline Line -->
+                        <div class="timeline-line"></div>
+
+                        <!-- Year Group 2025 -->
+                        <div class="timeline-year-group">
+                            <div class="timeline-year-badge">2025</div>
+                            
+                            <!-- 2025. 12 -->
+                            <div class="timeline-item">
+                                <div class="timeline-badge"><i class="fa-solid fa-book-open"></i></div>
+                                <div class="timeline-content">
+                                    <span class="timeline-date">12월</span>
+                                    <h4>『한국음악문화』 제7집 발간</h4>
+                                    <div class="timeline-loc"><i class="fa-solid fa-location-dot"></i> 한국음악학회</div>
+                                </div>
+                            </div>
+
+                            <!-- 2025. 11 -->
+                            <div class="timeline-item">
+                                <div class="timeline-badge"><i class="fa-solid fa-users"></i></div>
+                                <div class="timeline-content">
+                                    <span class="timeline-date">11월</span>
+                                    <h4>제9회 학술세미나 “통도사 의례전통과 범음성의 세계”</h4>
+                                    <div class="timeline-loc"><i class="fa-solid fa-location-dot"></i> 통도사 영축총림 강당</div>
+                                </div>
+                            </div>
+
+                            <!-- 2025. 7. 14 -->
+                            <div class="timeline-item highlight">
+                                <div class="timeline-badge"><i class="fa-solid fa-handshake"></i></div>
+                                <div class="timeline-content">
+                                    <span class="timeline-date">7월 14일</span>
+                                    <h4>한국불교음악학회 → 한국음악학회 이양 의결</h4>
+                                    <p>한국불교음악학회의 『불교음악문화』(봉은사 소재)에서 동국대학교 한국음악과 소재 한국음악학회, 『한국음악문화』로의 이양을 위한 이사회 및 편집위원회 의결.</p>
+                                    <div class="timeline-loc"><i class="fa-solid fa-location-dot"></i> 동국대학교 한국음악과 회의실</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Year Group 2024 -->
+                        <div class="timeline-year-group">
+                            <div class="timeline-year-badge">2024</div>
+                            
+                            <!-- 2024. 4 -->
+                            <div class="timeline-item">
+                                <div class="timeline-badge"><i class="fa-solid fa-users-rectangle"></i></div>
+                                <div class="timeline-content">
+                                    <span class="timeline-date">4월</span>
+                                    <h4>제8회 공동학술세미나 개최</h4>
+                                    <p>동아시아불교문화학회 & 한국불교음악학회 공동 개최 “삼국시대 불교문화와 음악”</p>
+                                    <div class="timeline-loc"><i class="fa-solid fa-location-dot"></i> 동국대학교 덕암세미나실</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Year Group 2023 -->
+                        <div class="timeline-year-group">
+                            <div class="timeline-year-badge">2023</div>
+
+                            <!-- 2023. 12 (1) -->
+                            <div class="timeline-item">
+                                <div class="timeline-badge"><i class="fa-solid fa-book-open"></i></div>
+                                <div class="timeline-content">
+                                    <span class="timeline-date">12월</span>
+                                    <h4>『불교음악문화』 제6집 발간</h4>
+                                    <div class="timeline-loc"><i class="fa-solid fa-location-dot"></i> 한국불교음악학회</div>
+                                </div>
+                            </div>
+
+                            <!-- 2023. 12 (2) -->
+                            <div class="timeline-item">
+                                <div class="timeline-badge"><i class="fa-solid fa-users"></i></div>
+                                <div class="timeline-content">
+                                    <span class="timeline-date">12월</span>
+                                    <h4>제7회 특별세미나 개최</h4>
+                                    <p>“월인천강지곡, 세종의 노래를 탐색하다”</p>
+                                    <div class="timeline-loc"><i class="fa-solid fa-location-dot"></i> 국립극장 뜰아래 연습장</div>
+                                </div>
+                            </div>
+
+                            <!-- 2023. 10 -->
+                            <div class="timeline-item">
+                                <div class="timeline-badge"><i class="fa-solid fa-users"></i></div>
+                                <div class="timeline-content">
+                                    <span class="timeline-date">10월</span>
+                                    <h4>제6회 불교음악학회 학술세미나</h4>
+                                    <p>“어장 벽응 대종사 생애와 범음성 세계”</p>
+                                    <div class="timeline-loc"><i class="fa-solid fa-location-dot"></i> 동국대학교 학명 세미나실</div>
+                                </div>
+                            </div>
+
+                            <!-- 2023. 6 -->
+                            <div class="timeline-item">
+                                <div class="timeline-badge"><i class="fa-solid fa-book-open"></i></div>
+                                <div class="timeline-content">
+                                    <span class="timeline-date">6월</span>
+                                    <h4>『불교음악문화』 제5집 발간</h4>
+                                    <div class="timeline-loc"><i class="fa-solid fa-location-dot"></i> 한국불교음악학회</div>
+                                </div>
+                            </div>
+
+                            <!-- 2023. 4 -->
+                            <div class="timeline-item">
+                                <div class="timeline-badge"><i class="fa-solid fa-users"></i></div>
+                                <div class="timeline-content">
+                                    <span class="timeline-date">4월</span>
+                                    <h4>제5회 불교음악학회 학술세미나</h4>
+                                    <p>“불교로 보는 한국음악사”</p>
+                                    <div class="timeline-loc"><i class="fa-solid fa-location-dot"></i> 봉은사 전통음악 체험실</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Year Group 2022 -->
+                        <div class="timeline-year-group">
+                            <div class="timeline-year-badge">2022</div>
+
+                            <!-- 2022. 11 -->
+                            <div class="timeline-item">
+                                <div class="timeline-badge"><i class="fa-solid fa-book-open"></i></div>
+                                <div class="timeline-content">
+                                    <span class="timeline-date">11월</span>
+                                    <h4>『불교음악문화』 제4집 발간</h4>
+                                    <div class="timeline-loc"><i class="fa-solid fa-location-dot"></i> 한국불교음악학회</div>
+                                </div>
+                            </div>
+
+                            <!-- 2022. 10 -->
+                            <div class="timeline-item">
+                                <div class="timeline-badge"><i class="fa-solid fa-users"></i></div>
+                                <div class="timeline-content">
+                                    <span class="timeline-date">10월</span>
+                                    <h4>제4회 불교음악학회 학술세미나</h4>
+                                    <p>“경제 동교범패 왕십리 안정사 범맥과 어장 상진 범음성 세계”</p>
+                                    <div class="timeline-loc"><i class="fa-solid fa-location-dot"></i> 양주 청련사</div>
+                                </div>
+                            </div>
+
+                            <!-- 2022. 4 (1) -->
+                            <div class="timeline-item">
+                                <div class="timeline-badge"><i class="fa-solid fa-book-open"></i></div>
+                                <div class="timeline-content">
+                                    <span class="timeline-date">4월</span>
+                                    <h4>『불교음악문화』 제3집 발간</h4>
+                                    <div class="timeline-loc"><i class="fa-solid fa-location-dot"></i> 한국불교음악학회</div>
+                                </div>
+                            </div>
+
+                            <!-- 2022. 4 (2) -->
+                            <div class="timeline-item">
+                                <div class="timeline-badge"><i class="fa-solid fa-users"></i></div>
+                                <div class="timeline-content">
+                                    <span class="timeline-date">4월</span>
+                                    <h4>제3회 불교음악학회 학술세미나</h4>
+                                    <p>“공립 합창단의 종교편향과 불교계 합창 활동”</p>
+                                    <div class="timeline-loc"><i class="fa-solid fa-location-dot"></i> 불교역사 문화기념관</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Year Group 2021 -->
+                        <div class="timeline-year-group">
+                            <div class="timeline-year-badge">2021</div>
+
+                            <!-- 2021. 10 -->
+                            <div class="timeline-item">
+                                <div class="timeline-badge"><i class="fa-solid fa-book-open"></i></div>
+                                <div class="timeline-content">
+                                    <span class="timeline-date">10월</span>
+                                    <h4>『불교음악문화』 제2집 발간</h4>
+                                    <div class="timeline-loc"><i class="fa-solid fa-location-dot"></i> 한국불교음악학회</div>
+                                </div>
+                            </div>
+
+                            <!-- 2021. 8 -->
+                            <div class="timeline-item">
+                                <div class="timeline-badge"><i class="fa-solid fa-users"></i></div>
+                                <div class="timeline-content">
+                                    <span class="timeline-date">8월</span>
+                                    <h4>제2회 불교음악학회 학술세미나</h4>
+                                    <p>“통영 벽발산 안정사 불교의례 악가무의 전통과 가치”</p>
+                                    <div class="timeline-loc"><i class="fa-solid fa-location-dot"></i> 통영 안정사</div>
+                                </div>
+                            </div>
+
+                            <!-- 2021. 4 -->
+                            <div class="timeline-item">
+                                <div class="timeline-badge"><i class="fa-solid fa-users"></i></div>
+                                <div class="timeline-content">
+                                    <span class="timeline-date">4월</span>
+                                    <h4>제1회 불교음악학회 학술세미나</h4>
+                                    <p>“불교음악학회 출범 및 창간호 발간 기념”</p>
+                                    <div class="timeline-loc"><i class="fa-solid fa-location-dot"></i> 서울 봉은사</div>
+                                </div>
+                            </div>
+
+                            <!-- 2021. 3 -->
+                            <div class="timeline-item">
+                                <div class="timeline-badge"><i class="fa-solid fa-book-open"></i></div>
+                                <div class="timeline-content">
+                                    <span class="timeline-date">3월</span>
+                                    <h4>『불교음악문화』 창간호 발간</h4>
+                                    <div class="timeline-loc"><i class="fa-solid fa-location-dot"></i> 한국불교음악학회</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Year Group 2020 & 2018 -->
+                        <div class="timeline-year-group">
+                            <div class="timeline-year-badge">2020 ~ 2018</div>
+
+                            <!-- 2020. 7. 15 -->
+                            <div class="timeline-item highlight">
+                                <div class="timeline-badge"><i class="fa-solid fa-hotel"></i></div>
+                                <div class="timeline-content">
+                                    <span class="timeline-date">2020년 7월 15일</span>
+                                    <h4>한국불교음악학회 설립</h4>
+                                    <p>한국불교음악학회 설립 이사회 구성과 학회 조직, 회칙 및 규정 확립</p>
+                                    <div class="timeline-loc"><i class="fa-solid fa-location-dot"></i> 봉은사 회의실</div>
+                                </div>
+                            </div>
+
+                            <!-- 2018. 12 -->
+                            <div class="timeline-item">
+                                <div class="timeline-badge"><i class="fa-solid fa-microphone"></i></div>
+                                <div class="timeline-content">
+                                    <span class="timeline-date">2018년 12월</span>
+                                    <h4>학술세미나 “불교음악의 정체성 탐구” 개최</h4>
+                                    <div class="timeline-loc"><i class="fa-solid fa-location-dot"></i> 봉은사 교육관</div>
+                                </div>
+                            </div>
+
+                            <!-- 2018. 4 -->
+                            <div class="timeline-item">
+                                <div class="timeline-badge"><i class="fa-solid fa-chalkboard-user"></i></div>
+                                <div class="timeline-content">
+                                    <span class="timeline-date">2018년 4월</span>
+                                    <h4>제2기 불교음악의 이론과 실제 교육</h4>
+                                    <div class="timeline-loc"><i class="fa-solid fa-location-dot"></i> 한국문화연수원</div>
+                                </div>
+                            </div>
+
+                            <!-- 2018. 3 -->
+                            <div class="timeline-item">
+                                <div class="timeline-badge"><i class="fa-solid fa-chalkboard-user"></i></div>
+                                <div class="timeline-content">
+                                    <span class="timeline-date">2018년 3월</span>
+                                    <h4>제1기 불교합창아카데미 개강</h4>
+                                    <div class="timeline-loc"><i class="fa-solid fa-location-dot"></i> 불교역사문화기념관</div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </main>
+
+                                <!-- Main Footer -->
+        <footer class="main-footer">
+            <div class="container footer-container">
+                <div class="footer-left">
+                    <div class="footer-main-row" style="display: flex; align-items: center; gap: 30px; margin-bottom: 12px;">
+                        <a href="index.html" class="footer-logo-block" style="display: flex; align-items: flex-end; gap: 0px; text-decoration: none; color: inherit; flex-shrink: 0;  text-decoration: none; color: inherit;">
+                        <img src="main_logo_white.png" alt="한국음악학회 로고" style="height: 65px; width: auto; object-fit: contain;">
+                        <div class="logo-text-footer" style="text-align: left; padding-bottom: 2px;">
+                            <h4 style="font-size: 1.15rem; font-weight: 800; letter-spacing: 0.05em; margin: 0; color: white; font-family: 'Pretendard', sans-serif; line-height: 1.1;">한국음악학회</h4>
+                            <div class="logo-divider" style="margin: 2px 0;"></div>
+                            <span class="logo-en" style="font-size: 0.55rem; font-weight: 500; text-transform: uppercase; color: rgba(255,255,255,0.6); display: block; font-family: 'Poppins', sans-serif; letter-spacing: 0.03em; margin-top: 1px; line-height: 1.1;">the society for korean music &amp; culture studies</span>
+                        </div>
+                    </a>
+                        <div class="footer-vertical-divider" style="width: 1px; height: 35px; background: rgba(255,255,255,0.15); flex-shrink: 0;"></div>
+                                                <div class="footer-address" style="text-align: left; font-size: 0.82rem; line-height: 1.6; color: #bbb;">
+                            <p style="margin: 0;">주소: (04620) 서울특별시 중구 필동로 1길 30 동국대학교 문화관 (한국음악과 내 학회사무국) &nbsp;&nbsp;|&nbsp;&nbsp; E-mail: skmcs@dgu.ac.kr</p>
+                            <p class="copyright" style="margin: 2px 0 0 0; color: #777;">Copyright &copy; 2026 The Society for Korean Music &amp; Culture Studies. All Rights Reserved.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer-right">
+                    <div class="designed-by">
+                        <span>Designed by</span>
+                        <span class="designer-logo"><i class="fa-solid fa-fire" style="color:#e65100"></i> Woochang Choi</span>
+                    </div>
+                </div>
+            </div>
+            <a href="#" class="btn-top"><i class="fa-solid fa-chevron-up"></i></a>
+        </footer>
+    </div>
+    <script src="share.js"></script>
+</body>
+</html>
+
+
+
+
+
+

@@ -1,0 +1,699 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=device-width, initial-scale=device-width, initial-scale=1.0">
+    <title>통합검색 | 한국음악학회</title>
+    
+    <link rel="stylesheet" href="styles_v2.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        .search-page-box {
+            margin: 0 auto 50px auto;
+            padding: 25px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            gap: 10px;
+            max-width: 650px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+        }
+
+        .search-page-box input {
+            flex: 1;
+            padding: 12px 18px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            outline: none;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .search-page-box input:focus {
+            border-color: var(--color-blue);
+        }
+
+        .search-page-box button {
+            padding: 12px 30px;
+            background-color: var(--color-red);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.2s;
+        }
+
+        .search-page-box button:hover {
+            background-color: #b22d23;
+        }
+
+        .search-result-info {
+            margin-bottom: 25px;
+            font-size: 1.15rem;
+            border-bottom: 2px solid var(--bg-charcoal);
+            padding-bottom: 12px;
+            color: var(--text-dark);
+            font-family: 'Pretendard', sans-serif;
+        }
+
+        .search-result-info mark {
+            background: none;
+            color: var(--color-red);
+            font-weight: 700;
+        }
+
+        .search-results-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-bottom: 60px;
+        }
+
+        .search-result-card {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            padding: 25px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.01);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .search-result-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+            border-color: var(--color-blue);
+        }
+
+        .result-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .result-category {
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            background: var(--bg-slate);
+            color: white;
+            border-radius: 4px;
+            letter-spacing: 0.02em;
+        }
+
+        .result-category.cat-학회소개 { background-color: var(--color-red); }
+        .result-category.cat-학술활동 { background-color: var(--color-yellow); color: var(--text-dark); }
+        .result-category.cat-회원서비스 { background-color: var(--color-blue); }
+        .result-category.cat-학회지 { background-color: var(--color-green); }
+        .result-category.cat-논문투고 { background-color: var(--bg-charcoal); }
+        .result-category.cat-정보광장 { background-color: #555; }
+
+        .result-link {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: color 0.2s;
+        }
+
+        .search-result-card:hover .result-link {
+            color: var(--color-blue);
+        }
+
+        .result-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--text-dark);
+            transition: color 0.2s;
+        }
+
+        .result-title a:hover {
+            color: var(--color-blue);
+        }
+
+        .result-snippet {
+            font-size: 0.92rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .result-snippet mark {
+            background-color: rgba(240, 177, 84, 0.2);
+            color: #d06d00;
+            font-weight: 600;
+            padding: 0 4px;
+            border-radius: 2px;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+        }
+
+        .no-results i {
+            font-size: 3rem;
+            color: var(--bg-slate);
+            margin-bottom: 15px;
+            opacity: 0.6;
+        }
+
+        .no-results p {
+            font-size: 1.05rem;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="layout-wrapper">
+        
+        <!-- Left Vertical Quick Menu -->
+        <aside class="quick-sidebar">
+            <div class="sidebar-toggle">
+                <i class="fa-solid fa-bars"></i>
+                <span>Quick Menu</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="news.html" class="side-link">
+                    <i class="fa-solid fa-bullhorn"></i>
+                    <span class="side-text">공지사항</span>
+                </a>
+                <a href="admission.html" class="side-link">
+                    <i class="fa-solid fa-user-plus"></i>
+                    <span class="side-text">입회안내</span>
+                </a>
+                <a href="submission.html" class="side-link">
+                    <i class="fa-solid fa-file-arrow-up"></i>
+                    <span class="side-text">논문 온라인투고</span>
+                </a>
+                <a href="activities.html" class="side-link">
+                    <i class="fa-solid fa-calendar-days"></i>
+                    <span class="side-text">학술대회 세미나</span>
+                </a>
+                <a href="forms.html" class="side-link">
+                    <i class="fa-solid fa-folder-open"></i>
+                    <span class="side-text">자료실</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Top Utility Bar -->
+        <div class="top-util-bar">
+            <div class="container">
+                <div class="util-right">
+                    <div class="util-links">
+                        <a href="login.html" class="util-link"><i class="fa-solid fa-right-to-bracket"></i> 로그인</a>
+                        <a href="register.html" class="util-link"><i class="fa-solid fa-user-plus"></i> 회원가입</a>
+                        <a href="sitemap.html" class="util-link"><i class="fa-solid fa-sitemap"></i> 사이트맵</a>
+                    </div>
+                    <form action="search.html" method="GET" class="top-search">
+                        <input type="text" name="query" placeholder="검색..." required>
+                        <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Header Navigation -->
+        <header class="main-header">
+            <div class="container header-container">
+                <a href="index.html" class="logo">
+                    <img src="main_logo.png" alt="한국음악학회 로고 마크" class="logo-icon-img">
+                    <div class="logo-text">
+                        <h1>한국음악학회</h1>
+                        <div class="logo-divider"></div>
+                        <span class="logo-en">the society for korean music & culture studies</span>
+                    </div>
+                </a>
+
+                <nav class="main-nav">
+                    <ul>
+                        <li class="nav-item">
+                            <a href="index.html">Home</a>
+                            <div class="hover-bar white"></div>
+                        </li>
+                        <li class="nav-item">
+                            <a href="about.html">학회소개</a>
+                            <div class="hover-bar red"></div>
+                            <span class="sub-text">about us</span>
+                            <ul class="dropdown-menu">
+                                <li><a href="about.html">인사말</a></li>
+                                <li><a href="organization.html">조직도/임원진</a></li>
+                                <li><a href="history.html">학회 연혁</a></li>
+                                <li><a href="rules.html">학회 정관</a></li>
+                                <li><a href="directions.html">오시는 길</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a href="news.html">학회소식</a>
+                            <div class="hover-bar black"></div>
+                            <span class="sub-text">news</span>
+                            <ul class="dropdown-menu">
+                                <li><a href="news.html?tab=notice">공지사항</a></li>
+                                <li><a href="news.html?tab=freeboard">자유게시판</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a href="issue.html">학회지</a>
+                            <div class="hover-bar green"></div>
+                            <span class="sub-text">journal</span>
+                            <ul class="dropdown-menu">
+                                <li><a href="issue.html">최신호</a></li>
+                                <li><a href="archive.html">지난호 (아카이브)</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a href="submission.html">논문투고</a>
+                            <div class="hover-bar yellow"></div>
+                            <span class="sub-text">submission</span>
+                            <ul class="dropdown-menu">
+                                <li><a href="submission.html">논문투고안내</a></li>
+                                <li><a href="submission_rules.html">논문투고규정</a></li>
+                                <li><a href="submission_review.html">심사규정</a></li>
+                                <li><a href="submission.html?tab=online">온라인 투고시스템</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a href="activities.html">학술활동</a>
+                            <div class="hover-bar grey"></div>
+                            <span class="sub-text">activities</span>
+                            <ul class="dropdown-menu">
+                                <li><a href="activities.html?tab=conference">학술대회 일정</a></li>
+                                <li><a href="activities.html?tab=seminar">연구모임/세미나</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a href="admission.html">회원서비스</a>
+                            <div class="hover-bar blue"></div>
+                            <span class="sub-text">member service</span>
+                            <ul class="dropdown-menu">
+                                <li><a href="admission.html">입회안내</a></li>
+                                <li><a href="#">마이페이지(수정중)</a></li>
+                                <li><a href="#">추천사이트</a></li>
+                                <li><a href="forms.html">양식모음</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </nav>
+
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <div class="sub-visual" style="background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('bg_about.png');">
+            <div class="visual-text">
+                <h2>통합검색</h2>
+            </div>
+        </div>
+
+        <main class="content-area">
+            <div class="container subpage-area">
+                <!-- LNB / Breadcrumb & Utilities -->
+                <div class="sub-util-row">
+                    <div class="breadcrumb">
+                        <i class="fa-solid fa-house"></i>
+                        <span class="depth">검색</span>
+                        <i class="fa-solid fa-angle-right divider"></i>
+                        <span class="depth current">통합검색 결과</span>
+                    </div>
+                    <div class="page-utils">
+                        <a href="#" title="인쇄"><i class="fa-solid fa-print"></i></a>
+                        <a href="#" title="공유"><i class="fa-solid fa-share-nodes"></i></a>
+                    </div>
+                </div>
+
+                <!-- Re-search bar inside main area -->
+                <div class="search-page-box">
+                    <input type="text" id="search-page-input" placeholder="검색어를 입력하세요...">
+                    <button id="search-page-btn">
+                        <i class="fa-solid fa-magnifying-glass"></i> 검색
+                    </button>
+                </div>
+
+                <!-- Results Section -->
+                <div class="search-result-info" id="search-info-container" style="display:none;">
+                    "<mark id="query-highlight"></mark>"에 대한 검색 결과가 총 <span id="result-count" style="font-weight: 700; color: var(--color-green);">0</span>건 있습니다.
+                </div>
+
+                <div id="search-results-list" class="search-results-list">
+                    <!-- Dynamic Search Results Rendered Here -->
+                </div>
+            </div>
+        </main>
+
+        <!-- Main Footer -->
+        <footer class="main-footer">
+            <div class="container footer-container">
+                <div class="footer-left">
+                    <div class="footer-main-row" style="display: flex; align-items: center; gap: 30px; margin-bottom: 12px;">
+                        <a href="index.html" class="footer-logo-block" style="display: flex; align-items: flex-end; gap: 0px; text-decoration: none; color: inherit; flex-shrink: 0;">
+                            <img src="main_logo_white.png" alt="한국음악학회 로고" style="height: 65px; width: auto; object-fit: contain;">
+                            <div class="logo-text-footer" style="text-align: left; padding-bottom: 2px;">
+                                <h4 style="font-size: 1.15rem; font-weight: 800; letter-spacing: 0.05em; margin: 0; color: white; font-family: 'Pretendard', sans-serif; line-height: 1.1;">한국음악학회</h4>
+                                <div class="logo-divider" style="margin: 2px 0;"></div>
+                                <span class="logo-en" style="font-size: 0.55rem; font-weight: 500; text-transform: uppercase; color: rgba(255,255,255,0.6); display: block; font-family: 'Poppins', sans-serif; letter-spacing: 0.03em; margin-top: 1px; line-height: 1.1;">the society for korean music &amp; culture studies</span>
+                            </div>
+                        </a>
+                        <div class="footer-vertical-divider" style="width: 1px; height: 35px; background: rgba(255,255,255,0.15); flex-shrink: 0;"></div>
+                        <div class="footer-address" style="text-align: left; font-size: 0.82rem; line-height: 1.6; color: #bbb;">
+                            <p style="margin: 0;">주소: (04620) 서울특별시 중구 필동로 1길 30 동국대학교 문화관 (한국음악과 내 학회사무국) &nbsp;&nbsp;|&nbsp;&nbsp; E-mail: skmcs@dgu.ac.kr</p>
+                            <p class="copyright" style="margin: 2px 0 0 0; color: #777;">Copyright &copy; 2026 The Society for Korean Music &amp; Culture Studies. All Rights Reserved.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer-right">
+                    <div class="designed-by">
+                        <span>Designed by</span>
+                        <span class="designer-logo"><i class="fa-solid fa-fire" style="color:#e65100"></i> Woochang Choi</span>
+                    </div>
+                </div>
+            </div>
+            <a href="#" class="btn-top"><i class="fa-solid fa-chevron-up"></i></a>
+        </footer>
+    </div>
+
+    <script src="journal_data.js"></script>
+    <script src="share.js"></script>
+    <script>
+        // Pre-populated search index Database representing all page components
+        const SEARCH_DATABASE = [
+            {
+                title: "인사말 (이사장 말씀)",
+                category: "학회소개",
+                url: "about.html",
+                content: "한국음악학회 이사장 인사말. 한국 전통 음악과 국악의 학문적 가치를 정립하고, 현대적 계승과 창조적 발전을 도모하며 소통하는 학회입니다. 동국한국음악학회 국악 연구 교류."
+            },
+            {
+                title: "조직도 및 임원진 구성",
+                category: "학회소개",
+                url: "organization.html",
+                content: "한국음악학회 임원진 명단 및 조직도 구성. 이사장, 고문, 부이사장, 상임이사, 편집위원회, 심사위원회 등의 조직 체계와 각 임원진의 부서별 명단 정보입니다."
+            },
+            {
+                title: "학회 연혁 (발자취)",
+                category: "학회소개",
+                url: "history.html",
+                content: "한국음악학회의 주요 연혁 및 발자취. 2010년대부터 현재까지 한국 전통음악 및 학술대회 개최, 학회지 발간, 연구 세미나 개설 등 학회의 발전을 담은 연대표입니다."
+            },
+            {
+                title: "학회 정관 및 임무 규정",
+                category: "학회소개",
+                url: "rules.html",
+                content: "한국음악학회의 설립 목적, 명칭, 사업 범위, 회원 자격(정회원, 준회원, 단체회원, 특별회원) 및 의무, 임원 임기, 회의 소집 및 재정 회계에 관한 공식 정관 정보입니다."
+            },
+            {
+                title: "오시는 길 (약도 및 지도 정보)",
+                category: "학회소개",
+                url: "directions.html",
+                content: "한국음악학회 사무국 찾아오시는 길 안내. 서울 중구 동국대학교 혜화관 위치, 대중교통(지하철 3호선 동대입구역, 4호선 충무로역) 편의 및 약도 정보가 포함되어 있습니다."
+            },
+            {
+                title: "학술대회 일정",
+                category: "학술활동",
+                url: "activities.html?tab=conference",
+                content: "춘계 학술대회 및 추계 학술대회 발표 일정, 프로그램북 다운로드, 참가 신청 안내. 한국음악학회는 한국 음악 연구의 발전을 위해 학술대회를 개최하고 있습니다."
+            },
+            {
+                title: "연구모임 및 세미나 일정",
+                category: "학술활동",
+                url: "activities.html?tab=seminar",
+                content: "학회 산하 연구회 세미나 개설 및 운영 일정 안내. 국악 및 동양 음악, 한국 음악 분석 등 연구모임 발표 주제와 일시, 장소 정보를 정회원 대상으로 제공합니다."
+            },
+            {
+                title: "입회안내 및 회원가입 / 회비납부",
+                category: "회원서비스",
+                url: "admission.html",
+                content: "회원 가입 절차 및 연회비 납부 안내. 정회원(입회비, 연회비, 평생회원), 비회원 가입 절차, 계좌번호(농협은행) 및 회원 혜택(학술지 투고 자격 및 행사 우선 초청) 상세 안내."
+            },
+            {
+                title: "회원가입 양식 작성",
+                category: "회원서비스",
+                url: "register.html",
+                content: "한국음악학회 신규 회원가입 페이지. 일반 정회원 및 평생회원 가입을 위한 약관 동의, 정보 입력 및 가입 신청 양식 작성 페이지입니다."
+            },
+            {
+                title: "이용약관 및 개인정보처리방침",
+                category: "회원서비스",
+                url: "agreement.html",
+                content: "한국음악학회 이용약관 및 개인정보처리방침 안내. 서비스 이용 조건, 권리와 의무, 회원 정보 보호 및 개인정보 처리 위탁 등에 관한 법적 고지사항 정보입니다."
+            },
+            {
+                title: "자료실 및 양식모음 다운로드",
+                category: "회원서비스",
+                url: "forms.html",
+                content: "입회 신청서(평생회원용, 일반정회원용), 논문 투고 신청서 및 연구윤리 서약서 양식 한글(HWP) 및 PDF 파일 다운로드 센터."
+            },
+            {
+                title: "학술지 소개 (최신호)",
+                category: "학회지",
+                url: "issue.html",
+                content: "학술지 '한국음악학회' 최신호 안내. 논문 목차, 저자 정보(윤소희, 홍효진, 양영진, 최명철, 정지훈 등) 및 학술적 연구 주제 요약본 수록."
+            },
+            {
+                title: "학술지 아카이브 (지난호 검색 및 PDF 원문)",
+                category: "학회지",
+                url: "archive.html",
+                content: "한국음악학회 학회지 지난호 아카이브 리스트. 제1호부터 최근 발행본까지 수록 논문의 목차 및 원문 PDF 자료를 검색하고 다운로드할 수 있는 아카이브 검색실."
+            },
+            {
+                title: "논문투고안내 및 온라인 투고 시스템 연동",
+                category: "논문투고",
+                url: "submission.html",
+                content: "논문 투고 자격(정회원), 투고 마감일(매년 2월, 8월 말), 온라인 논문투고 시스템(JAMS 링크 연계) 사용법 및 신규 접수 기간 안내."
+            },
+            {
+                title: "논문투고규정 (집필 기준)",
+                category: "논문투고",
+                url: "submission_rules.html",
+                content: "논문 투고 요령, 원고 집필 세부 기준(초록 작성 방법, 참고문헌 인용 표기법, 영문 성명 표기 기준) 및 투고 자격에 관한 세부 규정."
+            },
+            {
+                title: "심사규정 및 심사절차 기준",
+                category: "논문투고",
+                url: "submission_review.html",
+                content: "투고된 논문의 심사 절차 규정. 심사위원 위촉, 3인 심사위원의 판정 기준(게재 가, 수정 후 게재, 게재 불가), 표절 검사 및 이의 제기 절차 규정 정보."
+            },
+            {
+                title: "학회 새소식 및 공지사항 게시판",
+                category: "정보광장",
+                url: "news.html?tab=notice",
+                content: "학술대회 개최 공고, 학술지 원고 모집 안내(CALL FOR PAPERS), 주요 학회 일정 공지사항 및 공무 안내 게시판."
+            },
+            {
+                title: "자유게시판 (회원 소통 공간)",
+                category: "정보광장",
+                url: "news.html?tab=freeboard",
+                content: "한국음악학회 회원 간의 소통 및 학술 관련 정보 공유, 국악 연주회 안내, 자유 질문 및 답변이 이루어지는 소통 게시판."
+            },
+            {
+                title: "사이트맵 (Sitemap)",
+                category: "정보광장",
+                url: "sitemap.html",
+                content: "한국음악학회 사이트맵 페이지. 학회소개, 학회소식, 학회지, 논문투고, 학술활동, 회원서비스 등 사이트 전체 구조를 한눈에 확인하고 바로갈 수 있는 링크 목록을 제공합니다."
+            }
+        ];
+
+        // Dynamically append journal articles from journalData if loaded
+        if (typeof journalData !== 'undefined') {
+            journalData.forEach(issue => {
+                // Index the journal issue itself
+                SEARCH_DATABASE.push({
+                    title: `[학회지] 한국음악문화 ${issue.title} (${issue.date} 발행)`,
+                    category: "학회지",
+                    url: `issue.html?id=${issue.id}`,
+                    content: `${issue.fullTitle}. ${issue.desc} 발행일: ${issue.date}. 원문 PDF 다운로드 제공.`
+                });
+
+                // Index each article in the issue
+                issue.articles.forEach(article => {
+                    SEARCH_DATABASE.push({
+                        title: `[논문] ${article.title} - ${article.author}`,
+                        category: "학회지",
+                        url: `issue.html?id=${issue.id}`,
+                        content: `${article.title} (${article.enTitle}). 저자: ${article.author}. 분야: ${article.category}. 수록: 한국음악문화 ${issue.title}.`
+                    });
+                });
+            });
+        }
+
+        // Dynamically append board posts from localStorage or default lists
+        let noticePosts = [];
+        try {
+            const rawNotice = localStorage.getItem("notice_posts");
+            if (rawNotice) {
+                noticePosts = JSON.parse(rawNotice);
+            } else {
+                noticePosts = [
+                    { id: 5, category: "안내", title: "2026년 춘계 학술대회 일정 및 논문 발표 신청 안내", date: "2026. 03. 11", content: "2026년 춘계 학술대회 일정 및 논문 발표 신청 안내입니다.\n대중음악콘텐츠학회지 연구윤리 검증절차에 의해 본 학회 학술지 「대중음악콘텐츠학... 많은 관심과 투고 바랍니다." },
+                    { id: 4, category: "시스템", title: "학회 홈페이지 리뉴얼 및 온라인 투고 시스템 오픈 안내", date: "2026. 02. 20", content: "학회 홈페이지 리뉴얼 및 온라인 투고 시스템 오픈 안내입니다.\n회원 여러분의 편리한 논문 투고를 돕기 위해 신규 온라인 논문투고 시스템이 도입되었습니다." },
+                    { id: 3, category: "안내", title: "한국음악학회 제50권 2호 원문 서비스 오픈", date: "2026. 02. 15", content: "안녕하십니까, 한국음악학회입니다.\n한국음악학회 학회지 제50권 2호의 원문 서비스가 홈페이지를 통해 개시되었습니다." },
+                    { id: 2, category: "일반", title: "2026년도 신임 임원진 선출 결과 공고", date: "2026. 01. 30", content: "2026년도 신임 임원진 선출 결과 공고입니다.\n자세한 임원진 구성표는 첨부된 PDF 파일을 참조해 주시기 바랍니다." },
+                    { id: 1, category: "안내", title: "학회 연회비 납부 계좌 변경 안내", date: "2026. 01. 20", content: "학회 연회비 납부 계좌가 다음과 같이 변경되었습니다.\n- 은행: 신한은행\n- 계좌번호: 140-015-967840\n- 예금주: 한국음악학회 박범훈" }
+                ];
+            }
+        } catch (e) {
+            console.error("Failed to load notice posts:", e);
+        }
+
+        let freeboardPosts = [];
+        try {
+            const rawFreeboard = localStorage.getItem("freeboard_posts");
+            if (rawFreeboard) {
+                freeboardPosts = JSON.parse(rawFreeboard);
+            } else {
+                freeboardPosts = [
+                    { id: 3, category: "자유", title: "안녕하세요. 신임 회원 인사드립니다.", author: "김민우", date: "2026. 05. 28", content: "이번에 학회에 가입하게 된 김민우입니다. 국악관현악 연구에 관심이 많습니다. 앞으로 많은 지도 편달 부탁드립니다." },
+                    { id: 2, category: "질문", title: "2026년 춘계 학술대회 발표 자료 양식 관련 질문", author: "이영희", date: "2026. 05. 27", content: "춘계 학술대회 구두 발표 PPT 템플릿이나 양식이 따로 제공되는지 궁금합니다. 아니면 자유 양식으로 준비해도 되나요?" },
+                    { id: 1, category: "정보", title: "국악 학술 정보 사이트 공유합니다.", author: "박철수", date: "2026. 05. 20", content: "한국음악 연구에 유용한 자료들이 모여있는 국립국악원 국악학술정보시스템 링크를 공유합니다." }
+                ];
+            }
+        } catch (e) {
+            console.error("Failed to load freeboard posts:", e);
+        }
+
+        // Add notice posts to search database
+        noticePosts.forEach(post => {
+            SEARCH_DATABASE.push({
+                title: `[공지사항] ${post.title}`,
+                category: "정보광장",
+                url: `news.html?tab=notice&id=${post.id}`,
+                content: `${post.title}. 날짜: ${post.date}. 구분: ${post.category}. 내용: ${post.content}`
+            });
+        });
+
+        // Add freeboard posts to search database
+        freeboardPosts.forEach(post => {
+            SEARCH_DATABASE.push({
+                title: `[자유게시판] ${post.title}`,
+                category: "정보광장",
+                url: `news.html?tab=freeboard&id=${post.id}`,
+                content: `${post.title}. 작성자: ${post.author}. 날짜: ${post.date}. 구분: ${post.category}. 내용: ${post.content}`
+            });
+        });
+
+        // Highlight matching query in text helper
+        function highlightText(text, query) {
+            if (!query) return text;
+            const escapedQuery = query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+            const regex = new RegExp(`(${escapedQuery})`, 'gi');
+            return text.replace(regex, '<mark>$1</mark>');
+        }
+
+        // Execute search function
+        function performSearch(query) {
+            const resultsContainer = document.getElementById("search-results-list");
+            const infoContainer = document.getElementById("search-info-container");
+            const highlightSpan = document.getElementById("query-highlight");
+            const countSpan = document.getElementById("result-count");
+
+            // Empty previous results
+            resultsContainer.innerHTML = "";
+
+            const trimmedQuery = query ? query.trim() : "";
+
+            if (!trimmedQuery) {
+                // If query is empty, show empty state with search input reminder
+                infoContainer.style.display = "none";
+                resultsContainer.innerHTML = `
+                    <div class="no-results">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <p>검색어를 입력해 주세요.</p>
+                        <span style="font-size: 0.9rem; color: #999;">상단 또는 검색창에 키워드를 입력한 후 검색을 클릭해 주세요.</span>
+                    </div>
+                `;
+                return;
+            }
+
+            // Filter results from database
+            const queryLower = trimmedQuery.toLowerCase();
+            const filteredResults = SEARCH_DATABASE.filter(item => {
+                return item.title.toLowerCase().includes(queryLower) || 
+                       item.content.toLowerCase().includes(queryLower) ||
+                       item.category.toLowerCase().includes(queryLower);
+            });
+
+            // Update result headers
+            infoContainer.style.display = "block";
+            highlightSpan.textContent = trimmedQuery;
+            countSpan.textContent = filteredResults.length;
+
+            if (filteredResults.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div class="no-results">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <p>"${trimmedQuery}"에 대한 검색 결과가 없습니다.</p>
+                        <span style="font-size: 0.9rem; color: #999;">다른 검색어로 다시 시도해 주세요.</span>
+                    </div>
+                `;
+                return;
+            }
+
+            // Render cards
+            filteredResults.forEach(item => {
+                const card = document.createElement("div");
+                card.className = "search-result-card";
+                
+                const titleHighlighted = highlightText(item.title, trimmedQuery);
+                const contentHighlighted = highlightText(item.content, trimmedQuery);
+
+                card.innerHTML = `
+                    <div class="result-meta">
+                        <span class="result-category cat-${item.category}">${item.category}</span>
+                        <a href="${item.url}" class="result-link">바로가기 <i class="fa-solid fa-arrow-right"></i></a>
+                    </div>
+                    <h3 class="result-title"><a href="${item.url}">${titleHighlighted}</a></h3>
+                    <p class="result-snippet">${contentHighlighted}</p>
+                `;
+                resultsContainer.appendChild(card);
+            });
+        }
+
+        // Initialize Page
+        document.addEventListener("DOMContentLoaded", () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const query = urlParams.get('query');
+
+            const pageInput = document.getElementById("search-page-input");
+            const pageBtn = document.getElementById("search-page-btn");
+
+            if (query) {
+                pageInput.value = query;
+                performSearch(query);
+            } else {
+                performSearch("");
+            }
+
+            // Set up event handlers
+            pageBtn.addEventListener("click", () => {
+                const newQuery = pageInput.value;
+                // Redirect/reload with new query parameters
+                window.location.href = `search.html?query=${encodeURIComponent(newQuery)}`;
+            });
+
+            pageInput.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") {
+                    const newQuery = pageInput.value;
+                    window.location.href = `search.html?query=${encodeURIComponent(newQuery)}`;
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

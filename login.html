@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인 · 한국음악학회 온라인 논문투고시스템</title>
+    <meta name="description" content="한국음악학회 온라인 논문투고시스템 로그인 페이지">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        /* ── Design Tokens (matching styles_v2.css) ── */
+        :root {
+            --color-red:    #CB3C31;
+            --color-green:  #2B8A7E;
+            --color-yellow: #F0B136;
+            --color-blue:   #2A5FA5;
+            --color-black:  #1A1A1A;
+            --bg-charcoal:  #3A3A3A;
+            --bg-offwhite:  #F4F3ED;
+            --border-color: #D1CFCD;
+            --text-dark:    #1E1E1E;
+            --text-muted:   #888;
+
+            /* Obangsaek gradient strip */
+            --obangsaek: linear-gradient(90deg,
+                #CB3C31 0%,   #CB3C31 20%,
+                #F0B136 20%,  #F0B136 40%,
+                #F4F3ED 40%,  #F4F3ED 60%,
+                #2B8A7E 60%,  #2B8A7E 80%,
+                #1A1A1A 80%,  #1A1A1A 100%);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-offwhite);
+        }
+
+        /* ── Obangsaek top strip ── */
+        .obangsaek-bar {
+            height: 5px;
+            background: var(--obangsaek);
+            flex-shrink: 0;
+        }
+
+        /* ── Main login wrapper ── */
+        .login-wrapper {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: calc(100vh - 5px);
+        }
+
+        /* ════════════════════════════════
+           LEFT PANEL — decorative
+        ════════════════════════════════ */
+        .login-left {
+            position: relative;
+            background: var(--bg-charcoal);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 60px 50px;
+            overflow: hidden;
+        }
+
+        /* Background decorative pattern layers */
+        .login-left::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at 20% 20%, rgba(203,60,49,0.18) 0%, transparent 55%),
+                radial-gradient(ellipse at 80% 80%, rgba(43,138,126,0.15) 0%, transparent 55%),
+                radial-gradient(ellipse at 50% 50%, rgba(240,177,54,0.07) 0%, transparent 70%);
+        }
+
+        /* Circular decorative element */
+        .deco-circle {
+            position: absolute;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .deco-circle.c1 { width: 480px; height: 480px; top: -100px; right: -120px; }
+        .deco-circle.c2 { width: 320px; height: 320px; top: -40px; right: -60px;
+                          border-color: rgba(203,60,49,0.15); }
+        .deco-circle.c3 { width: 600px; height: 600px; bottom: -200px; left: -180px;
+                          border-color: rgba(43,138,126,0.10); }
+
+        /* Horizontal rule bars */
+        .deco-bars {
+            position: absolute;
+            bottom: 60px;
+            left: 50px;
+            right: 50px;
+            height: 4px;
+            background: var(--obangsaek);
+            border-radius: 2px;
+            opacity: 0.6;
+        }
+
+        .left-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            color: #fff;
+        }
+
+        /* Logo block */
+        .left-logo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0px; /* Tightened gap to match the small gap between the text and the divider line */
+            justify-content: center;
+            margin-top: 35px; /* Pushes the logo lower in the panel */
+            margin-bottom: 35px; /* Balanced spacing to the tagline */
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .left-logo:hover {
+            transform: scale(1.02);
+            opacity: 0.95;
+        }
+
+        .left-logo-img {
+            height: 125px; /* Increased height from 100px to 125px to make the logo larger */
+            width: auto;
+            object-fit: contain;
+        }
+
+        .left-logo-text h1 {
+            font-family: 'Pretendard', sans-serif;
+            font-size: 1.45rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            color: #fff;
+            line-height: 1.2;
+        }
+
+        .left-logo-divider {
+            height: 3px;
+            background: var(--obangsaek);
+            margin: 6px 0;
+            border-radius: 1px;
+        }
+
+        .left-logo-text .en {
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.6rem;
+            font-weight: 400;
+            letter-spacing: 0.08em;
+            color: rgba(255,255,255,0.6);
+            text-transform: uppercase;
+        }
+
+        /* Tagline */
+        .left-tagline {
+            font-family: 'Pretendard', sans-serif;
+            font-size: 1.7rem;
+            font-weight: 600;
+            line-height: 1.55;
+            color: #fff;
+            margin-bottom: 20px;
+            word-break: keep-all;
+        }
+
+        .left-tagline em {
+            font-style: normal;
+            color: var(--color-yellow);
+        }
+
+        .left-desc {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.5);
+            line-height: 1.8;
+            word-break: keep-all;
+            max-width: 340px;
+            margin: 0 auto 36px;
+        }
+
+        /* Feature pills */
+        .feature-pills {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 14px;
+            border-radius: 100px;
+            border: 1px solid rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.05);
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.75);
+            backdrop-filter: blur(4px);
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .pill:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+
+        .pill i { color: var(--color-yellow); font-size: 0.7rem; }
+
+        /* ════════════════════════════════
+           RIGHT PANEL — login form
+        ════════════════════════════════ */
+        .login-right {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 60px 70px;
+            background: #fff;
+            position: relative;
+        }
+
+        .login-right::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: var(--color-red);
+        }
+
+        .form-container {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        /* System badge */
+        .system-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            background: rgba(43,138,126,0.08);
+            border: 1px solid rgba(43,138,126,0.2);
+            border-radius: 100px;
+            font-size: 0.72rem;
+            color: var(--color-green);
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            margin-bottom: 24px;
+        }
+
+        .form-heading {
+            font-family: 'Pretendard', sans-serif;
+            font-size: 1.85rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            letter-spacing: -0.02em;
+            margin-bottom: 6px;
+        }
+
+        .form-subheading {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 36px;
+        }
+
+        /* Form groups */
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 7px;
+            letter-spacing: 0.01em;
+        }
+
+        .input-wrap {
+            position: relative;
+        }
+
+        .input-wrap i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #bbb;
+            font-size: 0.85rem;
+            transition: color 0.2s;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 13px 14px 13px 40px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            background: var(--bg-offwhite);
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+            outline: none;
+        }
+
+        .form-input:focus {
+            border-color: var(--color-red);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(203,60,49,0.08);
+        }
+
+        .form-input:focus + i,
+        .input-wrap:has(.form-input:focus) i {
+            color: var(--color-red);
+        }
+
+        /* Password toggle */
+        .pw-toggle {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #bbb;
+            font-size: 0.85rem;
+            background: none;
+            border: none;
+            padding: 4px;
+            transition: color 0.2s;
+        }
+        .pw-toggle:hover { color: var(--color-red); }
+
+        /* Options row */
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            cursor: pointer;
+        }
+
+        .remember-me input[type="checkbox"] {
+            appearance: none;
+            width: 16px; height: 16px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 4px;
+            background: var(--bg-offwhite);
+            cursor: pointer;
+            position: relative;
+            transition: all 0.15s;
+            flex-shrink: 0;
+        }
+
+        .remember-me input[type="checkbox"]:checked {
+            background: var(--color-red);
+            border-color: var(--color-red);
+        }
+
+        .remember-me input[type="checkbox"]:checked::after {
+            content: '';
+            position: absolute;
+            left: 4px; top: 1.5px;
+            width: 5px; height: 9px;
+            border: 2px solid #fff;
+            border-left: none; border-top: none;
+            transform: rotate(45deg);
+        }
+
+        .remember-me span {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .forgot-link {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .forgot-link:hover { color: var(--color-red); }
+
+        /* Login button */
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: var(--color-red);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0px;
+            margin-bottom: 16px;
+        }
+
+        .btn-login:hover {
+            background: #a8322a;
+            box-shadow: 0 6px 20px rgba(203,60,49,0.25);
+            transform: translateY(-1px);
+        }
+
+        .btn-login:active { transform: translateY(0); }
+
+        /* Divider */
+        .form-divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 20px 0;
+            color: #ccc;
+            font-size: 0.75rem;
+        }
+        .form-divider::before,
+        .form-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border-color);
+        }
+
+        /* Register row */
+        .register-row {
+            text-align: center;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+
+        .register-row a {
+            color: var(--color-green);
+            font-weight: 600;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .register-row a:hover { color: #1f6b61; }
+
+        /* Quick links */
+        .quick-links {
+            display: flex;
+            gap: 10px;
+            margin-top: 28px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border-color);
+            flex-wrap: wrap;
+        }
+
+        .quick-link-btn {
+            flex: 1;
+            min-width: 90px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 12px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--bg-offwhite);
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 0.72rem;
+            transition: all 0.2s;
+        }
+
+        .quick-link-btn i {
+            font-size: 1rem;
+            color: var(--bg-charcoal);
+        }
+
+        .quick-link-btn:hover {
+            border-color: var(--color-red);
+            background: #fff;
+            color: var(--color-red);
+        }
+        .quick-link-btn:hover i { color: var(--color-red); }
+
+        /* Notice box */
+        .notice-box {
+            margin-top: 20px;
+            padding: 14px 16px;
+            background: rgba(240,177,54,0.07);
+            border-left: 3px solid var(--color-yellow);
+            border-radius: 0 6px 6px 0;
+        }
+
+        .notice-box p {
+            font-size: 0.75rem;
+            color: #7a6a30;
+            line-height: 1.7;
+        }
+
+        .notice-box strong {
+            color: #5a4e20;
+            display: block;
+            margin-bottom: 3px;
+        }
+
+        /* Footer */
+        .login-footer {
+            text-align: center;
+            font-size: 0.7rem;
+            color: #bbb;
+            margin-top: 36px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 860px) {
+            .login-wrapper { grid-template-columns: 1fr; }
+            .login-left { display: none; }
+            .login-right { padding: 40px 30px; min-height: 100vh; }
+            .login-right::before { display: none; }
+        }
+
+        /* ── Loading animation on submit ── */
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spinner {
+            display: inline-block;
+            width: 16px; height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        /* ── Input focus icon fix ── */
+        .input-wrap:focus-within i.field-icon { color: var(--color-red); }
+    </style>
+</head>
+
+<body>
+    <div class="obangsaek-bar"></div>
+
+    <div class="login-wrapper">
+        <!-- ════ LEFT PANEL ════ -->
+        <div class="login-left">
+            <div class="deco-circle c1"></div>
+            <div class="deco-circle c2"></div>
+            <div class="deco-circle c3"></div>
+            <div class="deco-bars"></div>
+
+            <div class="left-content">
+                <!-- Logo -->
+                <a href="index.html" class="left-logo">
+                    <img src="main_logo_white.png" alt="한국음악학회 로고" class="left-logo-img">
+                    <div class="left-logo-text">
+                        <h1>한국음악학회</h1>
+                        <div class="left-logo-divider"></div>
+                        <span class="en">the society for korean music &amp; culture studies</span>
+                    </div>
+                </a>
+
+                <p class="left-tagline">
+                    한국 음악의 <em>학술적 가치</em>를<br>
+                    세계와 함께 나누다
+                </p>
+
+                <p class="left-desc">
+                    한국음악학회에 오신 것을 환영합니다.<br>
+                    로그인하시면 논문 투고, 심사 현황 확인, 학회지 원문 열람이 가능합니다.
+                </p>
+
+                <div class="feature-pills">
+                    <a href="submission.html?tab=online" class="pill"><i class="fa-solid fa-file-arrow-up"></i> 온라인 논문 투고</a>
+                    <a href="submission.html?tab=history" class="pill"><i class="fa-solid fa-magnifying-glass"></i> 심사 현황 조회</a>
+                    <a href="issue.html" class="pill"><i class="fa-solid fa-book-open"></i> 학회지 열람</a>
+                    <a href="news.html?tab=notice" class="pill"><i class="fa-solid fa-bell"></i> 공지사항 수신</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ════ RIGHT PANEL ════ -->
+        <div class="login-right">
+            <div class="form-container">
+                <div class="system-badge">
+                    <i class="fa-solid fa-server"></i>
+                    온라인 논문투고시스템
+                </div>
+
+                <h2 class="form-heading">Members' Login</h2>
+                <p class="form-subheading">학회 회원 아이디와 비밀번호를 입력해 주세요.</p>
+
+                <form id="login-form" onsubmit="handleLogin(event)">
+                    <!-- ID -->
+                    <div class="form-group">
+                        <label class="form-label" for="user-id">아이디 (이메일)</label>
+                        <div class="input-wrap">
+                            <i class="fa-regular fa-envelope field-icon"></i>
+                            <input
+                                type="text"
+                                id="user-id"
+                                class="form-input"
+                                placeholder="이메일 주소를 입력하세요"
+                                autocomplete="username"
+                                required>
+                        </div>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="form-group">
+                        <label class="form-label" for="user-pw">비밀번호</label>
+                        <div class="input-wrap">
+                            <i class="fa-solid fa-lock field-icon"></i>
+                            <input
+                                type="password"
+                                id="user-pw"
+                                class="form-input"
+                                placeholder="비밀번호를 입력하세요"
+                                autocomplete="current-password"
+                                required>
+                            <button type="button" class="pw-toggle" id="pw-toggle" title="비밀번호 보기/숨기기">
+                                <i class="fa-regular fa-eye" id="pw-icon"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Options -->
+                    <div class="form-options">
+                        <label class="remember-me">
+                            <input type="checkbox" id="remember">
+                            <span>아이디 저장</span>
+                        </label>
+                        <a href="#" class="forgot-link">아이디 · 비밀번호 찾기</a>
+                    </div>
+
+                    <!-- Submit -->
+                    <button type="submit" class="btn-login" id="login-btn">
+                        <i class="fa-solid fa-right-to-bracket"></i>
+                        로그인
+                    </button>
+                </form>
+
+                <div class="form-divider">또는</div>
+
+                <div class="register-row">
+                    아직 회원이 아니신가요?&nbsp;
+                    <a href="register.html">회원가입 신청하기 →</a>
+                </div>
+
+                <!-- Quick links -->
+                <div class="quick-links">
+                    <a href="index.html" class="quick-link-btn">
+                        <i class="fa-solid fa-house"></i>
+                        학회 홈페이지
+                    </a>
+                    <a href="issue.html" class="quick-link-btn">
+                        <i class="fa-solid fa-book-open"></i>
+                        학회지 보기
+                    </a>
+                    <a href="submission.html" class="quick-link-btn">
+                        <i class="fa-solid fa-file-pen"></i>
+                        투고 안내
+                    </a>
+                    <a href="news.html" class="quick-link-btn">
+                        <i class="fa-solid fa-bullhorn"></i>
+                        공지사항
+                    </a>
+                </div>
+
+                <!-- Notice -->
+                <div class="notice-box">
+                    <p><strong><i class="fa-solid fa-circle-info"></i> 로그인 안내</strong>
+                    본 시스템은 한국음악학회 정회원 및 논문 투고자를 위한 시스템입니다.<br>
+                    회원가입 후 승인이 완료되어야 로그인이 가능합니다.</p>
+                </div>
+
+                <div class="login-footer">
+                    <div style="margin-bottom: 8px; font-size: 0.72rem;">
+                        <a href="agreement.html#terms" style="color: #888; text-decoration: none; margin: 0 6px; transition: color 0.2s;">홈페이지 이용약관</a> | 
+                        <a href="agreement.html#privacy" style="color: #888; text-decoration: none; margin: 0 6px; font-weight: bold; transition: color 0.2s;">개인정보 취급방침</a> | 
+                        <a href="agreement.html#rules" style="color: #888; text-decoration: none; margin: 0 6px; transition: color 0.2s;">게시물 게재원칙</a>
+                    </div>
+                    Copyright &copy; 2026 The Society for Korean Music &amp; Culture Studies. All rights reserved.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Password toggle
+        const pwToggle = document.getElementById('pw-toggle');
+        const pwInput  = document.getElementById('user-pw');
+        const pwIcon   = document.getElementById('pw-icon');
+
+        pwToggle.addEventListener('click', () => {
+            const isHidden = pwInput.type === 'password';
+            pwInput.type = isHidden ? 'text' : 'password';
+            pwIcon.className = isHidden ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
+        });
+
+        // Remember ID
+        const idInput    = document.getElementById('user-id');
+        const rememberCb = document.getElementById('remember');
+        const saved      = localStorage.getItem('saved_id');
+        if (saved) { idInput.value = saved; rememberCb.checked = true; }
+
+        // Login form submit (demo)
+        function handleLogin(e) {
+            e.preventDefault();
+            const btn = document.getElementById('login-btn');
+            const pw = pwInput.value;
+
+            const email = idInput.value.trim();
+            const emailLower = email.toLowerCase();
+            
+            // Check registered_users in localStorage
+            const localUsersStr = localStorage.getItem("registered_users");
+            let users = [];
+            if (localUsersStr) {
+                try { users = JSON.parse(localUsersStr); } catch(err) {}
+            }
+            
+            // Find if there is a match
+            const matchedUser = users.find(u => u.email.toLowerCase() === emailLower);
+            
+            let role = '';
+            let name = '';
+            
+            if (matchedUser) {
+                if (matchedUser.password !== pw) {
+                    alert("비밀번호가 올바르지 않습니다.");
+                    pwInput.value = "";
+                    pwInput.focus();
+                    return;
+                }
+                role = matchedUser.name === "최우창" ? "admin" : matchedUser.role;
+                name = matchedUser.name;
+            } else {
+                // Check if user is trying to login with default mock credentials (which might not be in registered_users yet)
+                // Default fallback based on email keywords for test convenience
+                name = email.split('@')[0] || '회원';
+                if (emailLower.includes('woochang') || emailLower.includes('choiwoochang')) {
+                    role = 'admin';
+                    name = '최우창';
+                } else if (emailLower.includes('admin')) {
+                    role = 'admin';
+                    name = '관리인';
+                } else if (emailLower.includes('secretary') || emailLower.includes('gansa')) {
+                    role = 'secretary';
+                    name = '간사';
+                } else if (emailLower.includes('reviewer') || emailLower.includes('judge') || emailLower.includes('simsa')) {
+                    role = 'reviewer';
+                    name = '심사위원';
+                } else if (emailLower.includes('editor') || emailLower.includes('pyeonjib')) {
+                    role = 'editor';
+                    name = '편집장';
+                } else if (emailLower.includes('president') || emailLower.includes('hoejang')) {
+                    role = 'president';
+                    name = '회장';
+                } else {
+                    role = 'member';
+                }
+            }
+            
+            btn.innerHTML = '<span class="spinner"></span> 로그인 중...';
+            btn.disabled  = true;
+            
+            localStorage.setItem('logged_in_user', JSON.stringify({ email: email, name: name, role: role }));
+
+            if (rememberCb.checked) {
+                localStorage.setItem('saved_id', idInput.value);
+            } else {
+                localStorage.removeItem('saved_id');
+            }
+
+            // Simulate network delay then redirect
+            setTimeout(() => {
+                const urlParams = new URLSearchParams(window.location.search);
+                const redirectUrl = urlParams.get('redirect');
+                if (redirectUrl) {
+                    window.location.href = redirectUrl;
+                } else {
+                    window.location.href = 'index.html';
+                }
+            }, 1400);
+        }
+
+
+        // Input icon highlight on focus
+        document.querySelectorAll('.form-input').forEach(input => {
+            const wrap = input.closest('.input-wrap');
+            input.addEventListener('focus', () => {
+                wrap.querySelector('.field-icon').style.color = 'var(--color-red)';
+            });
+            input.addEventListener('blur', () => {
+                wrap.querySelector('.field-icon').style.color = '#bbb';
+            });
+        });
+    </script>
+</body>
+</html>
