@@ -409,9 +409,15 @@
 
                         <!-- Uploaded Files Management List -->
                         <div id="admin-file-list-wrap" style="margin-top:28px; border-top:1px solid rgba(255,255,255,0.1); padding-top:22px;">
-                            <div style="font-size:0.88rem; font-weight:700; color:rgba(255,255,255,0.6); margin-bottom:14px; display:flex; align-items:center; gap:8px;">
+                            <div style="font-size:0.88rem; font-weight:700; color:rgba(255,255,255,0.6); margin-bottom:14px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                                 <i class="fa-solid fa-folder-open"></i> 업로드된 파일 목록
                                 <span id="admin-file-count" style="background:rgba(255,255,255,0.1); border-radius:99px; padding:1px 8px; font-size:0.75rem;">0</span>
+                                <button id="btn-restore-defaults" onclick="_restoreDefaults()" style="display:none; margin-left:auto;
+                                    background:rgba(240,177,54,0.2); border:1px solid rgba(240,177,54,0.5); color:#f0b136;
+                                    border-radius:6px; padding:4px 12px; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.2s;"
+                                    onmouseover="this.style.background='rgba(240,177,54,0.4)'" onmouseout="this.style.background='rgba(240,177,54,0.2)'">
+                                    <i class="fa-solid fa-rotate-left"></i> 기본 서식 복원
+                                </button>
                             </div>
                             <div id="admin-file-list" style="display:flex; flex-direction:column; gap:10px;">
                                 <!-- Rendered by JS -->
@@ -501,6 +507,7 @@
         /* ─── Constants ───────────────────────────────────── */
         const ADMIN_ROLES  = ['admin','secretary','editor','president'];
         const STORAGE_KEY  = 'forms_uploaded_files_v3';
+        const HIDDEN_KEY   = 'forms_hidden_static_ids';
 
         const STATIC_FORMS = [
             { id:'S-001', name:'한국음악학회 정회원 입회신청서 양식', category:'입회안내', date:'2026-03-01',
@@ -526,6 +533,8 @@
         /* ─── Storage ────────────────────────────────────── */
         function getUploaded()   { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch(e) { return []; } }
         function saveUploaded(d) { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
+        function getHidden()     { try { return JSON.parse(localStorage.getItem(HIDDEN_KEY)) || []; } catch(e) { return []; } }
+        function saveHidden(d)   { localStorage.setItem(HIDDEN_KEY, JSON.stringify(d)); }
 
         /* ─── Download from base64 ───────────────────────── */
         function dlBase64(b64, name, mime) {
@@ -548,11 +557,15 @@
 
         /* ─── Render admin uploaded file cards ───────────── */
         function renderAdminList() {
-            const list = document.getElementById('admin-file-list');
-            const cnt  = document.getElementById('admin-file-count');
+            const list    = document.getElementById('admin-file-list');
+            const cnt     = document.getElementById('admin-file-count');
+            const restBtn = document.getElementById('btn-restore-defaults');
             if (!list) return;
             const uploaded = getUploaded();
+            const hidden   = getHidden();
             if (cnt) cnt.textContent = uploaded.length;
+            // Show restore button only if some static forms are hidden
+            if (restBtn) restBtn.style.display = hidden.length > 0 ? 'inline-flex' : 'none';
             if (uploaded.length === 0) {
                 list.innerHTML = `<div style="padding:20px; text-align:center; color:rgba(255,255,255,0.35); font-size:0.88rem;">
                     <i class="fa-solid fa-inbox" style="font-size:1.8rem; margin-bottom:8px; display:block; opacity:0.4;"></i>
@@ -605,7 +618,9 @@
             const admin  = isAdmin(user);
             admCol.forEach(el => el.style.display = admin ? 'table-cell' : 'none');
 
-            const all = [...STATIC_FORMS, ...getUploaded()];
+            const hidden = getHidden();
+            const visibleStatic = STATIC_FORMS.filter(f => !hidden.includes(f.id));
+            const all = [...visibleStatic, ...getUploaded()];
             if (cntEl) cntEl.textContent = all.length;
             tbody.innerHTML = '';
 
@@ -631,8 +646,8 @@
                         <i class="fa-solid fa-file-arrow-down"></i> ${esc(f.label)}
                     </a>`;
                 }).join(' ');
-                const delBtn = admin && !form.id.startsWith('S-')
-                    ? `<button onclick="_delUploaded('${esc(form.id)}')"
+                const delBtn = admin
+                    ? `<button onclick="_delForm('${esc(form.id)}')"
                         style="background:none;border:none;color:#cb3c31;cursor:pointer;font-size:0.9rem;padding:4px 8px;border-radius:4px;transition:color 0.2s;"
                         onmouseover="this.style.color='#8b0000'" onmouseout="this.style.color='#cb3c31'" title="삭제">
                         <i class="fa-solid fa-trash-can"></i></button>` : '';
@@ -646,7 +661,7 @@
                     <td><span style="display:inline-block;padding:3px 9px;border-radius:4px;font-size:0.75rem;font-weight:700;background:${clr}18;color:${clr};">${esc(form.category)}</span></td>
                     <td><div style="display:flex;gap:4px;flex-wrap:wrap;">${badges}</div></td>
                     <td style="text-align:center;"><div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;">${btns}</div></td>
-                    ${admin ? `<td class="forms-admin-col" style="text-align:center;">${delBtn||'<span style="color:var(--text-muted);font-size:0.75rem;">기본</span>'}</td>` : ''}
+                    ${admin ? `<td class="forms-admin-col" style="text-align:center;">${delBtn}</td>` : ''}
                 `;
                 tbody.appendChild(row);
             });
@@ -666,9 +681,21 @@
             if (!entry || !entry.base64) return alert('파일 데이터가 없습니다.');
             dlBase64(entry.base64, entry.download || f.name, entry.mime);
         };
-        window._delUploaded = function(id) {
-            if (!confirm('이 파일을 삭제하시겠습니까?')) return;
-            saveUploaded(getUploaded().filter(x => x.id !== id));
+        window._delForm = function(id) {
+            if (!confirm('이 서식을 목록에서 삭제하시겠습니까?\n(업로드 파일은 완전 삭제, 기본 서식은 숨김 처리됩니다)')) return;
+            if (id.startsWith('S-')) {
+                // Hide static form
+                const h = getHidden();
+                if (!h.includes(id)) { h.push(id); saveHidden(h); }
+            } else {
+                // Remove uploaded form
+                saveUploaded(getUploaded().filter(x => x.id !== id));
+            }
+            renderAll();
+        };
+        window._restoreDefaults = function() {
+            if (!confirm('숨겨진 기본 서식을 모두 복원하시겠습니까?')) return;
+            saveHidden([]);
             renderAll();
         };
 
