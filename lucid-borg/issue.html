@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -426,6 +426,35 @@
         }
 
         bindPdfButtons();
+
+        // 권한 제어: 정회원 이상만 세부 논문 및 PDF 다운로드 가능
+        const hasAccess = typeof window.isRegularMemberOrAbove === 'function' && window.isRegularMemberOrAbove();
+        if (!hasAccess) {
+            // 전체 다운로드 버튼 숨기기
+            if (pdfLink) pdfLink.style.display = 'none';
+            
+            // 논문 테이블 숨기고 잠금 오버레이 노출
+            const boardTable = document.querySelector('.board-table');
+            if (boardTable) {
+                boardTable.style.display = 'none';
+                
+                const lockOverlay = document.createElement('div');
+                lockOverlay.className = 'lock-overlay';
+                lockOverlay.innerHTML = `
+                    <i class="fa-solid fa-lock"></i>
+                    <h4>정회원 전용 서비스</h4>
+                    <p>
+                        학회지 세부 목차 및 논문 원문(PDF)은 <strong>정회원 이상</strong> 등급의 회원만 열람하실 수 있습니다.<br>
+                        로그인하시거나 회원가입을 통해 정회원 자격을 취득해 주시기 바랍니다.
+                    </p>
+                    <div class="btn-lock-actions">
+                        <a href="login.html" class="btn-search" style="background-color: var(--color-green); color: white; text-decoration: none; padding: 10px 24px; font-weight: 700; border-radius: 4px; display: inline-flex; align-items: center; gap: 6px;"><i class="fa-solid fa-right-to-bracket"></i> 로그인</a>
+                        <a href="register.html" class="btn-search" style="background-color: var(--color-red); color: white; text-decoration: none; padding: 10px 24px; font-weight: 700; border-radius: 4px; display: inline-flex; align-items: center; gap: 6px;"><i class="fa-solid fa-user-plus"></i> 회원가입</a>
+                    </div>
+                `;
+                boardTable.parentNode.insertBefore(lockOverlay, boardTable.nextSibling);
+            }
+        }
 
         function closePdfModal() {
             modal.style.display = 'none';

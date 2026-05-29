@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -8,6 +8,43 @@
     <link rel="stylesheet" href="styles_v2.css">
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Admin Upload Form & Modal Style Enhancements */
+        #upload-issue-form input,
+        #upload-issue-form textarea {
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease-in-out;
+        }
+        #upload-issue-form input:focus,
+        #upload-issue-form textarea:focus {
+            border-color: var(--color-red) !important;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(203, 60, 49, 0.15);
+        }
+        .article-input-card {
+            border: 1px solid var(--border-color);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .article-input-card:focus-within {
+            border-color: var(--color-green) !important;
+            box-shadow: 0 4px 12px rgba(46, 125, 50, 0.08);
+        }
+        /* Custom scrollbar for articles list */
+        #articles-input-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        #articles-input-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        #articles-input-container::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 4px;
+        }
+        #articles-input-container::-webkit-scrollbar-thumb:hover {
+            background: #aaa;
+        }
+    </style>
 </head>
 
 <body>
@@ -177,11 +214,14 @@
                 </div>
 
                 <!-- Archive Selector Row -->
-                <div class="archive-selector-row" style="margin-bottom: 15px; display: flex; align-items: center; gap: 0px; background: white; padding: 10px 20px; border: 1px solid var(--border-color); border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
-                    <label for="archive-select" style="font-weight: 600; color: var(--text-dark); font-family: 'Pretendard', sans-serif;">발행호 선택:</label>
-                    <select id="archive-select" style="padding: 8px 16px; border: 1px solid var(--border-color); border-radius: 4px; font-family: inherit; font-size: 0.95rem; background-color: #fff; cursor: pointer; color: var(--text-dark); min-width: 240px; font-weight: 500;">
-                        <!-- Options populated dynamically from journalData[1] onwards -->
-                    </select>
+                <div class="archive-selector-row" style="margin-bottom: 15px; display: flex; align-items: center; gap: 15px; background: white; padding: 10px 20px; border: 1px solid var(--border-color); border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <label for="archive-select" style="font-weight: 600; color: var(--text-dark); font-family: 'Pretendard', sans-serif; line-height: 1.3; display: inline-block; text-align: center; font-size: 0.9rem; padding-right: 5px; white-space: nowrap;">발행호<br>선택</label>
+                        <select id="archive-select" style="padding: 8px 16px; border: 1px solid var(--border-color); border-radius: 4px; font-family: inherit; font-size: 0.95rem; background-color: #fff; cursor: pointer; color: var(--text-dark); min-width: 240px; font-weight: 500;">
+                            <!-- Options populated dynamically -->
+                        </select>
+                    </div>
+                    <button type="button" id="btn-upload-issue" class="btn-apply" style="margin-left: auto; height: 38px; display: none; background-color: var(--color-red); font-size: 0.9rem; font-weight: 700; border-radius: 4px; padding: 0 15px; align-items: center; gap: 6px;"><i class="fa-solid fa-plus"></i> 발행호 추가</button>
                 </div>
 
                 <!-- Current Issue Summary -->
@@ -232,6 +272,63 @@
             </div>
         </div>
 
+        <!-- Upload Issue Modal -->
+        <div id="upload-issue-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center; padding: 20px;">
+            <div style="background:#fff; width:95%; max-width:650px; max-height: 90vh; border-radius:12px; overflow-y:auto; display:flex; flex-direction:column; box-shadow:0 15px 35px rgba(0,0,0,0.3); border: 1px solid var(--border-color);">
+                <div style="display:flex; align-items:center; justify-content:space-between; padding:18px 24px; background:var(--color-red); color:#fff; flex-shrink:0;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <i class="fa-solid fa-book-open" style="font-size:1.2rem;"></i>
+                        <span style="font-size:1.1rem; font-weight:700;">학회지 발행호 추가 (관리인 전용)</span>
+                    </div>
+                    <button id="upload-issue-close" style="background:none; border:none; color:#fff; font-size:1.6rem; cursor:pointer; line-height:1;">&times;</button>
+                </div>
+                <form id="upload-issue-form" style="padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                        <div style="display: flex; flex-direction: column; gap: 6px;">
+                            <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-dark);">권 (Volume)</label>
+                            <input type="number" name="volume" required placeholder="예: 5" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.9rem;">
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 6px;">
+                            <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-dark);">호 (Issue No.)</label>
+                            <input type="number" name="number" required placeholder="예: 2" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.9rem;">
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 6px;">
+                            <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-dark);">통권 (Whole No.)</label>
+                            <input type="number" name="tonggwon" required placeholder="예: 8" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.9rem;">
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                        <div style="display: flex; flex-direction: column; gap: 6px;">
+                            <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-dark);">발행일 (Date)</label>
+                            <input type="text" name="date" required placeholder="예: 2026. 06. 30" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.9rem;">
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 6px;">
+                            <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-dark);">전체 PDF 파일명</label>
+                            <input type="text" name="pdf" placeholder="예: 한국음악문화 제8호.pdf (기본값 '#')" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.9rem;">
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-dark);">발행호 요약 설명</label>
+                        <textarea name="desc" rows="3" required placeholder="발행호에 담긴 학술적 가치나 분야에 대한 요약 설명을 작성해 주세요." style="padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.9rem; font-family: inherit; resize: vertical;"></textarea>
+                    </div>
+                    <input type="hidden" name="cover" value="cover.png">
+                    <div style="border-top: 1.5px solid var(--border-color); padding-top: 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <span style="font-size: 0.9rem; font-weight: 800; color: var(--color-green);"><i class="fa-solid fa-list-ol"></i> 수록 논문 목록 등록</span>
+                            <button type="button" id="btn-add-article-row" style="background-color: var(--bg-charcoal); color: #fff; border: none; padding: 4px 10px; font-size: 0.8rem; font-weight: 700; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 4px;"><i class="fa-solid fa-plus"></i> 논문 행 추가</button>
+                        </div>
+                        <div id="articles-input-container" style="display: flex; flex-direction: column; gap: 12px; max-height: 250px; overflow-y: auto; padding: 4px; border: 1px solid #eee; border-radius: 6px; background-color: #fafaf9;">
+                            <!-- Article rows injected here -->
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px; justify-content: flex-end; border-top: 1px solid var(--border-color); padding-top: 15px; margin-top: 10px;">
+                        <button type="button" id="btn-upload-issue-cancel" style="padding: 10px 20px; border: 1px solid var(--border-color); background: #fff; border-radius: 4px; cursor: pointer; font-size: 0.9rem; font-weight: 600;">취소</button>
+                        <button type="submit" style="padding: 10px 25px; border: none; background: var(--color-red); color: #fff; border-radius: 4px; cursor: pointer; font-size: 0.9rem; font-weight: 700; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-cloud-arrow-up"></i> 업로드 및 저장</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
                                 <!-- Main Footer -->
         <footer class="main-footer">
             <div class="container footer-container">
@@ -267,10 +364,10 @@
     <script>
         const selectEl = document.getElementById('archive-select');
         
-        // 1. Populate the select dropdown with all issues from index 1 onwards
+        // 1. Populate the select dropdown with all issues
         function populateDropdown() {
             selectEl.innerHTML = '';
-            for (let i = 1; i < journalData.length; i++) {
+            for (let i = 0; i < journalData.length; i++) {
                 const issue = journalData[i];
                 const option = document.createElement('option');
                 option.value = issue.id;
@@ -338,6 +435,39 @@
 
             // Re-bind click event handlers for PDF links
             bindPdfButtons();
+
+            // 권한 제어: 정회원 이상만 세부 논문 및 PDF 다운로드 가능
+            const hasAccess = typeof window.isRegularMemberOrAbove === 'function' && window.isRegularMemberOrAbove();
+            
+            // Remove any existing lock overlay first to avoid duplicates when switching issues
+            const existingLock = document.querySelector('.lock-overlay');
+            if (existingLock) existingLock.remove();
+
+            const boardTable = document.querySelector('.board-table');
+            if (boardTable) boardTable.style.display = 'table'; // reset state first
+
+            if (!hasAccess) {
+                if (pdfLink) pdfLink.style.display = 'none';
+                if (boardTable) {
+                    boardTable.style.display = 'none';
+                    
+                    const lockOverlay = document.createElement('div');
+                    lockOverlay.className = 'lock-overlay';
+                    lockOverlay.innerHTML = `
+                        <i class="fa-solid fa-lock"></i>
+                        <h4>정회원 전용 서비스</h4>
+                        <p>
+                            학회지 세부 목차 및 논문 원문(PDF)은 <strong>정회원 이상</strong> 등급의 회원만 열람하실 수 있습니다.<br>
+                            로그인하시거나 회원가입을 통해 정회원 자격을 취득해 주시기 바랍니다.
+                        </p>
+                        <div class="btn-lock-actions">
+                            <a href="login.html" class="btn-search" style="background-color: var(--color-green); color: white; text-decoration: none; padding: 10px 24px; font-weight: 700; border-radius: 4px; display: inline-flex; align-items: center; gap: 6px;"><i class="fa-solid fa-right-to-bracket"></i> 로그인</a>
+                            <a href="register.html" class="btn-search" style="background-color: var(--color-red); color: white; text-decoration: none; padding: 10px 24px; font-weight: 700; border-radius: 4px; display: inline-flex; align-items: center; gap: 6px;"><i class="fa-solid fa-user-plus"></i> 회원가입</a>
+                        </div>
+                    `;
+                    boardTable.parentNode.insertBefore(lockOverlay, boardTable.nextSibling);
+                }
+            }
         }
 
         // Setup PDF viewer modal
@@ -380,13 +510,11 @@
         const urlParams = new URLSearchParams(window.location.search);
         const issueId = urlParams.get('id');
 
-        let activeIssue = journalData[1]; // Default to the first past issue (Vol. 4 No. 2)
+        let activeIssue = journalData[0]; // Default to the first issue (Vol. 5 No. 1)
         if (issueId) {
             const found = journalData.find(item => item.id === issueId);
             if (found) {
                 activeIssue = found;
-                // If it's the latest issue (index 0), it won't be in the past issues select,
-                // but let's select it or add it if needed, or simply set selectEl.value
                 selectEl.value = issueId;
             }
         } else {
@@ -405,6 +533,192 @@
                 window.history.pushState({ path: newUrl }, '', newUrl);
                 displayIssue(issue);
             }
+        });
+
+        // 4. Admin Upload Form Logic
+        const btnUploadIssue = document.getElementById('btn-upload-issue');
+        const uploadModal = document.getElementById('upload-issue-modal');
+        const uploadClose = document.getElementById('upload-issue-close');
+        const uploadCancel = document.getElementById('btn-upload-issue-cancel');
+        const btnAddArticleRow = document.getElementById('btn-add-article-row');
+        const articlesContainer = document.getElementById('articles-input-container');
+        const uploadForm = document.getElementById('upload-issue-form');
+
+        // Show button only for admins
+        const loggedInUserStr = localStorage.getItem("logged_in_user");
+        const ADMIN_ROLES = ["admin", "secretary", "editor", "president"];
+        if (loggedInUserStr) {
+            try {
+                const user = JSON.parse(loggedInUserStr);
+                if (ADMIN_ROLES.includes(user.role)) {
+                    btnUploadIssue.style.display = 'inline-flex';
+                }
+            } catch(e){}
+        }
+
+        // Open Modal
+        let articleRowCount = 0;
+        btnUploadIssue.addEventListener('click', () => {
+            uploadModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            articlesContainer.innerHTML = '';
+            articleRowCount = 0;
+            addArticleInputRow(); // start with one default row
+        });
+
+        // Close Modal helpers
+        function closeUploadModal() {
+            uploadModal.style.display = 'none';
+            document.body.style.overflow = '';
+            uploadForm.reset();
+        }
+
+        uploadClose.addEventListener('click', closeUploadModal);
+        uploadCancel.addEventListener('click', closeUploadModal);
+        uploadModal.addEventListener('click', e => { if (e.target === uploadModal) closeUploadModal(); });
+
+        // Add dynamic article card
+        function addArticleInputRow() {
+            articleRowCount++;
+            const card = document.createElement('div');
+            card.className = 'article-input-card';
+            card.id = `article-card-${articleRowCount}`;
+            card.style.cssText = "background: #fff; padding: 15px; border: 1px solid var(--border-color); border-radius: 6px; display: flex; flex-direction: column; gap: 10px; position: relative;";
+            card.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #eee; padding-bottom: 6px; margin-bottom: 4px;">
+                    <span style="font-size: 0.85rem; font-weight: 700; color: var(--color-green);"><i class="fa-solid fa-file-lines"></i> 논문 #${articleRowCount}</span>
+                    <button type="button" class="btn-remove-card" style="background: none; border: none; color: var(--color-red); font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px;"><i class="fa-solid fa-trash-can"></i> 삭제</button>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div style="grid-column: span 2; display: flex; flex-direction: column; gap: 4px;">
+                        <input type="text" placeholder="논문명 (국문) *" required class="art-title" style="padding: 8px 10px; border-radius: 4px; font-size: 0.85rem; width: 100%;">
+                    </div>
+                    <div style="grid-column: span 2; display: flex; flex-direction: column; gap: 4px;">
+                        <input type="text" placeholder="영문 논문명 (선택)" class="art-en-title" style="padding: 8px 10px; border-radius: 4px; font-size: 0.85rem; width: 100%;">
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <input type="text" placeholder="저자 *" required class="art-author" style="padding: 8px 10px; border-radius: 4px; font-size: 0.85rem; width: 100%;">
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <input type="text" placeholder="분야 (예: 불교음악) *" required class="art-cat" style="padding: 8px 10px; border-radius: 4px; font-size: 0.85rem; width: 100%;">
+                    </div>
+                    <div style="grid-column: span 2; display: flex; flex-direction: column; gap: 4px;">
+                        <input type="text" placeholder="원문 PDF 파일명 (선택, 예: 논문파일명.pdf)" class="art-pdf" style="padding: 8px 10px; border-radius: 4px; font-size: 0.85rem; width: 100%;">
+                    </div>
+                </div>
+            `;
+            
+            // Add delete event handler for this card
+            card.querySelector('.btn-remove-card').addEventListener('click', () => {
+                card.remove();
+                reindexCards();
+            });
+            
+            articlesContainer.appendChild(card);
+            articlesContainer.scrollTop = articlesContainer.scrollHeight;
+        }
+
+        function reindexCards() {
+            const cards = articlesContainer.querySelectorAll('.article-input-card');
+            cards.forEach((card, idx) => {
+                const titleSpan = card.querySelector('span');
+                if (titleSpan) {
+                    titleSpan.innerHTML = `<i class="fa-solid fa-file-lines"></i> 논문 #${idx + 1}`;
+                }
+            });
+            articleRowCount = cards.length;
+        }
+
+        btnAddArticleRow.addEventListener('click', addArticleInputRow);
+
+        // Form Submit Handler
+        uploadForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const vol = formData.get('volume');
+            const num = formData.get('number');
+            const tong = formData.get('tonggwon');
+            const date = formData.get('date');
+            const pdf = formData.get('pdf') || '#';
+            const desc = formData.get('desc');
+            const cover = formData.get('cover') || 'cover.png';
+            
+            const id = `v${vol}n${num}`;
+            const title = `제${vol}권 ${num}호 (통권 제${tong}호)`;
+            const fullTitle = `한국음악문화 제${vol}권 ${num}호 (통권 제${tong}호)`;
+            const label = `Volume ${vol}, Issue ${num} · 통권 제${tong}호`;
+            
+            // Robustly extract year and month (e.g. "2026. 06. 30" -> "2026. 06.")
+            let bannerDate = date;
+            const dateParts = date.split('.').map(p => p.trim()).filter(Boolean);
+            if (dateParts.length >= 2) {
+                bannerDate = `${dateParts[0]}. ${dateParts[1]}.`;
+            }
+            const bannerInfo = `제${vol}권 ${num}호 · 통권 제${tong}호 (${bannerDate})`;
+
+            // Extract articles from cards
+            const articles = [];
+            const articleCards = document.querySelectorAll('.article-input-card');
+            articleCards.forEach((card, index) => {
+                const titleInput = card.querySelector('.art-title').value;
+                const authorInput = card.querySelector('.art-author').value;
+                const catInput = card.querySelector('.art-cat').value;
+                const pdfInput = card.querySelector('.art-pdf').value || '#';
+                
+                let enTitle = card.querySelector('.art-en-title').value;
+                if (!enTitle) {
+                    enTitle = titleInput.split(' ').map(w => w.charAt(0).toUpperCase() + w.substring(1)).join(' ') + " (English translation pending)";
+                }
+                
+                articles.push({
+                    num: articleCards.length - index,
+                    category: catInput,
+                    title: titleInput,
+                    enTitle: enTitle,
+                    author: authorInput,
+                    pdf: pdfInput
+                });
+            });
+
+            const newIssue = {
+                id: id,
+                volume: vol,
+                number: num,
+                tonggwon: tong,
+                title: title,
+                fullTitle: fullTitle,
+                label: label,
+                bannerInfo: bannerInfo,
+                date: date,
+                cover: cover,
+                pdf: pdf,
+                desc: desc,
+                articles: articles
+            };
+
+            let localJournals = [];
+            const rawData = localStorage.getItem("journal_db");
+            if (rawData) {
+                localJournals = JSON.parse(rawData);
+            }
+            
+            const dupIndex = localJournals.findIndex(j => j.id === id);
+            if (dupIndex !== -1) {
+                if (!confirm(`이미 등록된 발행호(${title})가 존재합니다. 덮어쓰시겠습니까?`)) {
+                    return;
+                }
+                localJournals[dupIndex] = newIssue;
+            } else {
+                localJournals.push(newIssue);
+            }
+
+            // Save and Reload
+            localStorage.setItem("journal_db", JSON.stringify(localJournals));
+            
+            alert(`${title} 업로드가 완료되었습니다.`);
+            closeUploadModal();
+            window.location.reload();
         });
     </script>
     <script src="share.js"></script>

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -501,6 +501,9 @@
             const mainNoticeList = document.getElementById('main-notice-list');
             if (!mainNoticeList) return;
             
+            // Sort notices by id descending to guarantee latest is first
+            notices.sort((a, b) => b.id - a.id);
+            
             // Get latest 3 notices
             const latestNotices = notices.slice(0, 3);
             
@@ -555,6 +558,13 @@
                 `;
             }).join('');
         }
+
+        // Listen for storage changes from other tabs/modals to update main notices in real time
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'notice_posts') {
+                renderMainNotices();
+            }
+        });
     </script>
     <script src="share.js"></script>
 </body>

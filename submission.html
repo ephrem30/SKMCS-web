@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -272,7 +272,7 @@
                         <div class="wizard-step-content" id="step-content-2" style="display: none;">
                             <h3 class="form-section-title">논문 기본 정보 입력</h3>
                             
-                            <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: left; margin-bottom: 20px;">
+                            <div class="form-row-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: left; margin-bottom: 20px;">
                                 <div class="form-group">
                                     <label class="form-label" style="display: block; font-weight: 700; margin-bottom: 8px;">투고 대상 학회지 <span style="color: var(--color-red);">*</span></label>
                                     <select id="paper-journal" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; font-family: inherit; font-size: 0.95rem;">
@@ -332,7 +332,7 @@
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
                                     <h4 style="margin: 0; font-size: 1.05rem; color: var(--color-green);"><i class="fa-solid fa-user-pen"></i> 주저자 (제출자)</h4>
                                 </div>
-                                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0px;">
+                                <div class="form-row-grid" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
                                     <div class="form-group">
                                         <label style="display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 5px;">성명</label>
                                         <input type="text" id="author-name-1" readonly style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px; font-family: inherit; background: #f0f0f0;">
@@ -408,11 +408,11 @@
                             <table class="board-table history-table" style="width:100%; border-collapse: collapse; margin-bottom: 20px;">
                                 <thead>
                                     <tr>
-                                        <th style="width: 80px;">번호</th>
-                                        <th style="width: 150px;">투고 저널</th>
-                                        <th>논문 제목</th>
-                                        <th style="width: 130px; text-align: center;">제출일</th>
-                                        <th style="width: 120px; text-align: center;">진행 상태</th>
+                                        <th class="col-num" style="width: 80px;">번호</th>
+                                        <th class="col-journal" style="width: 150px;">투고 저널</th>
+                                        <th class="col-title">논문 제목</th>
+                                        <th class="col-date" style="width: 130px; text-align: center;">제출일</th>
+                                        <th class="col-status" style="width: 120px; text-align: center;">진행 상태</th>
                                     </tr>
                                 </thead>
                                 <tbody id="history-table-body">
@@ -483,15 +483,15 @@
                             <span class="total">심사 배정 논문: <strong id="reviewer-list-count">0</strong>건</span>
                         </div>
                         <div class="table-responsive">
-                            <table class="board-table">
+                            <table id="reviewer-board-table" style="width:100%; border-collapse: collapse; margin-bottom: 20px;">
                                 <thead>
                                     <tr>
-                                        <th style="width: 80px;">번호</th>
-                                        <th style="width: 140px;">구분/저널</th>
-                                        <th>논문 제목(국문)</th>
-                                        <th style="width: 120px; text-align: center;">논문 다운로드</th>
-                                        <th style="width: 100px; text-align: center;">진행상태</th>
-                                        <th style="width: 150px; text-align: center;">심사의견 제출현황</th>
+                                        <th class="col-num" style="width: 80px;">번호</th>
+                                        <th class="col-journal" style="width: 140px;">구분/저널</th>
+                                        <th class="col-title">논문 제목(국문)</th>
+                                        <th class="col-download" style="width: 120px; text-align: center;">논문 다운로드</th>
+                                        <th class="col-status" style="width: 100px; text-align: center;">진행상태</th>
+                                        <th class="col-action" style="width: 150px; text-align: center;">심사의견 제출현황</th>
                                     </tr>
                                 </thead>
                                 <tbody id="reviewer-list-tbody">
@@ -564,20 +564,24 @@
                                 </div>
                             </div>
 
-                            <div class="board-top-info" style="margin-bottom: 15px;">
+                            <div class="board-top-info" style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                                 <span class="total">전체 심사대상 논문: <strong id="admin-list-count">0</strong>건</span>
+                                <label style="font-size: 0.85rem; font-weight: 700; color: var(--color-red); display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none;">
+                                    <input type="checkbox" id="admin-show-deleted-checkbox" style="width: 16px; height: 16px; cursor: pointer; margin: 0;">
+                                    <i class="fa-solid fa-trash-can"></i> 삭제된 논문 보기
+                                </label>
                             </div>
                             <div class="table-responsive">
                                 <table class="board-table">
                                     <thead>
                                         <tr>
-                                            <th style="width: 80px;">번호</th>
-                                            <th style="width: 140px;">구분/저널</th>
-                                            <th>논문 제목(국문)</th>
-                                            <th style="width: 140px;">투고자(주저자)</th>
-                                            <th style="width: 120px; text-align: center;">논문 다운로드</th>
-                                            <th style="width: 100px; text-align: center;">진행상태</th>
-                                            <th style="width: 130px; text-align: center;">심사의견/자료</th>
+                                            <th class="col-num" style="width: 80px;">번호</th>
+                                            <th class="col-journal" style="width: 140px;">구분/저널</th>
+                                            <th class="col-title">논문 제목(국문)</th>
+                                            <th class="col-author" style="width: 140px;">투고자(주저자)</th>
+                                            <th class="col-download" style="width: 120px; text-align: center;">논문 다운로드</th>
+                                            <th class="col-status" style="width: 100px; text-align: center;">진행상태</th>
+                                            <th class="col-action" style="width: 130px; text-align: center;">심사의견/자료</th>
                                         </tr>
                                     </thead>
                                     <tbody id="admin-list-tbody">
@@ -792,16 +796,28 @@
                             
                             <!-- Admin Status Control Section -->
                             <div id="admin-status-control-box" style="display: none; border-top: 2px solid var(--text-dark); padding-top: 20px; margin-top: 20px;">
-                                <h4 style="margin: 0 0 12px 0; color: var(--color-red); font-size: 1rem; font-weight: 800; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-user-shield"></i> 관리인 권한: 심사 진행 상태 변경</h4>
-                                <div style="display: flex; gap: 0px; align-items: center;">
-                                    <select id="admin-status-select" style="padding: 10px 15px; font-size: 0.9rem; border: 2px solid var(--text-dark); border-radius: 4px; font-family: inherit; font-weight: 600; background: white;">
-                                        <option value="접수완료">접수완료</option>
-                                        <option value="심사중">심사중</option>
-                                        <option value="게재확정">게재확정</option>
-                                        <option value="반려">반려</option>
-                                    </select>
-                                    <button class="btn-solid" id="btn-save-status" style="padding: 10px 25px; font-size: 0.9rem; font-weight: 700;">상태 변경 저장</button>
-                                    <button id="btn-delete-submission" style="padding: 10px 25px; font-size: 0.9rem; font-weight: 700; background-color: #cb3c31; border: 2px solid #cb3c31; color: white; border-radius: 4px; cursor: pointer; margin-left: 10px; font-family: inherit; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#b03228'; this.style.borderColor='#b03228';" onmouseout="this.style.backgroundColor='#cb3c31'; this.style.borderColor='#cb3c31';"><i class="fa-solid fa-trash-can"></i> 투고 내역 삭제</button>
+                                <h4 style="margin: 0 0 12px 0; color: var(--color-red); font-size: 1rem; font-weight: 800; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-user-shield"></i> 관리인 권한: 심사 및 논문 상태 관리</h4>
+                                <div style="display: flex; flex-wrap: wrap; gap: 15px; align-items: flex-end; margin-bottom: 15px;">
+                                    <div style="display: flex; flex-direction: column; gap: 5px; text-align: left;">
+                                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">심사 진행 상태</span>
+                                        <select id="admin-status-select" style="padding: 8px 12px; font-size: 0.9rem; border: 2px solid var(--text-dark); border-radius: 4px; font-family: inherit; font-weight: 600; background: white;">
+                                            <option value="접수완료">접수완료</option>
+                                            <option value="심사중">심사중</option>
+                                            <option value="게재확정">게재확정</option>
+                                            <option value="반려">반려</option>
+                                        </select>
+                                    </div>
+                                    <div style="display: flex; flex-direction: column; gap: 5px; text-align: left;">
+                                        <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">심사위원 배정</span>
+                                        <select id="admin-reviewer-select" style="padding: 8px 12px; font-size: 0.9rem; border: 2px solid var(--text-dark); border-radius: 4px; font-family: inherit; font-weight: 600; background: white; min-width: 180px;">
+                                            <option value="">미배정</option>
+                                            <option value="reviewer@gmail.com">심사위원 (reviewer@gmail.com)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                    <button class="btn-solid" id="btn-save-status" style="padding: 10px 25px; font-size: 0.9rem; font-weight: 700;">저장</button>
+                                    <button id="btn-delete-submission" style="padding: 10px 25px; font-size: 0.9rem; font-weight: 700; background-color: #cb3c31; border: 2px solid #cb3c31; color: white; border-radius: 4px; cursor: pointer; font-family: inherit; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#b03228'; this.style.borderColor='#b03228';" onmouseout="this.style.backgroundColor='#cb3c31'; this.style.borderColor='#cb3c31';"><i class="fa-solid fa-trash-can"></i> 투고 내역 삭제</button>
                                 </div>
                             </div>
                         </div>

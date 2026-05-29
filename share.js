@@ -20,14 +20,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // 3. One-time DB migration & cleanup for old mock data (e.g. automatic admin logins)
-    const dbVersion = localStorage.getItem("db_version");
-    if (dbVersion !== "v4") {
-        localStorage.removeItem("logged_in_user");
-        localStorage.removeItem("registered_users");
-        localStorage.setItem("db_version", "v4");
-    }
-
     // 3. User Session Manager & DB Init
     const registeredUsersStr = localStorage.getItem("registered_users");
     const defaultMockUsers = [
@@ -479,3 +471,20 @@ function closeShareModal() {
     // Run on window load
     window.addEventListener("load", removeEditorialRules);
 })();
+
+// 글로벌 정회원 권한 확인 함수 (정회원 이상: member, research, lifetime, group, special 및 모든 관리임원)
+window.isRegularMemberOrAbove = function() {
+    const loggedInUserStr = localStorage.getItem("logged_in_user");
+    if (!loggedInUserStr) return false;
+    try {
+        const user = JSON.parse(loggedInUserStr);
+        const APPROVED_ROLES = [
+            'admin', 'secretary', 'reviewer', 'editor', 'president',
+            'member', 'research', 'lifetime', 'group', 'special'
+        ];
+        return APPROVED_ROLES.includes(user.role);
+    } catch (e) {
+        return false;
+    }
+};
+

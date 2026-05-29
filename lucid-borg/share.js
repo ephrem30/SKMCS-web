@@ -23,42 +23,37 @@ document.addEventListener("DOMContentLoaded", () => {
     // 3. User Session Manager & DB Init
     const registeredUsersStr = localStorage.getItem("registered_users");
     const defaultMockUsers = [
-        { email: "admin@gmail.com", password: "admin123", name: "최고관리인", role: "admin", affiliation: "한국음악학회", phone: "010-1234-5678", birth: "1980-01-01" },
-        { email: "secretary@gmail.com", password: "sec123", name: "이간사", role: "secretary", affiliation: "한국음악학회", phone: "010-2345-6789", birth: "1985-05-15" },
-        { email: "reviewer@gmail.com", password: "rev123", name: "박심사", role: "reviewer", affiliation: "동국대학교", phone: "010-3456-7890", birth: "1975-08-20" },
-        { email: "editor@gmail.com", password: "edi123", name: "김편집", role: "editor", affiliation: "서울대학교", phone: "010-4567-8901", birth: "1972-11-30" },
-        { email: "president@gmail.com", password: "pre123", name: "최회장", role: "president", affiliation: "한국음악학회", phone: "010-5678-9012", birth: "1965-03-25" },
-        { email: "member@gmail.com", password: "mem123", name: "김회원", role: "member", affiliation: "한국음악대학", phone: "010-6789-0123", birth: "1990-07-07" },
-        { email: "woochang@gmail.com", password: "admin123", name: "최우창", role: "admin", affiliation: "한국음악학회", phone: "010-9999-8888", birth: "1995-01-01" }
+        { email: "admin@gmail.com", password: "admin123", name: "최고관리자", role: "admin", affiliation: "한국음악학회", phone: "010-1234-5678", birth: "1980-01-01" },
+        { email: "secretary@gmail.com", password: "sec123", name: "학회간사", role: "secretary", affiliation: "한국음악학회", phone: "010-2345-6789", birth: "1985-05-15" },
+        { email: "reviewer@gmail.com", password: "rev123", name: "심사위원", role: "reviewer", affiliation: "한국음악학회", phone: "010-3456-7890", birth: "1975-08-20" },
+        { email: "editor@gmail.com", password: "edi123", name: "편집위원장", role: "editor", affiliation: "한국음악학회", phone: "010-4567-8901", birth: "1972-11-30" },
+        { email: "president@gmail.com", password: "pre123", name: "학회회장", role: "president", affiliation: "한국음악학회", phone: "010-5678-9012", birth: "1965-03-25" }
     ];
     if (!registeredUsersStr) {
         localStorage.setItem("registered_users", JSON.stringify(defaultMockUsers));
-    } else {
+    }
+
+    // Automatically grant full admin authority to the user named "최우창"
+    const currentUsersStr = localStorage.getItem("registered_users");
+    if (currentUsersStr) {
         try {
-            const users = JSON.parse(registeredUsersStr);
-            const woochangUser = users.find(u => u.name === "최우창" || u.email === "woochang@gmail.com");
-            if (woochangUser) {
-                if (woochangUser.role !== "admin") {
-                    woochangUser.role = "admin";
-                    localStorage.setItem("registered_users", JSON.stringify(users));
+            let users = JSON.parse(currentUsersStr);
+            let updated = false;
+            users.forEach(u => {
+                if (u.name === "최우창" && u.role !== "admin") {
+                    u.role = "admin";
+                    updated = true;
                 }
-            } else {
-                users.push({ email: "woochang@gmail.com", password: "admin123", name: "최우창", role: "admin", affiliation: "한국음악학회", phone: "010-9999-8888", birth: "1995-01-01" });
+            });
+            if (updated) {
                 localStorage.setItem("registered_users", JSON.stringify(users));
             }
         } catch (e) {
-            localStorage.setItem("registered_users", JSON.stringify(defaultMockUsers));
+            console.error("Error updating 최우창 user role:", e);
         }
     }
 
     let loggedInUserStr = localStorage.getItem("logged_in_user");
-    const isLoginPage = window.location.pathname.includes("login.html") || window.location.pathname.includes("register.html");
-    
-    if (!loggedInUserStr && !isLoginPage) {
-        const defaultAdmin = { email: "admin@gmail.com", name: "최고관리인", role: "admin" };
-        localStorage.setItem("logged_in_user", JSON.stringify(defaultAdmin));
-        loggedInUserStr = JSON.stringify(defaultAdmin);
-    }
 
     if (loggedInUserStr) {
         try {
@@ -178,6 +173,69 @@ document.addEventListener("DOMContentLoaded", () => {
                         sidebarNav.appendChild(adminSideLink);
                     }
                 }
+
+                // 3. Inject Member Management into Member Service dropdown menu (Admins only)
+                if (isAdmin) {
+                    const navItems = document.querySelectorAll(".main-nav > ul > li.nav-item");
+                    navItems.forEach(item => {
+                        const mainLink = item.querySelector("a");
+                        if (mainLink && (mainLink.getAttribute("href") === "admission.html" || mainLink.textContent.trim().replace(/\s+/g, '') === "회원서비스")) {
+                            const dropdown = item.querySelector(".dropdown-menu");
+                            if (dropdown && !dropdown.querySelector('a[href="member_admin.html"]')) {
+                                const memberAdminLi = document.createElement("li");
+                                memberAdminLi.innerHTML = `<a href="member_admin.html">회원관리</a>`;
+                                dropdown.appendChild(memberAdminLi);
+                            }
+                        }
+                    });
+
+                    // 4. Inject Member Management into Sitemap (Admins only)
+                    const sitemapCards = document.querySelectorAll(".sitemap-card");
+                    sitemapCards.forEach(card => {
+                        const h3 = card.querySelector(".sitemap-title-wrap h3");
+                        if (h3 && h3.textContent.trim().replace(/\s+/g, '') === "회원서비스") {
+                            const linksList = card.querySelector(".sitemap-links-list");
+                            if (linksList && !linksList.querySelector('a[href="member_admin.html"]')) {
+                                const memberAdminSitemapLi = document.createElement("li");
+                                memberAdminSitemapLi.className = "sitemap-link-item";
+                                memberAdminSitemapLi.innerHTML = `<a href="member_admin.html">회원관리 <i class="fa-solid fa-angle-right"></i></a>`;
+                                
+                                const loginLinkItem = Array.from(linksList.querySelectorAll("li")).find(li => {
+                                    const a = li.querySelector("a");
+                                    return a && (a.getAttribute("href") === "login.html" || a.textContent.includes("로그인"));
+                                });
+                                if (loginLinkItem) {
+                                    linksList.insertBefore(memberAdminSitemapLi, loginLinkItem);
+                                } else {
+                                    linksList.appendChild(memberAdminSitemapLi);
+                                }
+                            }
+                        }
+                    });
+
+                    // 5. Inject Member Management and Member Directory into sub-tabs (Admins only)
+                    const subTabs = document.querySelector(".sub-tabs");
+                    if (subTabs) {
+                        const hasAdmissionTab = subTabs.querySelector('a[href="admission.html"]');
+                        const hasFormsTab = subTabs.querySelector('a[href="forms.html"]');
+                        if (hasAdmissionTab || hasFormsTab) {
+                            if (!subTabs.querySelector('a[href="member_admin.html"]')) {
+                                const memberAdminTab = document.createElement("a");
+                                memberAdminTab.href = "member_admin.html";
+                                memberAdminTab.className = "tab-item";
+                                memberAdminTab.textContent = "회원관리 (관리인)";
+                                subTabs.appendChild(memberAdminTab);
+                            }
+                            if (!subTabs.querySelector('a[href="member_directory.html"]')) {
+                                const memberDirTab = document.createElement("a");
+                                memberDirTab.href = "member_directory.html";
+                                memberDirTab.className = "tab-item";
+                                memberDirTab.textContent = "회원명부";
+                                subTabs.appendChild(memberDirTab);
+                            }
+                        }
+                    }
+                }
             }
         } catch (err) {
             console.error("Error parsing user session:", err);
@@ -209,6 +267,65 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
     });
+
+    // 5. Mobile Responsive Menu Controller
+    const headerContainer = document.querySelector(".header-container");
+    const mainNav = document.querySelector(".main-nav");
+    if (headerContainer && mainNav) {
+        // Create mobile menu toggle button if it doesn't exist
+        if (!document.querySelector(".mobile-menu-toggle")) {
+            const toggleBtn = document.createElement("button");
+            toggleBtn.className = "mobile-menu-toggle";
+            toggleBtn.type = "button";
+            toggleBtn.setAttribute("aria-label", "메뉴 열기");
+            toggleBtn.innerHTML = '<i class="fa-solid fa-bars"></i>';
+            headerContainer.appendChild(toggleBtn);
+            
+            toggleBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                mainNav.classList.toggle("mobile-active");
+                const icon = toggleBtn.querySelector("i");
+                if (mainNav.classList.contains("mobile-active")) {
+                    icon.className = "fa-solid fa-xmark";
+                } else {
+                    icon.className = "fa-solid fa-bars";
+                }
+            });
+            
+            // Close menu if clicking outside
+            document.addEventListener("click", (e) => {
+                if (mainNav.classList.contains("mobile-active") && !mainNav.contains(e.target) && !toggleBtn.contains(e.target)) {
+                    mainNav.classList.remove("mobile-active");
+                    toggleBtn.querySelector("i").className = "fa-solid fa-bars";
+                }
+            });
+        }
+
+        // Add 'has-dropdown' class to nav-items with dropdown menus
+        const navItems = mainNav.querySelectorAll(".nav-item");
+        navItems.forEach(item => {
+            const dropdown = item.querySelector(".dropdown-menu");
+            if (dropdown) {
+                item.classList.add("has-dropdown");
+                const link = item.querySelector("a");
+                link.addEventListener("click", (e) => {
+                    if (window.matchMedia("(max-width: 992px)").matches) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        // Close other dropdowns
+                        navItems.forEach(otherItem => {
+                            if (otherItem !== item) {
+                                otherItem.classList.remove("mobile-open");
+                            }
+                        });
+                        
+                        item.classList.toggle("mobile-open");
+                    }
+                });
+            }
+        });
+    }
 });
 
 function openShareModal() {
@@ -354,3 +471,20 @@ function closeShareModal() {
     // Run on window load
     window.addEventListener("load", removeEditorialRules);
 })();
+
+// 글로벌 정회원 권한 확인 함수 (정회원 이상: member, research, lifetime, group, special 및 모든 관리임원)
+window.isRegularMemberOrAbove = function() {
+    const loggedInUserStr = localStorage.getItem("logged_in_user");
+    if (!loggedInUserStr) return false;
+    try {
+        const user = JSON.parse(loggedInUserStr);
+        const APPROVED_ROLES = [
+            'admin', 'secretary', 'reviewer', 'editor', 'president',
+            'member', 'research', 'lifetime', 'group', 'special'
+        ];
+        return APPROVED_ROLES.includes(user.role);
+    } catch (e) {
+        return false;
+    }
+};
+

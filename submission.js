@@ -224,18 +224,21 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!currentDetailId) return;
             
             const statusSelect = document.getElementById("admin-status-select");
+            const reviewerSelect = document.getElementById("admin-reviewer-select");
             if (!statusSelect) return;
             
             const newStatus = statusSelect.value;
+            const newReviewer = reviewerSelect ? reviewerSelect.value : "";
             
             const submissions = getSubmissions();
             const subIndex = submissions.findIndex(s => s.id === currentDetailId);
             if (subIndex === -1) return;
             
             submissions[subIndex].status = newStatus;
+            submissions[subIndex].reviewer_email = newReviewer;
             localStorage.setItem("submissions_data", JSON.stringify(submissions));
             
-            alert(`논문 상태가 [${newStatus}]으로 변경되었습니다.`);
+            alert(`논문 상태가 [${newStatus}]으로 변경(저장)되었습니다.`);
             
             // Refresh detail view
             openDetailModal(currentDetailId);
@@ -245,20 +248,49 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
     
-    // Admin submission delete button
+    // Admin show-deleted checkbox change listener
+    const showDeletedCheckbox = document.getElementById("admin-show-deleted-checkbox");
+    if (showDeletedCheckbox) {
+        showDeletedCheckbox.addEventListener("change", () => {
+            renderAdminSpaceTable();
+        });
+    }
+    
+    // Admin submission delete / restore button
     const btnDeleteSub = document.getElementById("btn-delete-submission");
     if (btnDeleteSub) {
         btnDeleteSub.addEventListener("click", () => {
             if (!currentDetailId) return;
-            if (!confirm("정말로 이 투고 내역을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.")) return;
             
             const submissions = getSubmissions();
-            const filtered = submissions.filter(s => s.id !== currentDetailId);
-            localStorage.setItem("submissions_data", JSON.stringify(filtered));
+            const subIndex = submissions.findIndex(s => s.id === currentDetailId);
+            if (subIndex === -1) return;
             
-            alert("투고 내역이 삭제되었습니다.");
-            closeDetailModal();
-            renderHistoryTable();
+            const sub = submissions[subIndex];
+            if (sub.deleted) {
+                // Restore paper
+                submissions[subIndex].deleted = false;
+                localStorage.setItem("submissions_data", JSON.stringify(submissions));
+                alert("투고 내역이 성공적으로 복구되었습니다.");
+                closeDetailModal();
+                renderAdminSpaceTable();
+                renderHistoryTable();
+                if (typeof renderReviewerSpaceTable === 'function') {
+                    renderReviewerSpaceTable();
+                }
+            } else {
+                // Delete paper (soft delete)
+                if (!confirm("정말로 이 투고 내역을 삭제하시겠습니까? (삭제된 내역은 '삭제된 논문 보기' 필터를 통해 복구할 수 있습니다)")) return;
+                submissions[subIndex].deleted = true;
+                localStorage.setItem("submissions_data", JSON.stringify(submissions));
+                alert("투고 내역이 삭제되었습니다.");
+                closeDetailModal();
+                renderAdminSpaceTable();
+                renderHistoryTable();
+                if (typeof renderReviewerSpaceTable === 'function') {
+                    renderReviewerSpaceTable();
+                }
+            }
         });
     }
     
@@ -586,7 +618,7 @@ function addCoAuthorCard(name = "", affiliation = "", email = "", role = "Co-Aut
             <h4 style="margin: 0; font-size: 1.05rem; color: var(--text-dark);"><i class="fa-regular fa-user"></i> 공동저자</h4>
             <button type="button" class="btn-remove-author" data-id="${coAuthorCount}"><i class="fa-solid fa-trash-can"></i> 삭제</button>
         </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px;">
+        <div class="form-row-grid" style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px;">
             <div class="form-group" style="margin-bottom: 0;">
                 <label style="display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 5px;">성명 *</label>
                 <input type="text" class="co-author-name" value="${name}" placeholder="예: 홍길동" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px; font-family: inherit;">
@@ -668,7 +700,9 @@ function submitPaper() {
         file_agreement: aFile ? aFile.name : "",
         date: new Date().toISOString().substring(0, 10),
         status: "접수완료",
-        author_email: loggedInUser.email
+        author_email: loggedInUser.email,
+        reviewer_email: "",
+        review_files: []
     };
     
     const submissions = getSubmissions();
@@ -757,10 +791,21 @@ function renderHistoryTable() {
     
     const submissions = getSubmissions();
     
-    // Filter submissions: admin and reviewer see all, member sees own
-    const filteredSubmissions = isAuthorized 
-        ? submissions 
-        : submissions.filter(sub => sub.author_email === user.email);
+    // Filter submissions: admin sees all active, reviewer sees assigned or own, member sees own
+    const filteredSubmissions = submissions.filter(sub => {
+        if (sub.deleted) return false;
+        
+        if (isAdmin) return true; // Admins see all
+        
+        if (user.role === 'reviewer') {
+            const isAssigned = sub.reviewer_email === user.email;
+            const isOwn = sub.author_email === user.email || (sub.authors && sub.authors.some(a => a.email === user.email));
+            return isAssigned || isOwn;
+        }
+        
+        const isOwn = sub.author_email === user.email || (sub.authors && sub.authors.some(a => a.email === user.email));
+        return isOwn;
+    });
         
     if (filteredSubmissions.length === 0) {
         tableBody.innerHTML = `
@@ -790,11 +835,11 @@ function renderHistoryTable() {
             : `<strong>${escapeHtml(sub.title_ko)}</strong>`;
             
         row.innerHTML = `
-            <td style="font-family: 'Poppins', sans-serif; font-weight: 500;">${filteredSubmissions.length - index}</td>
-            <td>${escapeHtml(sub.journal)} (${escapeHtml(sub.category)})</td>
-            <td style="text-align: left;">${titleHtml}</td>
-            <td style="text-align: center; font-family: 'Poppins', sans-serif;">${sub.date}</td>
-            <td style="text-align: center;">
+            <td class="col-num" style="font-family: 'Poppins', sans-serif; font-weight: 500;">${filteredSubmissions.length - index}</td>
+            <td class="col-journal">${escapeHtml(sub.journal)} (${escapeHtml(sub.category)})</td>
+            <td class="col-title" style="text-align: left;">${titleHtml}</td>
+            <td class="col-date" style="text-align: center; font-family: 'Poppins', sans-serif;">${sub.date}</td>
+            <td class="col-status" style="text-align: center;">
                 <span class="status-badge ${badgeClass}">${escapeHtml(sub.status)}</span>
             </td>
         `;
@@ -812,6 +857,40 @@ function openDetailModal(id) {
     const submissions = getSubmissions();
     const sub = submissions.find(s => s.id === id);
     if (!sub) return;
+    
+    // Check authorization to view details
+    const loggedInUserStr = localStorage.getItem("logged_in_user");
+    let isAuthorized = false;
+    let isOwner = false;
+    let isAdmin = false;
+    let user = null;
+    if (loggedInUserStr) {
+        try {
+            user = JSON.parse(loggedInUserStr);
+            isAdmin = ADMIN_ROLES.includes(user.role);
+            isAuthorized = ALL_AUTHORIZED_ROLES.includes(user.role);
+            isOwner = user.email === sub.author_email || (sub.authors && sub.authors.some(a => a.email === user.email));
+        } catch (e) {}
+    }
+    
+    // Check visibility logic: Admin sees all, reviewer sees assigned or own, member sees own
+    let canView = false;
+    if (user) {
+        if (isAdmin) {
+            canView = true;
+        } else if (sub.deleted) {
+            canView = false; // Non-admins cannot view soft-deleted papers
+        } else if (user.role === 'reviewer') {
+            canView = (sub.reviewer_email === user.email) || isOwner;
+        } else {
+            canView = isOwner;
+        }
+    }
+    
+    if (!canView) {
+        alert("이 논문에 대한 조회 권한이 없습니다.");
+        return;
+    }
     
     currentDetailId = id;
     
@@ -831,18 +910,6 @@ function openDetailModal(id) {
     
     // Download manuscript link simulation & real download for admins/reviewers
     const fileEl = document.getElementById("detail-file");
-    const loggedInUserStr = localStorage.getItem("logged_in_user");
-    let isAuthorized = false;
-    let isOwner = false;
-    let isAdmin = false;
-    if (loggedInUserStr) {
-        try {
-            const user = JSON.parse(loggedInUserStr);
-            isAdmin = ADMIN_ROLES.includes(user.role);
-            isAuthorized = ALL_AUTHORIZED_ROLES.includes(user.role);
-            isOwner = user.email === sub.author_email;
-        } catch (e) {}
-    }
 
     if (isAuthorized || isOwner) {
         // Map mock filename to real PDF files in the workspace
@@ -901,6 +968,55 @@ function openDetailModal(id) {
         if (statusSelect) {
             statusSelect.value = sub.status;
         }
+        
+        const reviewerSelect = document.getElementById("admin-reviewer-select");
+        if (reviewerSelect) {
+            // Populate reviewer options dynamically from registered_users (allow reviewers and administrators)
+            reviewerSelect.innerHTML = '<option value="">미배정</option>';
+            const registeredUsersStr = localStorage.getItem("registered_users");
+            if (registeredUsersStr) {
+                try {
+                    const users = JSON.parse(registeredUsersStr);
+                    const reviewers = users.filter(u => u.role === 'reviewer' || ADMIN_ROLES.includes(u.role));
+                    reviewers.forEach(r => {
+                        const opt = document.createElement("option");
+                        opt.value = r.email;
+                        opt.textContent = `${r.name} (${r.email})`;
+                        reviewerSelect.appendChild(opt);
+                    });
+                } catch(e) {}
+            }
+            reviewerSelect.value = sub.reviewer_email || "";
+        }
+        
+        const btnDeleteSub = document.getElementById("btn-delete-submission");
+        if (btnDeleteSub) {
+            if (sub.deleted) {
+                btnDeleteSub.innerHTML = '<i class="fa-solid fa-trash-arrow-up"></i> 투고 내역 복구';
+                btnDeleteSub.style.backgroundColor = "var(--color-green)";
+                btnDeleteSub.style.borderColor = "var(--color-green)";
+                btnDeleteSub.onmouseover = function() {
+                    this.style.backgroundColor = '#236c62';
+                    this.style.borderColor = '#236c62';
+                };
+                btnDeleteSub.onmouseout = function() {
+                    this.style.backgroundColor = 'var(--color-green)';
+                    this.style.borderColor = 'var(--color-green)';
+                };
+            } else {
+                btnDeleteSub.innerHTML = '<i class="fa-solid fa-trash-can"></i> 투고 내역 삭제';
+                btnDeleteSub.style.backgroundColor = "#cb3c31";
+                btnDeleteSub.style.borderColor = "#cb3c31";
+                btnDeleteSub.onmouseover = function() {
+                    this.style.backgroundColor = '#b03228';
+                    this.style.borderColor = '#b03228';
+                };
+                btnDeleteSub.onmouseout = function() {
+                    this.style.backgroundColor = '#cb3c31';
+                    this.style.borderColor = '#cb3c31';
+                };
+            }
+        }
     }
     
     const modal = document.getElementById("submission-detail-modal");
@@ -949,6 +1065,7 @@ function getSubmissions() {
                 date: "2026-05-10",
                 status: "심사중",
                 author_email: "jihoon@gmail.com",
+                reviewer_email: "reviewer@gmail.com",
                 review_files: []
             },
             {
@@ -968,6 +1085,7 @@ function getSubmissions() {
                 date: "2026-05-12",
                 status: "접수완료",
                 author_email: "sohee@gmail.com",
+                reviewer_email: "",
                 review_files: []
             }
         ];
@@ -1026,11 +1144,12 @@ window.renderAdminSpaceTable = function() {
     
     const submissions = getSubmissions();
     
-    // Update dashboard counts
-    const totalCount = submissions.length;
-    const reviewingCount = submissions.filter(s => s.status === "심사중").length;
-    const acceptedCount = submissions.filter(s => s.status === "게재확정").length;
-    const rejectedCount = submissions.filter(s => s.status === "반려").length;
+    // Update dashboard counts using active (non-deleted) submissions
+    const activeSubmissions = submissions.filter(s => !s.deleted);
+    const totalCount = activeSubmissions.length;
+    const reviewingCount = activeSubmissions.filter(s => s.status === "심사중").length;
+    const acceptedCount = activeSubmissions.filter(s => s.status === "게재확정").length;
+    const rejectedCount = activeSubmissions.filter(s => s.status === "반려").length;
     
     const totalEl = document.getElementById("admin-total-papers");
     const reviewingEl = document.getElementById("admin-reviewing-papers");
@@ -1042,13 +1161,25 @@ window.renderAdminSpaceTable = function() {
     if (reviewingEl) reviewingEl.textContent = reviewingCount;
     if (acceptedEl) acceptedEl.textContent = acceptedCount;
     if (rejectedEl) rejectedEl.textContent = rejectedCount;
-    if (listCountEl) listCountEl.textContent = totalCount;
     
-    if (submissions.length === 0) {
+    const showDeletedCheckbox = document.getElementById("admin-show-deleted-checkbox");
+    const showDeleted = showDeletedCheckbox ? showDeletedCheckbox.checked : false;
+    
+    const filteredSubmissions = submissions.filter(sub => {
+        if (showDeleted) {
+            return sub.deleted === true;
+        } else {
+            return !sub.deleted;
+        }
+    });
+    
+    if (listCountEl) listCountEl.textContent = filteredSubmissions.length;
+    
+    if (filteredSubmissions.length === 0) {
         tableBody.innerHTML = `
             <tr>
                 <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 30px 0;">
-                    접수된 심사 대상 논문이 없습니다.
+                    ${showDeleted ? "삭제된 논문 내역이 없습니다." : "접수된 심사 대상 논문이 없습니다."}
                 </td>
             </tr>
         `;
@@ -1056,9 +1187,9 @@ window.renderAdminSpaceTable = function() {
     }
     
     // Sort submissions: newest first
-    submissions.sort((a, b) => b.id.localeCompare(a.id));
+    filteredSubmissions.sort((a, b) => b.id.localeCompare(a.id));
     
-    submissions.forEach((sub, index) => {
+    filteredSubmissions.forEach((sub, index) => {
         const row = document.createElement("tr");
         row.setAttribute("data-id", sub.id);
         row.style.cursor = "pointer";
@@ -1085,15 +1216,15 @@ window.renderAdminSpaceTable = function() {
         const downloadBtnHtml = `<a href="${encodeURI(realFile)}" download="${escapeHtml(downloadName)}" class="btn-outline" style="padding: 4px 10px; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;" onclick="event.stopPropagation();"><i class="fa-solid fa-file-arrow-down"></i> 다운로드</a>`;
 
         row.innerHTML = `
-            <td style="font-family: 'Poppins', sans-serif; font-weight: 500;">${submissions.length - index}</td>
-            <td>${escapeHtml(sub.journal)} (${escapeHtml(sub.category)})</td>
-            <td style="text-align: left; font-weight: 700;">${escapeHtml(sub.title_ko)}</td>
-            <td>${escapeHtml(sub.author_email)}</td>
-            <td style="text-align: center;">${downloadBtnHtml}</td>
-            <td style="text-align: center;">
+            <td class="col-num" style="font-family: 'Poppins', sans-serif; font-weight: 500;">${submissions.length - index}</td>
+            <td class="col-journal">${escapeHtml(sub.journal)} (${escapeHtml(sub.category)})</td>
+            <td class="col-title" style="text-align: left; font-weight: 700;">${escapeHtml(sub.title_ko)}</td>
+            <td class="col-author">${escapeHtml(sub.author_email)}</td>
+            <td class="col-download" style="text-align: center;">${downloadBtnHtml}</td>
+            <td class="col-status" style="text-align: center;">
                 <span class="status-badge ${badgeClass}">${escapeHtml(sub.status)}</span>
             </td>
-            <td style="text-align: center;">${uploadStatusHtml}</td>
+            <td class="col-action" style="text-align: center;">${uploadStatusHtml}</td>
         `;
         
         row.addEventListener("click", () => {
@@ -1126,9 +1257,26 @@ function renderReviewerSpaceTable() {
     tableBody.innerHTML = "";
     
     const submissions = getSubmissions();
-    if (countEl) countEl.textContent = submissions.length;
+    const loggedInUserStr = localStorage.getItem("logged_in_user");
+    let loggedInUser = null;
+    if (loggedInUserStr) {
+        try {
+            loggedInUser = JSON.parse(loggedInUserStr);
+        } catch(e) {}
+    }
     
-    if (submissions.length === 0) {
+    // Reviewers and Admins only see submissions explicitly assigned to them in the Reviewer Space
+    const reviewerSubmissions = submissions.filter(sub => {
+        if (sub.deleted) return false; // Exclude soft-deleted papers
+        if (loggedInUser && (loggedInUser.role === 'reviewer' || ADMIN_ROLES.includes(loggedInUser.role))) {
+            return sub.reviewer_email === loggedInUser.email;
+        }
+        return true;
+    });
+    
+    if (countEl) countEl.textContent = reviewerSubmissions.length;
+    
+    if (reviewerSubmissions.length === 0) {
         tableBody.innerHTML = `
             <tr>
                 <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px 0;">
@@ -1139,9 +1287,9 @@ function renderReviewerSpaceTable() {
         return;
     }
     
-    submissions.sort((a, b) => b.id.localeCompare(a.id));
+    reviewerSubmissions.sort((a, b) => b.id.localeCompare(a.id));
     
-    submissions.forEach((sub, index) => {
+    reviewerSubmissions.forEach((sub, index) => {
         const row = document.createElement("tr");
         row.setAttribute("data-id", sub.id);
         row.style.cursor = "pointer";
@@ -1167,14 +1315,14 @@ function renderReviewerSpaceTable() {
         const downloadBtnHtml = `<a href="${encodeURI(realFile)}" download="${escapeHtml(downloadName)}" class="btn-outline" style="padding: 4px 10px; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;" onclick="event.stopPropagation();"><i class="fa-solid fa-file-arrow-down"></i> 다운로드</a>`;
 
         row.innerHTML = `
-            <td style="font-family: 'Poppins', sans-serif; font-weight: 500;">${submissions.length - index}</td>
-            <td>${escapeHtml(sub.journal)} (${escapeHtml(sub.category)})</td>
-            <td style="text-align: left; font-weight: 700;">${escapeHtml(sub.title_ko)}</td>
-            <td style="text-align: center;">${downloadBtnHtml}</td>
-            <td style="text-align: center;">
+            <td class="col-num" style="font-family: 'Poppins', sans-serif; font-weight: 500;">${submissions.length - index}</td>
+            <td class="col-journal">${escapeHtml(sub.journal)} (${escapeHtml(sub.category)})</td>
+            <td class="col-title" style="text-align: left; font-weight: 700;">${escapeHtml(sub.title_ko)}</td>
+            <td class="col-download" style="text-align: center;">${downloadBtnHtml}</td>
+            <td class="col-status" style="text-align: center;">
                 <span class="status-badge ${badgeClass}">${escapeHtml(sub.status)}</span>
             </td>
-            <td style="text-align: center;">${uploadStatusHtml}</td>
+            <td class="col-action" style="text-align: center;">${uploadStatusHtml}</td>
         `;
         
         row.addEventListener("click", () => {
