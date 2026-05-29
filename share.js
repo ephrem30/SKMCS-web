@@ -221,20 +221,26 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
                     });
 
-                    // 5. Inject Member Management into sub-tabs (Admins only)
+                    // 5. Inject Member Management and Member Directory into sub-tabs (Admins only)
                     const subTabs = document.querySelector(".sub-tabs");
                     if (subTabs) {
                         const hasAdmissionTab = subTabs.querySelector('a[href="admission.html"]');
                         const hasFormsTab = subTabs.querySelector('a[href="forms.html"]');
-                        if ((hasAdmissionTab || hasFormsTab) && !subTabs.querySelector('a[href="member_admin.html"]')) {
-                            const memberAdminTab = document.createElement("a");
-                            memberAdminTab.href = "member_admin.html";
-                            memberAdminTab.className = "tab-item";
-                            if (window.location.pathname.endsWith("member_admin.html")) {
-                                memberAdminTab.className += " active";
+                        if (hasAdmissionTab || hasFormsTab) {
+                            if (!subTabs.querySelector('a[href="member_admin.html"]')) {
+                                const memberAdminTab = document.createElement("a");
+                                memberAdminTab.href = "member_admin.html";
+                                memberAdminTab.className = "tab-item";
+                                memberAdminTab.textContent = "회원관리 (관리인)";
+                                subTabs.appendChild(memberAdminTab);
                             }
-                            memberAdminTab.textContent = "회원관리 (관리인)";
-                            subTabs.appendChild(memberAdminTab);
+                            if (!subTabs.querySelector('a[href="member_directory.html"]')) {
+                                const memberDirTab = document.createElement("a");
+                                memberDirTab.href = "member_directory.html";
+                                memberDirTab.className = "tab-item";
+                                memberDirTab.textContent = "회원명부";
+                                subTabs.appendChild(memberDirTab);
+                            }
                         }
                     }
                 }

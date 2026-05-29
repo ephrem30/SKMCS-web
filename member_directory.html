@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>한국음악학회 - 회원명부</title>
+    <link rel="stylesheet" href="styles_v2.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        // Security Access Guard Routine (Execute immediately to prevent blank content flash)
+        (function() {
+            const loggedInUserStr = localStorage.getItem("logged_in_user");
+            const ADMIN_ROLES = ["admin", "secretary", "editor", "president"];
+            if (!loggedInUserStr) {
+                alert("로그인이 필요한 페이지입니다.");
+                window.location.href = "login.html";
+                return;
+            }
+            try {
+                const user = JSON.parse(loggedInUserStr);
+                if (!ADMIN_ROLES.includes(user.role)) {
+                    alert("관리자만 접근할 수 있는 페이지입니다.");
+                    window.location.href = "index.html";
+                }
+            } catch (e) {
+                alert("올바르지 않은 세션 정보입니다.");
+                window.location.href = "index.html";
+            }
+        })();
+    </script>
+    <style>
+        /* Print-friendly styles */
+        @media print {
+            body {
+                background-color: white !important;
+                color: black !important;
+                padding-left: 0 !important;
+            }
+            .top-util-bar,
+            .main-header,
+            .sub-visual,
+            .sub-util-row,
+            .sub-tabs,
+            .quick-sidebar,
+            .main-footer,
+            .btn-top,
+            .no-print,
+            .board-search-box {
+                display: none !important;
+            }
+            .content-area,
+            .container.subpage-area {
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            .greeting-wrap {
+                border: none !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+                background: white !important;
+            }
+            .board-table {
+                min-width: 100% !important;
+                width: 100% !important;
+                border-collapse: collapse !important;
+            }
+            .board-table th, 
+            .board-table td {
+                border: 1px solid #000 !important;
+                padding: 8px 5px !important;
+                font-size: 11px !important;
+                color: black !important;
+                background: white !important;
+            }
+            .board-table th {
+                font-weight: bold !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="layout-wrapper">
+        
+        <!-- Left Vertical Quick Menu -->
+        <aside class="quick-sidebar no-print">
+            <div class="sidebar-toggle">
+                <i class="fa-solid fa-bars"></i>
+                <span>Quick Menu</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="news.html" class="side-link">
+                    <i class="fa-solid fa-bullhorn"></i>
+                    <span class="side-text">공지사항</span>
+                </a>
+                <a href="admission.html" class="side-link">
+                    <i class="fa-solid fa-user-plus"></i>
+                    <span class="side-text">입회안내</span>
+                </a>
+                <a href="submission.html" class="side-link">
+                    <i class="fa-solid fa-file-arrow-up"></i>
+                    <span class="side-text">논문 온라인투고</span>
+                </a>
+                <a href="activities.html" class="side-link">
+                    <i class="fa-solid fa-calendar-days"></i>
+                    <span class="side-text">학술대회 세미나</span>
+                </a>
+                <a href="forms.html" class="side-link">
+                    <i class="fa-solid fa-folder-open"></i>
+                    <span class="side-text">자료실</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Top Utility Bar -->
+        <div class="top-util-bar no-print">
+            <div class="container">
+                <div class="util-right">
+                    <div class="util-links">
+                        <a href="login.html" class="util-link"><i class="fa-solid fa-right-to-bracket"></i> 로그인</a>
+                        <a href="register.html" class="util-link"><i class="fa-solid fa-user-plus"></i> 회원가입</a>
+                        <a href="sitemap.html" class="util-link"><i class="fa-solid fa-sitemap"></i> 사이트맵</a>
+                    </div>
+                    <form action="search.html" method="GET" class="top-search">
+                        <input type="text" name="query" placeholder="검색..." required>
+                        <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Header Navigation -->
+        <header class="main-header no-print">
+            <div class="container header-container">
+                <a href="index.html" class="logo">
+                    <img src="main_logo.png" alt="한국음악학회 로고 마크" class="logo-icon-img">
+                    <div class="logo-text">
+                        <h1>한국음악학회</h1>
+                        <div class="logo-divider"></div>
+                        <span class="logo-en">the society for korean music & culture studies</span>
+                    </div>
+                </a>
+
+                <nav class="main-nav">
+                    <ul>
+                        <li class="nav-item">
+                            <a href="index.html">Home</a>
+                            <div class="hover-bar white"></div>
+                        </li>
+                        <li class="nav-item">
+                            <a href="about.html">학회소개</a>
+                            <div class="hover-bar red"></div>
+                            <span class="sub-text">about us</span>
+                            <ul class="dropdown-menu">
+                                <li><a href="about.html">인사말</a></li>
+                                <li><a href="organization.html">조직도/임원진</a></li>
+                                <li><a href="history.html">학회 연혁</a></li>
+                                <li><a href="rules.html">학회 정관</a></li>
+                                <li><a href="directions.html">오시는 길</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a href="news.html">학회소식</a>
+                            <div class="hover-bar black"></div>
+                            <span class="sub-text">news</span>
+                            <ul class="dropdown-menu">
+                                <li><a href="news.html?tab=notice">공지사항</a></li>
+                                <li><a href="news.html?tab=freeboard">자유게시판</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a href="issue.html">학회지</a>
+                            <div class="hover-bar green"></div>
+                            <span class="sub-text">journal</span>
+                            <ul class="dropdown-menu">
+                                <li><a href="issue.html">최신호</a></li>
+                                <li><a href="archive.html">지난호 (아카이브)</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a href="submission.html">논문투고</a>
+                            <div class="hover-bar yellow"></div>
+                            <span class="sub-text">submission</span>
+                            <ul class="dropdown-menu">
+                                <li><a href="submission.html">논문투고안내</a></li>
+                                <li><a href="submission_rules.html">논문투고규정</a></li>
+                                <li><a href="submission_review.html">심사규정</a></li>
+                                <li><a href="submission.html?tab=online">온라인 투고시스템</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a href="activities.html">학술활동</a>
+                            <div class="hover-bar grey"></div>
+                            <span class="sub-text">activities</span>
+                            <ul class="dropdown-menu">
+                                <li><a href="activities.html?tab=conference">학술대회 일정</a></li>
+                                <li><a href="activities.html?tab=seminar">연구모임/세미나</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item active">
+                            <a href="admission.html">회원서비스</a>
+                            <div class="hover-bar blue"></div>
+                            <span class="sub-text">member service</span>
+                            <ul class="dropdown-menu">
+                                <li><a href="admission.html">입회안내</a></li>
+                                <li><a href="#">마이페이지(수정중)</a></li>
+                                <li><a href="#">추천사이트</a></li>
+                                <li><a href="forms.html">양식모음</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <div class="sub-visual no-print" style="background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('bg_about.png');">
+            <div class="visual-text">
+                <h2>회원명부</h2>
+            </div>
+        </div>
+
+        <main class="content-area">
+            <div class="container subpage-area">
+                <!-- LNB / Breadcrumb & Utilities -->
+                <div class="sub-util-row no-print">
+                    <div class="breadcrumb">
+                        <i class="fa-solid fa-house"></i>
+                        <span class="depth">회원서비스</span>
+                        <i class="fa-solid fa-angle-right divider"></i>
+                        <span class="depth"><a href="member_admin.html" style="color: inherit; text-decoration: none;">회원관리 (관리인)</a></span>
+                        <i class="fa-solid fa-angle-right divider"></i>
+                        <span class="depth current">회원명부</span>
+                    </div>
+                    <div class="page-utils">
+                        <a href="javascript:window.print();" title="인쇄"><i class="fa-solid fa-print"></i></a>
+                    </div>
+                </div>
+
+                <!-- Depth 3 Tabs -->
+                <div class="sub-tabs no-print">
+                    <a href="admission.html" class="tab-item">입회안내</a>
+                    <a href="#" class="tab-item">마이페이지(수정중)</a>
+                    <a href="forms.html" class="tab-item">양식모음</a>
+                    <a href="member_admin.html" class="tab-item active">회원관리 (관리인)</a>
+                </div>
+
+                <!-- Roster Section -->
+                <div class="greeting-wrap" style="padding: 30px;">
+                    <div class="history-header" style="text-align: center; margin-bottom: 30px;">
+                        <h3 class="history-title" style="font-size: 2.2rem; font-weight: 800; color: var(--text-dark); margin-bottom: 15px;">
+                            <i class="fa-solid fa-address-book" style="color: var(--color-red); margin-right: 5px;"></i> 한국음악학회 회원명부
+                        </h3>
+                        <p class="history-sub no-print" style="font-size: 1.15rem; color: var(--color-green); font-weight: 500;">
+                            가입된 모든 회원의 정보를 일괄 출력하고 인쇄할 수 있는 회원명부입니다.
+                        </p>
+                    </div>
+
+                    <!-- Action buttons -->
+                    <div class="no-print" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                        <a href="member_admin.html" class="btn-outline" style="padding: 8px 18px; font-weight: 700; text-decoration: none; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-arrow-left"></i> 대시보드로 돌아가기
+                        </a>
+                        <button type="button" class="btn-solid" onclick="window.print()" style="background-color: var(--color-red); border-color: var(--color-red); padding: 8px 20px; font-weight: 700; font-size: 0.9rem; cursor: pointer; border-radius: 4px; display: inline-flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-print"></i> 명부 인쇄하기 (Print)
+                        </button>
+                    </div>
+
+                    <!-- Search Filter Box -->
+                    <div class="board-search-box no-print" style="margin-bottom: 25px; background-color: var(--bg-offwhite);">
+                        <div class="filter-group" style="min-width: 200px;">
+                            <label for="directory-filter-role" style="font-weight: 700; color: var(--text-dark); margin-right: 8px;">등급</label>
+                            <select id="directory-filter-role" onchange="renderDirectoryList()" style="flex: 1; height: 42px; background-color: white; border: 1px solid var(--border-color); border-radius: 4px; padding: 0 10px;">
+                                <option value="all">전체 권한 등급</option>
+                                <option value="admin">최고관리인 (admin)</option>
+                                <option value="secretary">학회간사 (secretary)</option>
+                                <option value="editor">편집위원장 (editor)</option>
+                                <option value="president">학회회장 (president)</option>
+                                <option value="reviewer">심사위원 (reviewer)</option>
+                                <option value="member">일반회원 (member)</option>
+                                <option value="research">연구회원 (research)</option>
+                                <option value="lifetime">평생회원 (lifetime)</option>
+                            </select>
+                        </div>
+                        <div class="search-group" style="min-width: 320px; display: flex; gap: 10px; flex: 1; justify-content: flex-end;">
+                            <input type="text" id="directory-keyword" placeholder="회원 이름, 이메일, 소속 검색..." onkeyup="if(event.key==='Enter') renderDirectoryList()" style="flex: 1; max-width: 300px; height: 42px; border: 1px solid var(--border-color); border-radius: 4px; padding: 0 15px;">
+                            <button type="button" class="btn-search" onclick="renderDirectoryList()" style="height: 42px; min-width: 90px; background-color: var(--bg-charcoal); color: white; border: none; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;"><i class="fa-solid fa-magnifying-glass"></i> 검색</button>
+                        </div>
+                    </div>
+
+                    <!-- Directory count -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <span style="font-size: 0.95rem; font-weight: 600; color: var(--text-dark);">
+                            총 회원수: <strong id="directory-user-count" style="color: var(--color-red);">0</strong>명
+                        </span>
+                        <span class="no-print" style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">
+                            ※ 인쇄 시 헤더/푸터 및 버튼 영역은 자동으로 제외됩니다.
+                        </span>
+                    </div>
+
+                    <!-- Roster Data Table -->
+                    <div style="overflow-x: auto; width: 100%;">
+                        <table class="board-table" style="min-width: 800px; width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th style="width: 8%; text-align: center;">순번</th>
+                                    <th style="width: 12%;">성명</th>
+                                    <th style="width: 25%;">이메일 (ID)</th>
+                                    <th style="width: 22%;">소속기관 및 직책</th>
+                                    <th style="width: 15%;">연락처</th>
+                                    <th style="width: 10%;">권한등급</th>
+                                    <th style="width: 8%; text-align: center;">생년월일</th>
+                                </tr>
+                            </thead>
+                            <tbody id="directory-list-tbody">
+                                <!-- Populated dynamically by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Main Footer -->
+        <footer class="main-footer no-print">
+            <div class="container footer-container">
+                <div class="footer-left">
+                    <div class="footer-main-row" style="display: flex; align-items: center; gap: 30px; margin-bottom: 12px;">
+                        <a href="index.html" class="footer-logo-block" style="display: flex; align-items: flex-end; gap: 0px; text-decoration: none; color: inherit; flex-shrink: 0;">
+                            <img src="main_logo_white.png" alt="한국음악학회 로고" style="height: 65px; width: auto; object-fit: contain;">
+                            <div class="logo-text-footer" style="text-align: left; padding-bottom: 2px;">
+                                <h4 style="font-size: 1.15rem; font-weight: 800; letter-spacing: 0.05em; margin: 0; color: white; font-family: 'Pretendard', sans-serif; line-height: 1.1;">한국음악학회</h4>
+                                <div class="logo-divider" style="margin: 2px 0;"></div>
+                                <span class="logo-en" style="font-size: 0.55rem; font-weight: 500; text-transform: uppercase; color: rgba(255,255,255,0.6); display: block; font-family: 'Poppins', sans-serif; letter-spacing: 0.03em; margin-top: 1px; line-height: 1.1;">the society for korean music &amp; culture studies</span>
+                            </div>
+                        </a>
+                        <div class="footer-vertical-divider" style="width: 1px; height: 35px; background: rgba(255,255,255,0.15); flex-shrink: 0;"></div>
+                        <div class="footer-address" style="text-align: left; font-size: 0.82rem; line-height: 1.6; color: #bbb;">
+                            <p style="margin: 0;">주소: (04620) 서울특별시 중구 필동로 1길 30 동국대학교 문화관 (한국음악과 내 학회사무국) &nbsp;&nbsp;|&nbsp;&nbsp; E-mail: skmcs@dgu.ac.kr</p>
+                            <p class="copyright" style="margin: 2px 0 0 0; color: #777;">Copyright &copy; 2026 The Society for Korean Music &amp; Culture Studies. All Rights Reserved.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer-right">
+                    <div class="designed-by">
+                        <span>Designed by</span>
+                        <span class="designer-logo"><i class="fa-solid fa-fire" style="color:#e65100"></i> Woochang Choi</span>
+                    </div>
+                </div>
+            </div>
+            <a href="#" class="btn-top"><i class="fa-solid fa-chevron-up"></i></a>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="share.js"></script>
+    <script>
+        // Load registered users from localStorage
+        let registeredUsers = [];
+        try {
+            registeredUsers = JSON.parse(localStorage.getItem("registered_users") || "[]");
+        } catch (e) {
+            console.error("Error parsing registered_users:", e);
+        }
+
+        const roleLabels = {
+            'admin': '관리인',
+            'secretary': '간사',
+            'reviewer': '심사위원',
+            'editor': '편집장',
+            'president': '회장',
+            'member': '일반회원',
+            'research': '연구회원',
+            'lifetime': '평생회원',
+            'group': '단체회원',
+            'special': '특별회원'
+        };
+
+        function renderDirectoryList() {
+            const tbody = document.getElementById("directory-list-tbody");
+            const filterRole = document.getElementById("directory-filter-role").value;
+            const keyword = document.getElementById("directory-keyword").value.trim().toLowerCase();
+
+            tbody.innerHTML = "";
+
+            // Filter users
+            const filteredUsers = registeredUsers.filter(user => {
+                const matchesRole = (filterRole === "all") || (user.role === filterRole);
+                
+                const name = (user.name || "").toLowerCase();
+                const email = (user.email || "").toLowerCase();
+                const affiliation = (user.affiliation || "").toLowerCase();
+
+                const matchesKeyword = !keyword || 
+                    name.includes(keyword) || 
+                    email.includes(keyword) || 
+                    affiliation.includes(keyword);
+
+                return matchesRole && matchesKeyword;
+            });
+
+            // Update count
+            document.getElementById("directory-user-count").textContent = filteredUsers.length;
+
+            if (filteredUsers.length === 0) {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `<td colspan="7" style="text-align: center; color: var(--text-muted); padding: 40px 0;">조건에 맞는 회원이 없습니다.</td>`;
+                tbody.appendChild(tr);
+                return;
+            }
+
+            // Populate table rows
+            filteredUsers.forEach((user, idx) => {
+                const tr = document.createElement("tr");
+                const roleText = roleLabels[user.role] || user.role;
+                
+                tr.innerHTML = `
+                    <td style="text-align: center; font-weight: 500;">${idx + 1}</td>
+                    <td style="font-weight: 700; color: var(--text-dark);">${user.name || "-"}</td>
+                    <td>${user.email || "-"}</td>
+                    <td>${user.affiliation || "-"}</td>
+                    <td>${user.phone || "-"}</td>
+                    <td><span class="activity-badge" style="background-color: ${user.role === 'admin' ? 'var(--color-red)' : 'var(--color-green)'}; font-size: 0.72rem; padding: 2px 8px; border-radius: 4px; font-weight: 600;">${roleText}</span></td>
+                    <td style="text-align: center;">${user.birth || "-"}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Initialize Directory List on load
+        document.addEventListener("DOMContentLoaded", () => {
+            renderDirectoryList();
+        });
+    </script>
+</body>
+</html>

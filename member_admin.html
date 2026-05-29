@@ -195,6 +195,7 @@
                     <a href="#" class="tab-item">마이페이지(수정중)</a>
                     <a href="forms.html" class="tab-item">양식모음</a>
                     <a href="member_admin.html" class="tab-item active">회원관리 (관리인)</a>
+                    <a href="member_directory.html" class="tab-item">회원명부</a>
                 </div>
 
                 <!-- Admin Dashboard Section -->
@@ -206,22 +207,23 @@
 
                     <!-- Statistics Summary Card Widgets -->
                     <div class="grid-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; margin-bottom: 40px;">
-                        <div class="grid-box" style="background-color: #fcfcfc; border: 1px solid var(--border-color); padding: 20px; border-radius: 6px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.02);">
+                        <div class="grid-box" style="background-color: #fcfcfc; border: 1px solid var(--border-color); padding: 20px 15px; border-radius: 6px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.02); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 140px;">
                             <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 5px;">전체 가입 회원</span>
                             <strong id="stat-total-users" style="font-size: 2.2rem; color: var(--text-dark); font-weight: 800; font-family: 'Poppins', sans-serif;">0</strong>
                             <span style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-top: 5px;">명</span>
+                            <a href="member_directory.html" class="btn-outline" style="margin-top: 10px; padding: 4px 12px; font-size: 0.75rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; border: 1.5px solid var(--color-green); color: var(--color-green); border-radius: 4px; transition: all 0.2s;"><i class="fa-solid fa-address-book"></i> 회원명부 출력</a>
                         </div>
-                        <div class="grid-box" style="background-color: #fcfcfc; border: 1px solid var(--border-color); padding: 20px; border-radius: 6px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.02);">
+                        <div class="grid-box" style="background-color: #fcfcfc; border: 1px solid var(--border-color); padding: 20px; border-radius: 6px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.02); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 140px;">
                             <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 5px;">최고 관리인</span>
                             <strong id="stat-admin-users" style="font-size: 2.2rem; color: var(--color-red); font-weight: 800; font-family: 'Poppins', sans-serif;">0</strong>
                             <span style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-top: 5px;">명</span>
                         </div>
-                        <div class="grid-box" style="background-color: #fcfcfc; border: 1px solid var(--border-color); padding: 20px; border-radius: 6px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.02);">
+                        <div class="grid-box" style="background-color: #fcfcfc; border: 1px solid var(--border-color); padding: 20px; border-radius: 6px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.02); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 140px;">
                             <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 5px;">간사 / 간부진</span>
                             <strong id="stat-staff-users" style="font-size: 2.2rem; color: var(--color-green); font-weight: 800; font-family: 'Poppins', sans-serif;">0</strong>
                             <span style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-top: 5px;">명</span>
                         </div>
-                        <div class="grid-box" style="background-color: #fcfcfc; border: 1px solid var(--border-color); padding: 20px; border-radius: 6px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.02);">
+                        <div class="grid-box" style="background-color: #fcfcfc; border: 1px solid var(--border-color); padding: 20px; border-radius: 6px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.02); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 140px;">
                             <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 5px;">일반 / 평생회원</span>
                             <strong id="stat-regular-users" style="font-size: 2.2rem; color: var(--color-blue); font-weight: 800; font-family: 'Poppins', sans-serif;">0</strong>
                             <span style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-top: 5px;">명</span>
@@ -229,27 +231,27 @@
                     </div>
 
                     <!-- Search Filter Box -->
-                    <div class="board-search-box" style="margin-bottom: 25px;">
-                        <div style="display: flex; gap: 15px; width: 100%; flex-wrap: wrap;">
-                            <div class="filter-group" style="flex: 1; min-width: 150px;">
-                                <select id="search-filter-role" style="width: 100%;" onchange="renderUserList()">
-                                    <option value="all">전체 권한 등급</option>
-                                    <option value="admin">최고관리인 (admin)</option>
-                                    <option value="secretary">학회간사 (secretary)</option>
-                                    <option value="editor">편집위원장 (editor)</option>
-                                    <option value="president">학회회장 (president)</option>
-                                    <option value="reviewer">심사위원 (reviewer)</option>
-                                    <option value="member">일반회원 (member)</option>
-                                    <option value="research">연구회원 (research)</option>
-                                    <option value="lifetime">평생회원 (lifetime)</option>
-                                </select>
-                            </div>
-                            <div class="search-group" style="flex: 2; min-width: 250px; display: flex; gap: 10px;">
-                                <input type="text" id="search-keyword" placeholder="회원 이름, 이메일, 소속 검색..." style="flex: 1;" onkeyup="if(event.key==='Enter') renderUserList()">
-                                <button type="button" class="btn-search" onclick="renderUserList()" style="min-width: 90px;"><i class="fa-solid fa-magnifying-glass"></i> 검색</button>
-                            </div>
+                    <div class="board-search-box" style="margin-bottom: 25px; background-color: var(--bg-offwhite);">
+                        <div class="filter-group" style="min-width: 180px;">
+                            <label for="search-filter-role" style="font-weight: 700; color: var(--text-dark); margin-right: 8px;">등급</label>
+                            <select id="search-filter-role" onchange="renderUserList()" style="flex: 1; height: 42px; background-color: white; border: 1px solid var(--border-color); border-radius: 4px; padding: 0 10px;">
+                                <option value="all">전체 권한 등급</option>
+                                <option value="admin">최고관리인 (admin)</option>
+                                <option value="secretary">학회간사 (secretary)</option>
+                                <option value="editor">편집위원장 (editor)</option>
+                                <option value="president">학회회장 (president)</option>
+                                <option value="reviewer">심사위원 (reviewer)</option>
+                                <option value="member">일반회원 (member)</option>
+                                <option value="research">연구회원 (research)</option>
+                                <option value="lifetime">평생회원 (lifetime)</option>
+                            </select>
+                        </div>
+                        <div class="search-group" style="min-width: 280px; display: flex; gap: 10px; flex: 1; justify-content: flex-end;">
+                            <input type="text" id="search-keyword" placeholder="회원 이름, 이메일, 소속 검색..." onkeyup="if(event.key==='Enter') renderUserList()" style="flex: 1; max-width: 300px; height: 42px; border: 1px solid var(--border-color); border-radius: 4px; padding: 0 15px;">
+                            <button type="button" class="btn-search" onclick="renderUserList()" style="height: 42px; min-width: 90px; background-color: var(--bg-charcoal); color: white; border: none; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;"><i class="fa-solid fa-magnifying-glass"></i> 검색</button>
                         </div>
                     </div>
+
 
                     <!-- User List Count and Actions -->
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
