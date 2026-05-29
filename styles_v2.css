@@ -4502,6 +4502,193 @@ i.fa-angle-right:not(.divider) {
 }
 
 /* ========================================================
+   Reviewer Space — Card Layout
+   ======================================================== */
+
+.reviewer-board-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    padding: 0 2px;
+    font-size: 0.92rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+.reviewer-board-topbar .total strong {
+    color: var(--color-green);
+    font-size: 1rem;
+}
+
+/* Card list container */
+#reviewer-card-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* Each card */
+.reviewer-card {
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 18px 20px;
+    cursor: pointer;
+    transition: box-shadow 0.18s ease, border-color 0.18s ease, transform 0.12s ease;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+.reviewer-card:hover {
+    border-color: var(--color-green);
+    box-shadow: 0 4px 18px rgba(43,138,126,0.12);
+    transform: translateY(-2px);
+}
+
+/* Card header row: number · journal · status badge */
+.reviewer-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+.reviewer-card-num {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 0.82rem;
+    background: var(--bg-charcoal);
+    color: #fff;
+    border-radius: 4px;
+    padding: 2px 8px;
+    line-height: 1.5;
+    flex-shrink: 0;
+}
+.reviewer-card-journal {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: rgba(0,0,0,0.04);
+    border-radius: 4px;
+    padding: 2px 8px;
+    flex-shrink: 0;
+}
+
+/* Paper title */
+.reviewer-card-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    line-height: 1.5;
+    margin-bottom: 8px;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+}
+
+/* Meta info: author, date */
+.reviewer-card-meta {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+}
+.reviewer-card-meta span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.reviewer-card-meta i {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+/* Action row: download btn + submission status */
+.reviewer-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
+}
+
+.reviewer-dl-btn {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 16px !important;
+    font-size: 0.85rem !important;
+    font-weight: 700 !important;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* Upload status pills */
+.reviewer-upload-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+.reviewer-upload-status.done {
+    color: var(--color-green);
+    background: rgba(43,138,126,0.08);
+    border: 1px solid rgba(43,138,126,0.2);
+}
+.reviewer-upload-status.pending {
+    color: var(--text-muted);
+    background: rgba(0,0,0,0.04);
+    border: 1px solid var(--border-color);
+}
+
+/* Empty state */
+.reviewer-empty {
+    text-align: center;
+    padding: 50px 20px;
+    color: var(--text-muted);
+}
+.reviewer-empty i {
+    font-size: 2.5rem;
+    margin-bottom: 14px;
+    display: block;
+    opacity: 0.35;
+}
+.reviewer-empty p {
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+/* ── Mobile overrides ── */
+@media (max-width: 768px) {
+    .reviewer-card {
+        padding: 14px 15px;
+        border-radius: 8px;
+    }
+    .reviewer-card-title {
+        font-size: 0.92rem;
+    }
+    .reviewer-card-meta {
+        gap: 10px;
+        font-size: 0.78rem;
+    }
+    .reviewer-card-actions {
+        gap: 10px;
+        padding-top: 10px;
+    }
+    .reviewer-dl-btn {
+        padding: 6px 12px !important;
+        font-size: 0.8rem !important;
+    }
+    .reviewer-upload-status {
+        font-size: 0.78rem;
+        padding: 3px 8px;
+    }
+}
+
+/* ========================================================
    Admin Delete Button — Submission Board Rows
    ======================================================== */
 .btn-row-delete {
