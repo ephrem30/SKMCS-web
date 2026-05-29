@@ -788,6 +788,11 @@ function renderHistoryTable() {
             historyDesc.textContent = "투고하신 논문의 심사 단계별 진행 현황을 실시간으로 확인하실 수 있습니다.";
         }
     }
+
+    // Show/hide admin-only delete column header
+    document.querySelectorAll(".admin-only-col").forEach(el => {
+        el.style.display = isAdmin ? "table-cell" : "none";
+    });
     
     const submissions = getSubmissions();
     
@@ -806,11 +811,13 @@ function renderHistoryTable() {
         const isOwn = sub.author_email === user.email || (sub.authors && sub.authors.some(a => a.email === user.email));
         return isOwn;
     });
+
+    const colSpan = isAdmin ? 6 : 5;
         
     if (filteredSubmissions.length === 0) {
         tableBody.innerHTML = `
             <tr>
-                <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 30px 0;">
+                <td colspan="${colSpan}" style="text-align: center; color: var(--text-muted); padding: 30px 0;">
                     ${isAuthorized ? '접수된 논문이 없습니다.' : '투고하신 논문이 없습니다.'}
                 </td>
             </tr>
@@ -833,6 +840,18 @@ function renderHistoryTable() {
         const titleHtml = isAuthorized 
             ? `<div><strong>${escapeHtml(sub.title_ko)}</strong></div><div style="font-size: 0.8rem; color: #888; margin-top: 4px;"><i class="fa-solid fa-user"></i> 제출자: ${escapeHtml(sub.author_email)}</div>`
             : `<strong>${escapeHtml(sub.title_ko)}</strong>`;
+
+        // Admin delete button cell
+        const deleteCellHtml = isAdmin ? `
+            <td class="col-delete admin-only-col" style="text-align: center; vertical-align: middle;">
+                <button class="btn-row-delete" data-id="${escapeHtml(sub.id)}" title="삭제"
+                    style="background: #cb3c31; color: white; border: none; border-radius: 4px;
+                           padding: 5px 9px; font-size: 0.78rem; cursor: pointer; line-height: 1;
+                           display: inline-flex; align-items: center; gap: 4px; font-weight: 700;
+                           transition: background 0.15s;">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            </td>` : '';
             
         row.innerHTML = `
             <td class="col-num" style="font-family: 'Poppins', sans-serif; font-weight: 500;">${filteredSubmissions.length - index}</td>
@@ -842,17 +861,64 @@ function renderHistoryTable() {
             <td class="col-status" style="text-align: center;">
                 <span class="status-badge ${badgeClass}">${escapeHtml(sub.status)}</span>
             </td>
+            ${deleteCellHtml}
         `;
         
-        row.addEventListener("click", () => {
+        // Row click opens modal (but not delete button)
+        row.addEventListener("click", (e) => {
+            if (e.target.closest(".btn-row-delete")) return;
             openDetailModal(sub.id);
         });
+
+        // Delete button click
+        if (isAdmin) {
+            const deleteBtn = row.querySelector(".btn-row-delete");
+            if (deleteBtn) {
+                deleteBtn.addEventListener("mouseenter", function() { this.style.background = "#b03228"; });
+                deleteBtn.addEventListener("mouseleave", function() { this.style.background = "#cb3c31"; });
+                deleteBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    deleteSubmissionFromBoard(sub.id);
+                });
+            }
+        }
         
         tableBody.appendChild(row);
     });
 }
 
+// Delete submission directly from the board (Admin only - soft delete)
+function deleteSubmissionFromBoard(id) {
+    if (!confirm("이 논문 투고 내역을 삭제하시겠습니까?\n삭제 후 관리자 패널에서 복구할 수 있습니다.")) return;
+
+    const submissions = getSubmissions();
+    const idx = submissions.findIndex(s => s.id === id);
+    if (idx === -1) return;
+
+    submissions[idx].deleted = true;
+    submissions[idx].deleted_at = new Date().toISOString();
+    localStorage.setItem("submissions_data", JSON.stringify(submissions));
+
+    // Refresh tables
+    renderHistoryTable();
+    if (typeof renderReviewerSpaceTable === 'function') renderReviewerSpaceTable();
+
+    // Small toast-style notice
+    const toast = document.createElement("div");
+    toast.textContent = "논문이 삭제되었습니다. (관리자 패널에서 복구 가능)";
+    toast.style.cssText = `
+        position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+        background: #333; color: white; padding: 12px 22px; border-radius: 8px;
+        font-size: 0.9rem; font-weight: 600; z-index: 99999;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.25); pointer-events: none;
+        animation: fadeInUp 0.25s ease;
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
 // Open paper detail and admin moderation modal
+
 function openDetailModal(id) {
     const submissions = getSubmissions();
     const sub = submissions.find(s => s.id === id);

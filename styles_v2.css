@@ -4501,6 +4501,54 @@ i.fa-angle-right:not(.divider) {
     background-color: rgba(43, 138, 126, 0.04);
 }
 
+/* ========================================================
+   Admin Delete Button — Submission Board Rows
+   ======================================================== */
+.btn-row-delete {
+    background: #cb3c31;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 5px 9px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 700;
+    transition: background 0.15s, transform 0.1s;
+    white-space: nowrap;
+}
+.btn-row-delete:hover {
+    background: #b03228 !important;
+    transform: scale(1.05);
+}
+.btn-row-delete:active {
+    transform: scale(0.96);
+}
+
+/* Mobile: make delete button icon-only (no extra padding) */
+@media (max-width: 768px) {
+    .btn-row-delete {
+        padding: 6px 8px !important;
+        font-size: 0.8rem !important;
+    }
+    /* col-delete stays visible on mobile for admin */
+    .board-table th.col-delete,
+    .board-table td.col-delete {
+        display: table-cell !important;
+        width: 50px !important;
+        padding: 8px 3px !important;
+        text-align: center !important;
+    }
+}
+
+/* Toast animation */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
 
 /* Unified Nested Search Box Styles */
 .nested-search-group {
