@@ -31,6 +31,90 @@
         })();
     </script>
     <style>
+        /* Table enhancement styles for easy reading */
+        .board-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .board-table th {
+            background-color: var(--bg-charcoal);
+            color: white;
+            font-weight: 700;
+            padding: 14px 10px;
+            font-size: 0.95rem;
+            border-bottom: 2px solid var(--text-dark);
+            text-align: left;
+        }
+
+        .board-table td {
+            padding: 12px 10px;
+            font-size: 0.92rem;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-dark);
+        }
+
+        /* Zebra Striping */
+        .board-table tbody tr:nth-child(even) {
+            background-color: #faf9f6;
+        }
+
+        /* Hover effect */
+        .board-table tbody tr:hover {
+            background-color: #f2efe7;
+            transition: background-color 0.15s ease-in-out;
+        }
+
+        /* Custom role badge styling */
+        .badge-role {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 4px;
+            color: white;
+            display: inline-block;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        /* CSV Export & Print button animations */
+        .btn-action-panel {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn-export-csv {
+            background-color: #1f7246; /* Excel green */
+            border-color: #1f7246;
+            color: white;
+            padding: 8px 20px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .btn-export-csv:hover {
+            background-color: #154c2e;
+            transform: translateY(-1px);
+        }
+
+        /* Print generation date info stamp */
+        .print-date-stamp {
+            display: none;
+            font-size: 0.8rem;
+            color: #666;
+            text-align: right;
+            margin-top: 15px;
+        }
+
         /* Print-friendly styles */
         @media print {
             body {
@@ -78,6 +162,19 @@
             }
             .board-table th {
                 font-weight: bold !important;
+                background-color: #e0e0e0 !important;
+                color: black !important;
+            }
+            .badge-role {
+                box-shadow: none !important;
+                border: 1px solid #000 !important;
+                color: black !important;
+                background-color: transparent !important;
+                padding: 1px 4px !important;
+                font-size: 10px !important;
+            }
+            .print-date-stamp {
+                display: block !important;
             }
         }
     </style>
@@ -246,28 +343,34 @@
                     <a href="admission.html" class="tab-item">입회안내</a>
                     <a href="#" class="tab-item">마이페이지(수정중)</a>
                     <a href="forms.html" class="tab-item">양식모음</a>
-                    <a href="member_admin.html" class="tab-item active">회원관리 (관리인)</a>
+                    <a href="member_admin.html" class="tab-item">회원관리 (관리인)</a>
+                    <a href="member_directory.html" class="tab-item active">회원명부</a>
                 </div>
 
                 <!-- Roster Section -->
-                <div class="greeting-wrap" style="padding: 30px;">
+                <div class="greeting-wrap" style="padding: 35px 30px;">
                     <div class="history-header" style="text-align: center; margin-bottom: 30px;">
                         <h3 class="history-title" style="font-size: 2.2rem; font-weight: 800; color: var(--text-dark); margin-bottom: 15px;">
                             <i class="fa-solid fa-address-book" style="color: var(--color-red); margin-right: 5px;"></i> 한국음악학회 회원명부
                         </h3>
                         <p class="history-sub no-print" style="font-size: 1.15rem; color: var(--color-green); font-weight: 500;">
-                            가입된 모든 회원의 정보를 일괄 출력하고 인쇄할 수 있는 회원명부입니다.
+                            등록된 전체 회원의 인적사항을 한눈에 열람하고 엑셀 파일 다운로드 또는 출력할 수 있습니다.
                         </p>
                     </div>
 
                     <!-- Action buttons -->
-                    <div class="no-print" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <div class="no-print" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px;">
                         <a href="member_admin.html" class="btn-outline" style="padding: 8px 18px; font-weight: 700; text-decoration: none; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 8px;">
                             <i class="fa-solid fa-arrow-left"></i> 대시보드로 돌아가기
                         </a>
-                        <button type="button" class="btn-solid" onclick="window.print()" style="background-color: var(--color-red); border-color: var(--color-red); padding: 8px 20px; font-weight: 700; font-size: 0.9rem; cursor: pointer; border-radius: 4px; display: inline-flex; align-items: center; gap: 8px;">
-                            <i class="fa-solid fa-print"></i> 명부 인쇄하기 (Print)
-                        </button>
+                        <div class="btn-action-panel">
+                            <button type="button" class="btn-export-csv" onclick="exportToCSV()">
+                                <i class="fa-solid fa-file-excel"></i> 엑셀 파일 내보내기 (CSV)
+                            </button>
+                            <button type="button" class="btn-solid" onclick="window.print()" style="background-color: var(--color-red); border-color: var(--color-red); padding: 8px 20px; font-weight: 700; font-size: 0.9rem; cursor: pointer; border-radius: 4px; display: inline-flex; align-items: center; gap: 8px;">
+                                <i class="fa-solid fa-print"></i> 명부 인쇄하기 (Print)
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Search Filter Box -->
@@ -287,32 +390,32 @@
                             </select>
                         </div>
                         <div class="search-group" style="min-width: 320px; display: flex; gap: 10px; flex: 1; justify-content: flex-end;">
-                            <input type="text" id="directory-keyword" placeholder="회원 이름, 이메일, 소속 검색..." onkeyup="if(event.key==='Enter') renderDirectoryList()" style="flex: 1; max-width: 300px; height: 42px; border: 1px solid var(--border-color); border-radius: 4px; padding: 0 15px;">
+                            <input type="text" id="directory-keyword" placeholder="이름, 이메일, 소속기관 검색..." onkeyup="if(event.key==='Enter') renderDirectoryList()" style="flex: 1; max-width: 300px; height: 42px; border: 1px solid var(--border-color); border-radius: 4px; padding: 0 15px;">
                             <button type="button" class="btn-search" onclick="renderDirectoryList()" style="height: 42px; min-width: 90px; background-color: var(--bg-charcoal); color: white; border: none; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;"><i class="fa-solid fa-magnifying-glass"></i> 검색</button>
                         </div>
                     </div>
 
                     <!-- Directory count -->
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                        <span style="font-size: 0.95rem; font-weight: 600; color: var(--text-dark);">
-                            총 회원수: <strong id="directory-user-count" style="color: var(--color-red);">0</strong>명
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1.5px solid var(--text-dark); padding-bottom: 10px;">
+                        <span style="font-size: 1rem; font-weight: 700; color: var(--text-dark);">
+                            검색 회원 목록: <strong id="directory-user-count" style="color: var(--color-red); font-family: 'Poppins', sans-serif;">0</strong>명
                         </span>
                         <span class="no-print" style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;">
-                            ※ 인쇄 시 헤더/푸터 및 버튼 영역은 자동으로 제외됩니다.
+                            ※ 등급별 배지의 색상을 통해 직책을 쉽게 분류할 수 있습니다.
                         </span>
                     </div>
 
                     <!-- Roster Data Table -->
                     <div style="overflow-x: auto; width: 100%;">
-                        <table class="board-table" style="min-width: 800px; width: 100%;">
+                        <table class="board-table" style="min-width: 850px; width: 100%;">
                             <thead>
                                 <tr>
-                                    <th style="width: 8%; text-align: center;">순번</th>
-                                    <th style="width: 12%;">성명</th>
-                                    <th style="width: 25%;">이메일 (ID)</th>
-                                    <th style="width: 22%;">소속기관 및 직책</th>
-                                    <th style="width: 15%;">연락처</th>
-                                    <th style="width: 10%;">권한등급</th>
+                                    <th style="width: 6%; text-align: center;">순번</th>
+                                    <th style="width: 12%; text-align: center;">성명</th>
+                                    <th style="width: 24%;">이메일 (ID)</th>
+                                    <th style="width: 25%;">소속기관 및 직책</th>
+                                    <th style="width: 15%; text-align: center;">연락처</th>
+                                    <th style="width: 10%; text-align: center;">권한등급</th>
                                     <th style="width: 8%; text-align: center;">생년월일</th>
                                 </tr>
                             </thead>
@@ -320,6 +423,11 @@
                                 <!-- Populated dynamically by JS -->
                             </tbody>
                         </table>
+                    </div>
+
+                    <!-- Print timestamp info -->
+                    <div class="print-date-stamp" id="print-date-stamp">
+                        출력 일시: 2026. 05. 29
                     </div>
                 </div>
             </div>
@@ -368,17 +476,36 @@
         }
 
         const roleLabels = {
-            'admin': '관리인',
-            'secretary': '간사',
+            'admin': '최고관리인',
+            'secretary': '학회간사',
             'reviewer': '심사위원',
-            'editor': '편집장',
-            'president': '회장',
+            'editor': '편집위원장',
+            'president': '학회회장',
             'member': '일반회원',
             'research': '연구회원',
             'lifetime': '평생회원',
             'group': '단체회원',
             'special': '특별회원'
         };
+
+        // Curated Obangsaek and professional badge colors
+        const roleColors = {
+            'admin': '#CB3C31',     // Traditional Vermilion Red
+            'secretary': '#2A5FA5', // Traditional Indigo Blue
+            'president': '#2B8A7E', // Traditional Dancheong Green
+            'editor': '#1A1A1A',    // Pitch Black
+            'reviewer': '#F0B136',  // Traditional Yellow Gold
+            'lifetime': '#5C4C92',  // Royal Purple
+            'member': '#787572',    // Slate Dark Grey
+            'research': '#4F6F52',  // Sage Green
+            'group': '#365486',     // Deep Ocean Blue
+            'special': '#A63F82'    // Plum Magenta
+        };
+
+        function getRoleBadgeStyle(role) {
+            const color = roleColors[role] || '#787572';
+            return `background-color: ${color};`;
+        }
 
         function renderDirectoryList() {
             const tbody = document.getElementById("directory-list-tbody");
@@ -417,22 +544,82 @@
             filteredUsers.forEach((user, idx) => {
                 const tr = document.createElement("tr");
                 const roleText = roleLabels[user.role] || user.role;
+                const badgeStyle = getRoleBadgeStyle(user.role);
                 
                 tr.innerHTML = `
-                    <td style="text-align: center; font-weight: 500;">${idx + 1}</td>
-                    <td style="font-weight: 700; color: var(--text-dark);">${user.name || "-"}</td>
-                    <td>${user.email || "-"}</td>
-                    <td>${user.affiliation || "-"}</td>
-                    <td>${user.phone || "-"}</td>
-                    <td><span class="activity-badge" style="background-color: ${user.role === 'admin' ? 'var(--color-red)' : 'var(--color-green)'}; font-size: 0.72rem; padding: 2px 8px; border-radius: 4px; font-weight: 600;">${roleText}</span></td>
-                    <td style="text-align: center;">${user.birth || "-"}</td>
+                    <td style="text-align: center; font-weight: 500; color: #666;">${idx + 1}</td>
+                    <td style="font-weight: 700; color: var(--text-dark); text-align: center;">${user.name || "-"}</td>
+                    <td style="font-family: 'Poppins', sans-serif;">${user.email || "-"}</td>
+                    <td style="font-weight: 500;">${user.affiliation || "-"}</td>
+                    <td style="text-align: center; font-family: 'Poppins', sans-serif;">${user.phone || "-"}</td>
+                    <td style="text-align: center;">
+                        <span class="badge-role" style="${badgeStyle}">${roleText}</span>
+                    </td>
+                    <td style="text-align: center; font-family: 'Poppins', sans-serif; color: #555;">${user.birth || "-"}</td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        // Initialize Directory List on load
+        // CSV Export Functionality with Excel UTF-8 BOM encoding fail-safe
+        function exportToCSV() {
+            const filterRole = document.getElementById("directory-filter-role").value;
+            const keyword = document.getElementById("directory-keyword").value.trim().toLowerCase();
+
+            const filteredUsers = registeredUsers.filter(user => {
+                const matchesRole = (filterRole === "all") || (user.role === filterRole);
+                const name = (user.name || "").toLowerCase();
+                const email = (user.email || "").toLowerCase();
+                const affiliation = (user.affiliation || "").toLowerCase();
+                return matchesRole && (!keyword || name.includes(keyword) || email.includes(keyword) || affiliation.includes(keyword));
+            });
+
+            if (filteredUsers.length === 0) {
+                alert("내보낼 회원 목록이 없습니다.");
+                return;
+            }
+
+            // Headers
+            let csvContent = "순번,성명,이메일(ID),소속 및 직책,연락처,권한등급,생년월일\n";
+
+            // Rows
+            filteredUsers.forEach((user, index) => {
+                const roleText = roleLabels[user.role] || user.role;
+                const row = [
+                    index + 1,
+                    `"${(user.name || "").replace(/"/g, '""')}"`,
+                    `"${(user.email || "").replace(/"/g, '""')}"`,
+                    `"${(user.affiliation || "").replace(/"/g, '""')}"`,
+                    `"${(user.phone || "").replace(/"/g, '""')}"`,
+                    `"${roleText}"`,
+                    `"${(user.birth || "").replace(/"/g, '""')}"`
+                ];
+                csvContent += row.join(",") + "\n";
+            });
+
+            // Create download with UTF-8 BOM so Excel opens it correctly
+            const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            
+            // Format filename with current date stamp
+            const date = new Date().toISOString().slice(0, 10);
+            link.setAttribute("download", `한국음악학회_회원명부_${date}.csv`);
+            link.style.visibility = "hidden";
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Set Print date dynamic text
         document.addEventListener("DOMContentLoaded", () => {
+            const date = new Date();
+            const dateStr = `${date.getFullYear()}. ${String(date.getMonth() + 1).padStart(2, '0')}. ${String(date.getDate()).padStart(2, '0')}`;
+            document.getElementById("print-date-stamp").textContent = `명부 출력 일시: ${dateStr}`;
+            
             renderDirectoryList();
         });
     </script>
