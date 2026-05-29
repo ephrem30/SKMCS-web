@@ -350,10 +350,10 @@
                 <!-- Roster Section -->
                 <div class="greeting-wrap" style="padding: 35px 30px;">
                     <div class="history-header" style="text-align: center; margin-bottom: 30px;">
-                        <h3 class="history-title" style="font-size: 2.2rem; font-weight: 800; color: var(--text-dark); margin-bottom: 15px;">
-                            <i class="fa-solid fa-address-book" style="color: var(--color-red); margin-right: 5px;"></i> 한국음악학회 회원명부
+                        <h3 class="history-title" style="font-size: 1.8rem; font-weight: 800; color: var(--text-dark); margin-bottom: 15px; white-space: nowrap; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                            <i class="fa-solid fa-address-book" style="color: var(--color-red); font-size: 1.7rem; vertical-align: middle;"></i> 한국음악학회 회원명부
                         </h3>
-                        <p class="history-sub no-print" style="font-size: 1.15rem; color: var(--color-green); font-weight: 500;">
+                        <p class="history-sub no-print" style="font-size: 0.95rem; color: var(--color-green); font-weight: 500;">
                             등록된 전체 회원의 인적사항을 한눈에 열람하고 엑셀 파일 다운로드 또는 출력할 수 있습니다.
                         </p>
                     </div>
@@ -374,24 +374,26 @@
                     </div>
 
                     <!-- Search Filter Box -->
-                    <div class="board-search-box no-print" style="margin-bottom: 25px; background-color: var(--bg-offwhite);">
-                        <div class="filter-group" style="min-width: 200px;">
-                            <label for="directory-filter-role" style="font-weight: 700; color: var(--text-dark); margin-right: 8px;">등급</label>
-                            <select id="directory-filter-role" onchange="renderDirectoryList()" style="flex: 1; height: 42px; background-color: white; border: 1px solid var(--border-color); border-radius: 4px; padding: 0 10px;">
-                                <option value="all">전체 권한 등급</option>
-                                <option value="admin">최고관리인 (admin)</option>
-                                <option value="secretary">학회간사 (secretary)</option>
-                                <option value="editor">편집위원장 (editor)</option>
-                                <option value="president">학회회장 (president)</option>
-                                <option value="reviewer">심사위원 (reviewer)</option>
-                                <option value="member">일반회원 (member)</option>
-                                <option value="research">연구회원 (research)</option>
-                                <option value="lifetime">평생회원 (lifetime)</option>
-                            </select>
-                        </div>
-                        <div class="search-group" style="min-width: 320px; display: flex; gap: 10px; flex: 1; justify-content: flex-end;">
-                            <input type="text" id="directory-keyword" placeholder="이름, 이메일, 소속기관 검색..." onkeyup="if(event.key==='Enter') renderDirectoryList()" style="flex: 1; max-width: 300px; height: 42px; border: 1px solid var(--border-color); border-radius: 4px; padding: 0 15px;">
-                            <button type="button" class="btn-search" onclick="renderDirectoryList()" style="height: 42px; min-width: 90px; background-color: var(--bg-charcoal); color: white; border: none; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;"><i class="fa-solid fa-magnifying-glass"></i> 검색</button>
+                    <div class="board-search-box no-print" style="margin-bottom: 25px; background-color: var(--bg-offwhite); display: flex; justify-content: center; align-items: center; padding: 15px 20px;">
+                        <div style="display: flex; gap: 15px; align-items: center; justify-content: center; flex-wrap: wrap; width: 100%; max-width: 700px;">
+                            <div class="filter-group" style="display: flex; align-items: center; gap: 8px;">
+                                <label for="directory-filter-role" style="font-weight: 700; color: var(--text-dark); white-space: nowrap;">등급</label>
+                                <select id="directory-filter-role" onchange="renderDirectoryList()" style="width: 160px; height: 42px; background-color: white; border: 1px solid var(--border-color); border-radius: 4px; padding: 0 10px; font-weight: 500;">
+                                    <option value="all">전체 권한 등급</option>
+                                    <option value="admin">최고관리인 (admin)</option>
+                                    <option value="secretary">학회간사 (secretary)</option>
+                                    <option value="editor">편집위원장 (editor)</option>
+                                    <option value="president">학회회장 (president)</option>
+                                    <option value="reviewer">심사위원 (reviewer)</option>
+                                    <option value="member">일반회원 (member)</option>
+                                    <option value="research">연구회원 (research)</option>
+                                    <option value="lifetime">평생회원 (lifetime)</option>
+                                </select>
+                            </div>
+                            <div class="search-group" style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 250px;">
+                                <input type="text" id="directory-keyword" placeholder="이름, 이메일, 소속기관 검색..." onkeyup="if(event.key==='Enter') renderDirectoryList()" style="flex: 1; height: 42px; border: 1px solid var(--border-color); border-radius: 4px; padding: 0 15px; background-color: white;">
+                                <button type="button" class="btn-search" onclick="renderDirectoryList()" style="height: 42px; min-width: 90px; background-color: var(--bg-charcoal); color: white; border: none; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 700;"><i class="fa-solid fa-magnifying-glass"></i> 검색</button>
+                            </div>
                         </div>
                     </div>
 
