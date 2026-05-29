@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -335,22 +335,26 @@
                                     서식명 <span style="color:#ff7b7b;">*</span>
                                 </label>
                                 <input type="text" id="up-name" placeholder="예: 정회원 입회신청서 양식"
-                                    style="width:100%; padding:11px 14px; background:rgba(255,255,255,0.1); border:1.5px solid rgba(255,255,255,0.2);
+                                    style="width:100%; padding:11px 14px; background:rgba(255,255,255,0.12); border:1.5px solid rgba(255,255,255,0.35);
                                     border-radius:8px; color:#fff; font-size:0.9rem; font-family:inherit; box-sizing:border-box;
-                                    transition:border-color 0.2s; outline:none;"
-                                    onfocus="this.style.borderColor='var(--color-green)'" onblur="this.style.borderColor='rgba(255,255,255,0.2)'">
+                                    transition:border-color 0.2s; outline:none; -webkit-text-fill-color:#fff;"
+                                    onfocus="this.style.borderColor='var(--color-green)'" onblur="this.style.borderColor='rgba(255,255,255,0.35)'"
+                                    oninput="this.style.color='#fff'">
                             </div>
                             <div>
                                 <label style="display:block; font-size:0.8rem; font-weight:700; color:rgba(255,255,255,0.7); margin-bottom:6px;">
                                     구분 <span style="color:#ff7b7b;">*</span>
                                 </label>
                                 <select id="up-category"
-                                    style="width:100%; padding:11px 14px; background:rgba(255,255,255,0.1); border:1.5px solid rgba(255,255,255,0.2);
-                                    border-radius:8px; color:#fff; font-size:0.9rem; font-family:inherit; cursor:pointer; box-sizing:border-box;">
-                                    <option value="입회안내" style="color:#000;">입회안내</option>
-                                    <option value="논문투고" style="color:#000;">논문투고</option>
-                                    <option value="심사위원" style="color:#000;">심사위원</option>
-                                    <option value="기타" style="color:#000;">기타</option>
+                                    style="width:100%; padding:11px 14px; background:#1e3528; border:1.5px solid rgba(255,255,255,0.35);
+                                    border-radius:8px; color:#fff; font-size:0.9rem; font-family:inherit; cursor:pointer; box-sizing:border-box;
+                                    -webkit-text-fill-color:#fff; outline:none;"
+                                    onfocus="this.style.borderColor='var(--color-green)'" onblur="this.style.borderColor='rgba(255,255,255,0.35)'">
+                                    <option value="양식모음" style="background:#1e3528; color:#fff;">양식모음</option>
+                                    <option value="입회안내" style="background:#1e3528; color:#fff;">입회안내</option>
+                                    <option value="논문투고" style="background:#1e3528; color:#fff;">논문투고</option>
+                                    <option value="심사위원" style="background:#1e3528; color:#fff;">심사위원</option>
+                                    <option value="기타" style="background:#1e3528; color:#fff;">기타</option>
                                 </select>
                             </div>
                         </div>
@@ -605,7 +609,7 @@
             if (cntEl) cntEl.textContent = all.length;
             tbody.innerHTML = '';
 
-            const catColors = { '입회안내':'#2b6cb0','논문투고':'var(--color-green)','심사위원':'#e63946','기타':'#666' };
+            const catColors = { '양식모음':'#b45309','입회안내':'#2b6cb0','논문투고':'var(--color-green)','심사위원':'#e63946','기타':'#666' };
 
             all.forEach((form, idx) => {
                 const row  = document.createElement('tr');
