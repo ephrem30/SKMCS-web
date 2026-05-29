@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -308,143 +308,44 @@
                     <a href="forms.html" class="tab-item active">양식모음</a>
                 </div>
 
+                <!-- Top Bar: count + admin upload button -->
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; flex-wrap:wrap; gap:10px;">
+                    <div style="font-size:0.92rem; color:var(--text-muted); font-weight:600;">
+                        전체 <strong id="forms-total-count" style="color:var(--color-green);">0</strong>건
+                    </div>
+                    <button id="btn-upload-form" style="display:none; align-items:center; gap:8px;
+                        background:var(--color-green); color:#fff; border:none; border-radius:8px;
+                        padding:10px 20px; font-size:0.88rem; font-weight:700; cursor:pointer;
+                        transition:background 0.2s, transform 0.1s; box-shadow:0 2px 8px rgba(43,138,126,0.3);">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> 파일 업로드
+                    </button>
+                </div>
+
                 <!-- Info Box -->
                 <div class="forms-info-box">
                     <h4><i class="fa-solid fa-circle-info"></i> 양식 다운로드 안내</h4>
                     <p>한국음악학회 회원 가입 신청, 논문 투고 및 심사에 필요한 각종 서식 파일입니다.<br>
-                    필요한 양식을 컴퓨터에 다운로드 받아 작성하신 후, 각각의 담당 창구(회원 가입 화면 혹은 논문 투고 시스템)를 통해 업로드해 주시기 바랍니다.</p>
+                    필요한 양식을 컴퓨터에 다운로드 받아 작성하신 후, 각각의 담당 창구를 통해 업로드해 주시기 바랍니다.</p>
                 </div>
 
                 <!-- Forms List Table -->
-                <table class="forms-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 8%;">번호</th>
-                            <th style="width: 52%;">서식명</th>
-                            <th style="width: 15%;">파일형식</th>
-                            <th style="width: 25%; text-align: center;">다운로드</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>1</td>
-                            <td style="font-weight: 700; color: var(--text-dark);">한국음악학회 정회원 입회신청서 양식</td>
-                            <td>
-                                <div style="display: flex; gap: 4px; flex-wrap: wrap;">
-                                    <span class="form-badge badge-hwp">HWP</span>
-                                    <span class="form-badge badge-pdf">PDF</span>
-                                    <span class="form-badge badge-docx">DOCX</span>
-                                </div>
-                            </td>
-                            <td style="text-align: center;">
-                                <div style="display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;">
-                                    <a href="skmcs_admission_form.hwp" class="btn-download-form btn-hwp" download="한국음악학회_정회원입회신청서.hwp">
-                                        <i class="fa-solid fa-file-arrow-down"></i> HWP
-                                    </a>
-                                    <a href="입회신청서(평생회원) - 최우창(대금).pdf" class="btn-download-form btn-pdf" download>
-                                        <i class="fa-solid fa-file-arrow-down"></i> PDF
-                                    </a>
-                                    <a href="#" class="btn-download-form btn-docx">
-                                        <i class="fa-solid fa-file-arrow-down"></i> DOCX
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>2</td>
-                            <td style="font-weight: 700; color: var(--text-dark);">논문 투고 신청서 및 저작권 위임 동의서</td>
-                            <td>
-                                <div style="display: flex; gap: 4px; flex-wrap: wrap;">
-                                    <span class="form-badge badge-hwp">HWP</span>
-                                    <span class="form-badge badge-pdf">PDF</span>
-                                    <span class="form-badge badge-docx">DOCX</span>
-                                </div>
-                            </td>
-                            <td style="text-align: center;">
-                                <div style="display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;">
-                                    <a href="투고 규정 - 복사본.pdf" class="btn-download-form btn-hwp" download>
-                                        <i class="fa-solid fa-file-arrow-down"></i> HWP
-                                    </a>
-                                    <a href="#" class="btn-download-form btn-pdf">
-                                        <i class="fa-solid fa-file-arrow-down"></i> PDF
-                                    </a>
-                                    <a href="#" class="btn-download-form btn-docx">
-                                        <i class="fa-solid fa-file-arrow-down"></i> DOCX
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>3</td>
-                            <td style="font-weight: 700; color: var(--text-dark);">한국음악학회 연구윤리규정 준수 서약서</td>
-                            <td>
-                                <div style="display: flex; gap: 4px; flex-wrap: wrap;">
-                                    <span class="form-badge badge-hwp">HWP</span>
-                                    <span class="form-badge badge-pdf">PDF</span>
-                                    <span class="form-badge badge-docx">DOCX</span>
-                                </div>
-                            </td>
-                            <td style="text-align: center;">
-                                <div style="display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;">
-                                    <a href="#" class="btn-download-form btn-hwp">
-                                        <i class="fa-solid fa-file-arrow-down"></i> HWP
-                                    </a>
-                                    <a href="#" class="btn-download-form btn-pdf">
-                                        <i class="fa-solid fa-file-arrow-down"></i> PDF
-                                    </a>
-                                    <a href="#" class="btn-download-form btn-docx">
-                                        <i class="fa-solid fa-file-arrow-down"></i> DOCX
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>4</td>
-                            <td style="font-weight: 700; color: var(--text-dark);">논문 심사 의견서 양식 (심사위원용)</td>
-                            <td>
-                                <div style="display: flex; gap: 4px; flex-wrap: wrap;">
-                                    <span class="form-badge badge-hwp">HWP</span>
-                                    <span class="form-badge badge-pdf">PDF</span>
-                                    <span class="form-badge badge-docx">DOCX</span>
-                                </div>
-                            </td>
-                            <td style="text-align: center;">
-                                <div style="display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;">
-                                    <a href="#" class="btn-download-form btn-hwp">
-                                        <i class="fa-solid fa-file-arrow-down"></i> HWP
-                                    </a>
-                                    <a href="한국음악문화 - 심사규정.pdf" class="btn-download-form btn-pdf" download>
-                                        <i class="fa-solid fa-file-arrow-down"></i> PDF
-                                    </a>
-                                    <a href="#" class="btn-download-form btn-docx">
-                                        <i class="fa-solid fa-file-arrow-down"></i> DOCX
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                        <!-- 논문 양식 (실제 HWP 파일 업로드) -->
-                        <tr style="background-color: #f0f9f7;">
-                            <td style="font-family: 'Poppins', sans-serif; font-weight: 700; color: var(--color-green);">5</td>
-                            <td>
-                                <div style="font-weight: 800; color: var(--text-dark); font-size: 0.95rem; margin-bottom: 4px;">
-                                    <i class="fa-solid fa-star" style="color: var(--color-green); font-size: 0.75rem; margin-right: 4px;"></i>
-                                    한국음악학회 논문 작성 양식
-                                </div>
-                                <div style="font-size: 0.8rem; color: var(--text-muted);">논문 원고 작성 시 본 양식을 사용해 주시기 바랍니다.</div>
-                            </td>
-                            <td>
-                                <div style="display: flex; gap: 4px; flex-wrap: wrap;">
-                                    <span class="form-badge badge-hwp">HWP</span>
-                                </div>
-                            </td>
-                            <td style="text-align: center;">
-                                <a href="skmcs_paper_template.hwp" class="btn-download-form btn-hwp" download="한국음악학회_논문양식.hwp">
-                                    <i class="fa-solid fa-file-arrow-down"></i> HWP 다운로드
-                                </a>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="forms-table">
+                        <thead>
+                            <tr>
+                                <th style="width:7%;">번호</th>
+                                <th style="width:40%;">서식명</th>
+                                <th style="width:13%;">구분</th>
+                                <th style="width:12%;">파일형식</th>
+                                <th style="width:18%; text-align:center;">다운로드</th>
+                                <th class="forms-admin-col" style="width:10%; text-align:center; display:none;">관리</th>
+                            </tr>
+                        </thead>
+                        <tbody id="forms-list-tbody">
+                            <!-- Rendered by JS -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </main>
 
@@ -479,129 +380,459 @@
         </footer>
     </div>
 
+    <!-- ══════════ Upload Modal ══════════ -->
+    <div id="upload-modal-overlay" style="
+        display:none; position:fixed; inset:0; z-index:9000;
+        background:rgba(0,0,0,0.55); align-items:center; justify-content:center; padding:20px;">
+        <div style="background:#fff; border-radius:16px; width:100%; max-width:540px;
+                    box-shadow:0 20px 60px rgba(0,0,0,0.25); overflow:hidden; animation:fadeInUp 0.25s ease;">
+            <!-- Modal Header -->
+            <div style="background:var(--bg-charcoal); color:#fff; padding:20px 24px;
+                        display:flex; align-items:center; justify-content:space-between;">
+                <h3 style="margin:0; font-size:1.1rem; font-weight:800; display:flex; align-items:center; gap:8px;">
+                    <i class="fa-solid fa-cloud-arrow-up" style="color:var(--color-green);"></i> 양식 파일 업로드
+                </h3>
+                <button id="btn-close-upload" style="background:none; border:none; color:rgba(255,255,255,0.7);
+                    font-size:1.3rem; cursor:pointer; padding:4px 8px; border-radius:4px; transition:color 0.2s;">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <!-- Modal Body -->
+            <div style="padding:24px;">
+                <div style="margin-bottom:16px;">
+                    <label style="display:block; font-size:0.85rem; font-weight:700; color:var(--text-dark); margin-bottom:6px;">서식명 <span style="color:#e63946;">*</span></label>
+                    <input type="text" id="upload-form-name" placeholder="예: 한국음악학회 정회원 입회신청서 양식"
+                        style="width:100%; padding:11px 14px; border:1.5px solid var(--border-color); border-radius:8px;
+                               font-size:0.9rem; box-sizing:border-box; transition:border-color 0.2s; font-family:inherit;">
+                </div>
+                <div style="display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap;">
+                    <div style="flex:1; min-width:160px;">
+                        <label style="display:block; font-size:0.85rem; font-weight:700; color:var(--text-dark); margin-bottom:6px;">구분 <span style="color:#e63946;">*</span></label>
+                        <select id="upload-form-category" style="width:100%; padding:11px 14px; border:1.5px solid var(--border-color);
+                            border-radius:8px; font-size:0.9rem; background:#fff; font-family:inherit; cursor:pointer;">
+                            <option value="입회안내">입회안내</option>
+                            <option value="논문투고">논문투고</option>
+                            <option value="심사위원">심사위원</option>
+                            <option value="기타">기타</option>
+                        </select>
+                    </div>
+                </div>
+                <!-- File Drop Zone -->
+                <div id="upload-dropzone" style="border:2.5px dashed var(--border-color); border-radius:12px;
+                    padding:36px 20px; text-align:center; cursor:pointer; transition:all 0.2s; margin-bottom:16px;
+                    background:#fafafa;">
+                    <i class="fa-solid fa-file-arrow-up" style="font-size:2.2rem; color:var(--color-green); margin-bottom:12px; display:block;"></i>
+                    <div style="font-weight:700; color:var(--text-dark); margin-bottom:4px;">클릭하거나 파일을 여기로 드래그하세요</div>
+                    <div style="font-size:0.8rem; color:var(--text-muted);">HWP, PDF, DOCX, ZIP 등 모든 형식 지원 · 최대 10MB</div>
+                    <input type="file" id="upload-file-input" style="display:none;" accept="*/*">
+                </div>
+                <!-- File Preview -->
+                <div id="upload-file-preview" style="display:none; background:#f0f9f7; border:1px solid rgba(43,138,126,0.3);
+                    border-radius:8px; padding:12px 16px; margin-bottom:16px; display:flex; align-items:center; gap:12px;">
+                    <i class="fa-solid fa-file-circle-check" style="color:var(--color-green); font-size:1.4rem; flex-shrink:0;"></i>
+                    <div style="flex:1; min-width:0;">
+                        <div id="preview-filename" style="font-weight:700; color:var(--text-dark); font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></div>
+                        <div id="preview-filesize" style="font-size:0.78rem; color:var(--text-muted); margin-top:2px;"></div>
+                    </div>
+                    <button id="btn-clear-file" style="background:none; border:none; color:#cb3c31; cursor:pointer; font-size:1rem; padding:4px;">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <!-- Upload Progress -->
+                <div id="upload-progress-wrap" style="display:none; margin-bottom:16px;">
+                    <div style="background:#e9ecef; border-radius:99px; height:8px; overflow:hidden;">
+                        <div id="upload-progress-bar" style="height:100%; width:0%; background:var(--color-green); border-radius:99px; transition:width 0.3s;"></div>
+                    </div>
+                    <div id="upload-progress-text" style="font-size:0.78rem; color:var(--text-muted); margin-top:6px; text-align:center;">처리 중...</div>
+                </div>
+            </div>
+            <!-- Modal Footer -->
+            <div style="padding:0 24px 24px; display:flex; gap:10px; justify-content:flex-end;">
+                <button id="btn-cancel-upload" style="padding:10px 22px; border:1.5px solid var(--border-color);
+                    background:#fff; color:var(--text-dark); border-radius:8px; font-weight:700;
+                    font-size:0.9rem; cursor:pointer; transition:all 0.2s;">취소</button>
+                <button id="btn-confirm-upload" style="padding:10px 24px; background:var(--color-green);
+                    color:#fff; border:none; border-radius:8px; font-weight:800; font-size:0.9rem;
+                    cursor:pointer; display:flex; align-items:center; gap:8px; transition:background 0.2s;">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> 업로드 등록
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="share.js"></script>
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const tableBody = document.querySelector(".forms-table tbody");
-            if (!tableBody) return;
-            
-            // Function to map mock filename/category to real file
-            function getDownloadUrl(filename, category) {
-                const f = (filename || "").toLowerCase();
-                const c = (category || "").toLowerCase();
-                if (f.includes("입회") || f.includes("회원") || c.includes("입회") || c.includes("회원")) {
-                    return "입회신청서(평생회원) - 최우창(대금).pdf";
-                }
-                if (f.includes("투고") || f.includes("규정") || c.includes("투고") || c.includes("규정")) {
-                    return "투고 규정 - 복사본.pdf";
-                }
-                if (f.includes("심사") || f.includes("의견") || c.includes("심사") || c.includes("의견")) {
-                    return "한국음악문화 - 심사규정.pdf";
-                }
-                return "한국음악학회 - 연혁.pdf";
+    (function() {
+        'use strict';
+
+        // ── Constants ──────────────────────────────────────────────
+        const ADMIN_ROLES = ["admin", "secretary", "editor", "president"];
+        const STORAGE_KEY  = "forms_uploaded_files_v2";
+
+        // Static files already hosted on server
+        const STATIC_FORMS = [
+            {
+                id: "STATIC-001",
+                name: "한국음악학회 정회원 입회신청서 양식",
+                category: "입회안내",
+                date: "2026-03-01",
+                files: [
+                    { label: "HWP", url: "skmcs_admission_form.hwp",  download: "한국음악학회_정회원입회신청서.hwp" },
+                    { label: "PDF", url: "입회신청서(평생회원) - 최우창(대금).pdf", download: "한국음악학회_정회원입회신청서.pdf" }
+                ]
+            },
+            {
+                id: "STATIC-002",
+                name: "논문 투고 신청서 및 저작권 위임 동의서",
+                category: "논문투고",
+                date: "2026-03-10",
+                files: [
+                    { label: "PDF", url: "투고 규정 - 복사본.pdf", download: "한국음악학회_논문투고신청서.pdf" }
+                ]
+            },
+            {
+                id: "STATIC-003",
+                name: "논문 심사 의견서 양식 (심사위원용)",
+                category: "심사위원",
+                date: "2026-04-05",
+                files: [
+                    { label: "PDF", url: "한국음악문화 - 심사규정.pdf", download: "한국음악학회_심사의견서양식.pdf" }
+                ]
+            },
+            {
+                id: "STATIC-004",
+                name: "한국음악학회 논문 작성 양식",
+                category: "논문투고",
+                date: "2026-05-29",
+                files: [
+                    { label: "HWP", url: "skmcs_paper_template.hwp", download: "한국음악학회_논문작성양식.hwp" }
+                ]
             }
-            
-            // Initial materials
-            const DEFAULT_MATERIALS = [
-                {
-                    id: "MAT-0001",
-                    name: "한국음악학회 정회원 입회신청서 양식",
-                    category: "입회안내",
-                    filename: "한국음악학회_정회원_가입신청서.hwp",
-                    formats: ["HWP", "PDF", "DOCX"],
-                    date: "2026-03-01"
-                },
-                {
-                    id: "MAT-0002",
-                    name: "논문 투고 신청서 및 저작권 위임 동의서",
-                    category: "논문투고",
-                    filename: "한국음악문화_논문투고양식.zip",
-                    formats: ["HWP", "PDF", "DOCX"],
-                    date: "2026-03-10"
-                },
-                {
-                    id: "MAT-0003",
-                    name: "한국음악학회 연구윤리규정 준수 서약서",
-                    category: "논문투고",
-                    filename: "연구윤리규정_준수서약서.hwp",
-                    formats: ["HWP", "PDF", "DOCX"],
-                    date: "2026-03-15"
-                },
-                {
-                    id: "MAT-0004",
-                    name: "논문 심사 의견서 양식 (심사위원용)",
-                    category: "심사위원",
-                    filename: "논문_심사의견서_양식.docx",
-                    formats: ["HWP", "PDF", "DOCX"],
-                    date: "2026-04-05"
-                }
-            ];
-            
-            let materials = [];
-            const materialsStr = localStorage.getItem("uploaded_materials");
-            if (materialsStr) {
-                try {
-                    materials = JSON.parse(materialsStr);
-                } catch(e) {}
-            }
-            
-            if (!materials || materials.length === 0) {
-                materials = DEFAULT_MATERIALS;
-                localStorage.setItem("uploaded_materials", JSON.stringify(materials));
-            }
-            
-            tableBody.innerHTML = "";
-            
-            materials.forEach((mat, idx) => {
-                const row = document.createElement("tr");
-                
-                // Badges HTML
-                const formats = mat.formats && mat.formats.length > 0 ? mat.formats : ["HWP", "PDF", "DOCX"];
-                const badgesHtml = formats.map(fmt => `<span class="form-badge badge-${fmt.toLowerCase()}">${fmt}</span>`).join(" ");
-                
-                // Download Buttons HTML
-                const realFile = getDownloadUrl(mat.filename || mat.name, mat.category);
-                const buttonsHtml = formats.map(fmt => {
-                    const btnClass = `btn-${fmt.toLowerCase()}`;
-                    return `
-                        <a href="${encodeURI(realFile)}" class="btn-download-form ${btnClass}" download="${escapeHtml(mat.name)}.${fmt.toLowerCase()}">
-                            <i class="fa-solid fa-file-arrow-down"></i> ${fmt}
-                        </a>
-                    `;
-                }).join(" ");
-                
+        ];
+
+        // ── Helpers ────────────────────────────────────────────────
+        function getUser() {
+            try { return JSON.parse(localStorage.getItem("logged_in_user")); } catch(e) { return null; }
+        }
+        function isAdmin(user) {
+            return user && ADMIN_ROLES.includes(user.role);
+        }
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.toString()
+                .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+                .replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+        }
+        function formatBytes(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+            return (bytes/(1024*1024)).toFixed(1) + ' MB';
+        }
+        function getExtBadge(label) {
+            const l = label.toLowerCase();
+            const cls = l === 'pdf' ? 'badge-pdf' : l === 'hwp' ? 'badge-hwp' : l === 'docx' ? 'badge-docx' : 'badge-hwp';
+            return `<span class="form-badge ${cls}">${escapeHtml(label)}</span>`;
+        }
+        function getBtnClass(label) {
+            const l = label.toLowerCase();
+            return l === 'pdf' ? 'btn-pdf' : l === 'hwp' ? 'btn-hwp' : l === 'docx' ? 'btn-docx' : 'btn-hwp';
+        }
+
+        // ── Storage ────────────────────────────────────────────────
+        function getUploadedForms() {
+            try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch(e) { return []; }
+        }
+        function saveUploadedForms(forms) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(forms));
+        }
+
+        // ── Download from base64 data ──────────────────────────────
+        function downloadBase64(base64, filename, mime) {
+            const byteChars = atob(base64);
+            const byteNums  = new Array(byteChars.length);
+            for (let i = 0; i < byteChars.length; i++) byteNums[i] = byteChars.charCodeAt(i);
+            const blob = new Blob([new Uint8Array(byteNums)], { type: mime || 'application/octet-stream' });
+            const url  = URL.createObjectURL(blob);
+            const a    = document.createElement('a');
+            a.href = url; a.download = filename;
+            document.body.appendChild(a); a.click();
+            setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 500);
+        }
+
+        // ── Render ─────────────────────────────────────────────────
+        function render() {
+            const user     = getUser();
+            const admin    = isAdmin(user);
+            const tbody    = document.getElementById('forms-list-tbody');
+            const countEl  = document.getElementById('forms-total-count');
+            const uploadBtn= document.getElementById('btn-upload-form');
+            const adminCols= document.querySelectorAll('.forms-admin-col');
+
+            if (!tbody) return;
+
+            // Show admin controls
+            uploadBtn.style.display = admin ? 'inline-flex' : 'none';
+            adminCols.forEach(el => el.style.display = admin ? 'table-cell' : 'none');
+
+            const uploaded = getUploadedForms();
+            const allForms = [...STATIC_FORMS, ...uploaded];
+
+            if (countEl) countEl.textContent = allForms.length;
+            tbody.innerHTML = '';
+
+            allForms.forEach((form, idx) => {
+                const row = document.createElement('tr');
+                const isUploaded = !form.id.startsWith('STATIC-');
+
+                // Badges
+                const badgesHtml = (form.files || []).map(f => getExtBadge(f.label)).join(' ');
+
+                // Download buttons
+                const btnsHtml = (form.files || []).map(f => {
+                    if (f.base64) {
+                        // Uploaded file: download via JS blob
+                        return `<button class="btn-download-form ${getBtnClass(f.label)}"
+                            onclick="window._dlBase64('${escapeHtml(form.id)}','${escapeHtml(f.label)}')"
+                            style="border:none; cursor:pointer;">
+                            <i class="fa-solid fa-file-arrow-down"></i> ${escapeHtml(f.label)}
+                        </button>`;
+                    } else {
+                        // Static file: direct link
+                        return `<a href="${encodeURI(f.url)}" class="btn-download-form ${getBtnClass(f.label)}"
+                            download="${escapeHtml(f.download || f.url)}">
+                            <i class="fa-solid fa-file-arrow-down"></i> ${escapeHtml(f.label)}
+                        </a>`;
+                    }
+                }).join(' ');
+
+                // Admin delete
+                const deleteHtml = admin ? `
+                    <button class="forms-admin-col" onclick="window._deleteForm('${escapeHtml(form.id)}')"
+                        style="display:table-cell; background:none; border:none; color:#cb3c31; cursor:pointer;
+                               font-size:0.9rem; padding:4px 8px; transition:color 0.2s; border-radius:4px;"
+                        title="삭제" onmouseover="this.style.color='#b03228'" onmouseout="this.style.color='#cb3c31'">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>` : `<td class="forms-admin-col" style="display:none;"></td>`;
+
+                // Category badge
+                const catColors = {
+                    '입회안내': '#2b6cb0', '논문투고': 'var(--color-green)',
+                    '심사위원': '#e63946', '기타': '#666'
+                };
+                const catColor = catColors[form.category] || '#666';
+
                 row.innerHTML = `
-                    <td style="font-family: 'Poppins', sans-serif;">${idx + 1}</td>
-                    <td style="font-weight: 700; color: var(--text-dark);">${escapeHtml(mat.name)}</td>
+                    <td style="font-family:'Poppins',sans-serif; font-weight:600; color:var(--text-muted);">${idx + 1}</td>
                     <td>
-                        <div style="display: flex; gap: 4px; flex-wrap: wrap;">
-                            ${badgesHtml}
+                        <div style="font-weight:700; color:var(--text-dark); margin-bottom:3px;">${escapeHtml(form.name)}</div>
+                        <div style="font-size:0.77rem; color:var(--text-muted);">${form.date || ''}</div>
+                    </td>
+                    <td>
+                        <span style="display:inline-block; padding:3px 8px; border-radius:4px; font-size:0.75rem;
+                            font-weight:700; background:${catColor}22; color:${catColor};">
+                            ${escapeHtml(form.category)}
+                        </span>
+                    </td>
+                    <td>
+                        <div style="display:flex; gap:4px; flex-wrap:wrap;">${badgesHtml}</div>
+                    </td>
+                    <td style="text-align:center;">
+                        <div style="display:flex; gap:6px; justify-content:center; flex-wrap:wrap;">
+                            ${btnsHtml}
                         </div>
                     </td>
-                    <td style="text-align: center;">
-                        <div style="display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;">
-                            ${buttonsHtml}
-                        </div>
-                    </td>
+                    ${admin ? `<td class="forms-admin-col" style="text-align:center;">${deleteHtml}</td>` : ''}
                 `;
-                tableBody.appendChild(row);
+                tbody.appendChild(row);
             });
-            
-            function escapeHtml(str) {
-                if (!str) return '';
-                return str.toString()
-                    .replace(/&/g, "&amp;")
-                    .replace(/</g, "&lt;")
-                    .replace(/>/g, "&gt;")
-                    .replace(/"/g, "&quot;")
-                    .replace(/'/g, "&#039;");
+
+            if (allForms.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:40px; color:var(--text-muted);">
+                    등록된 서식 파일이 없습니다.</td></tr>`;
             }
+        }
+
+        // ── Global download handler ────────────────────────────────
+        window._dlBase64 = function(formId, label) {
+            const uploaded = getUploadedForms();
+            const form = uploaded.find(f => f.id === formId);
+            if (!form) return;
+            const fileEntry = form.files.find(f => f.label === label);
+            if (!fileEntry || !fileEntry.base64) return alert('파일 데이터를 찾을 수 없습니다.');
+            downloadBase64(fileEntry.base64, fileEntry.download || fileEntry.label, fileEntry.mime);
+        };
+
+        // ── Global delete handler ──────────────────────────────────
+        window._deleteForm = function(formId) {
+            if (formId.startsWith('STATIC-')) return alert('기본 서식은 삭제할 수 없습니다.');
+            if (!confirm('이 서식 파일을 삭제하시겠습니까?')) return;
+            const forms = getUploadedForms().filter(f => f.id !== formId);
+            saveUploadedForms(forms);
+            render();
+        };
+
+        // ── Upload Modal Logic ─────────────────────────────────────
+        let selectedFile = null;
+
+        function openUploadModal() {
+            document.getElementById('upload-modal-overlay').style.display = 'flex';
+            document.getElementById('upload-form-name').value = '';
+            document.getElementById('upload-form-category').value = '입회안내';
+            document.getElementById('upload-file-input').value = '';
+            document.getElementById('upload-file-preview').style.display = 'none';
+            document.getElementById('upload-progress-wrap').style.display = 'none';
+            document.getElementById('upload-dropzone').style.display = 'block';
+            selectedFile = null;
+        }
+        function closeUploadModal() {
+            document.getElementById('upload-modal-overlay').style.display = 'none';
+            selectedFile = null;
+        }
+
+        function setSelectedFile(file) {
+            if (!file) return;
+            if (file.size > 10 * 1024 * 1024) {
+                alert('파일 크기는 최대 10MB까지 가능합니다.');
+                return;
+            }
+            selectedFile = file;
+            document.getElementById('preview-filename').textContent = file.name;
+            document.getElementById('preview-filesize').textContent = formatBytes(file.size);
+            document.getElementById('upload-file-preview').style.display = 'flex';
+            document.getElementById('upload-dropzone').style.display = 'none';
+            // Auto-fill name if empty
+            const nameInput = document.getElementById('upload-form-name');
+            if (!nameInput.value.trim()) {
+                nameInput.value = file.name.replace(/\.[^.]+$/, '');
+            }
+        }
+
+        function doUpload() {
+            const name = document.getElementById('upload-form-name').value.trim();
+            const category = document.getElementById('upload-form-category').value;
+
+            if (!name) { alert('서식명을 입력해 주세요.'); return; }
+            if (!selectedFile) { alert('업로드할 파일을 선택해 주세요.'); return; }
+
+            const ext = selectedFile.name.split('.').pop().toUpperCase();
+            const btn = document.getElementById('btn-confirm-upload');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 처리 중...';
+
+            document.getElementById('upload-progress-wrap').style.display = 'block';
+            const bar  = document.getElementById('upload-progress-bar');
+            const text = document.getElementById('upload-progress-text');
+
+            const reader = new FileReader();
+            reader.onprogress = (e) => {
+                if (e.lengthComputable) {
+                    const pct = Math.round((e.loaded / e.total) * 100);
+                    bar.style.width = pct + '%';
+                    text.textContent = pct + '% 처리 중...';
+                }
+            };
+            reader.onload = (e) => {
+                bar.style.width = '100%';
+                text.textContent = '등록 완료!';
+
+                const base64 = e.target.result.split(',')[1];
+                const dateStr = new Date().toISOString().split('T')[0];
+                const newForm = {
+                    id: 'UPL-' + Date.now(),
+                    name: name,
+                    category: category,
+                    date: dateStr,
+                    files: [{
+                        label: ext,
+                        base64: base64,
+                        mime: selectedFile.type || 'application/octet-stream',
+                        download: selectedFile.name
+                    }]
+                };
+
+                const forms = getUploadedForms();
+                forms.push(newForm);
+                saveUploadedForms(forms);
+
+                setTimeout(() => {
+                    closeUploadModal();
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> 업로드 등록';
+                    render();
+
+                    // Toast
+                    const toast = document.createElement('div');
+                    toast.textContent = `"${name}" 파일이 등록되었습니다.`;
+                    toast.style.cssText = `position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+                        background:#333;color:#fff;padding:12px 22px;border-radius:8px;
+                        font-size:0.9rem;font-weight:600;z-index:99999;
+                        box-shadow:0 4px 16px rgba(0,0,0,0.25);animation:fadeInUp 0.25s ease;`;
+                    document.body.appendChild(toast);
+                    setTimeout(() => toast.remove(), 3000);
+                }, 600);
+            };
+            reader.onerror = () => {
+                alert('파일 읽기 오류가 발생했습니다.');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> 업로드 등록';
+            };
+            reader.readAsDataURL(selectedFile);
+        }
+
+        // ── Event Bindings ─────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            render();
+
+            // Upload modal open/close
+            document.getElementById('btn-upload-form').addEventListener('click', openUploadModal);
+            document.getElementById('btn-close-upload').addEventListener('click', closeUploadModal);
+            document.getElementById('btn-cancel-upload').addEventListener('click', closeUploadModal);
+            document.getElementById('upload-modal-overlay').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('upload-modal-overlay')) closeUploadModal();
+            });
+
+            // File input via click on dropzone
+            const dropzone = document.getElementById('upload-dropzone');
+            const fileInput = document.getElementById('upload-file-input');
+            dropzone.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files[0]) setSelectedFile(e.target.files[0]);
+            });
+
+            // Drag and drop
+            dropzone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropzone.style.borderColor = 'var(--color-green)';
+                dropzone.style.background = '#f0f9f7';
+            });
+            dropzone.addEventListener('dragleave', () => {
+                dropzone.style.borderColor = 'var(--border-color)';
+                dropzone.style.background = '#fafafa';
+            });
+            dropzone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropzone.style.borderColor = 'var(--border-color)';
+                dropzone.style.background = '#fafafa';
+                const file = e.dataTransfer.files[0];
+                if (file) setSelectedFile(file);
+            });
+
+            // Clear selected file
+            document.getElementById('btn-clear-file').addEventListener('click', () => {
+                selectedFile = null;
+                fileInput.value = '';
+                document.getElementById('upload-file-preview').style.display = 'none';
+                document.getElementById('upload-dropzone').style.display = 'block';
+            });
+
+            // Confirm upload
+            document.getElementById('btn-confirm-upload').addEventListener('click', doUpload);
+
+            // Upload button hover effect
+            const uploadBtn = document.getElementById('btn-upload-form');
+            uploadBtn.addEventListener('mouseenter', () => { uploadBtn.style.background = '#1a5c52'; });
+            uploadBtn.addEventListener('mouseleave', () => { uploadBtn.style.background = 'var(--color-green)'; });
         });
-    </script>
+    })();
 </body>
 </html>
-
-
-
-
-
