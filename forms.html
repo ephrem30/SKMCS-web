@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -313,7 +313,7 @@
                     <div style="font-size:0.92rem; color:var(--text-muted); font-weight:600;">
                         전체 <strong id="forms-total-count" style="color:var(--color-green);">0</strong>건
                     </div>
-                    <button id="btn-upload-form" style="display:none; align-items:center; gap:8px;
+                    <button id="btn-upload-form" style="display:inline-flex; align-items:center; gap:8px;
                         background:var(--color-green); color:#fff; border:none; border-radius:8px;
                         padding:10px 20px; font-size:0.88rem; font-weight:700; cursor:pointer;
                         transition:background 0.2s, transform 0.1s; box-shadow:0 2px 8px rgba(43,138,126,0.3);">
@@ -570,8 +570,7 @@
 
             if (!tbody) return;
 
-            // Show admin controls
-            uploadBtn.style.display = admin ? 'inline-flex' : 'none';
+            // Upload button always visible; delete col only for admin
             adminCols.forEach(el => el.style.display = admin ? 'table-cell' : 'none');
 
             const uploaded = getUploadedForms();
@@ -675,6 +674,17 @@
         let selectedFile = null;
 
         function openUploadModal() {
+            const user = getUser();
+            if (!user) {
+                if (confirm('로그인한 관리자만 파일을 업로드할 수 있습니다.\n로그인 페이지로 이동하시겠습니까?')) {
+                    window.location.href = 'login.html';
+                }
+                return;
+            }
+            if (!isAdmin(user)) {
+                alert('파일 업로드는 관리자(admin) 계정만 가능합니다.\n관리자에게 문의해 주세요.');
+                return;
+            }
             document.getElementById('upload-modal-overlay').style.display = 'flex';
             document.getElementById('upload-form-name').value = '';
             document.getElementById('upload-form-category').value = '입회안내';
