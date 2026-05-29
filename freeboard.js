@@ -1,4 +1,4 @@
-﻿// freeboard.js - Functional Free Board & Notice Board CRUD with User Roles
+// freeboard.js - Functional Free Board & Notice Board CRUD with User Roles
 
 // Force administrator session for full page access and verification - DISABLED FOR PRODUCTION ROLE-BASED ACCESS
 /*
@@ -62,7 +62,7 @@ const DEFAULT_NOTICES = [
     { id: 4, type: "notice", category: "시스템", title: "학회 홈페이지 리뉴얼 및 온라인 투고 시스템 오픈 안내", file: false, date: "2026. 02. 20", views: 301, content: "학회 홈페이지 리뉴얼 및 온라인 투고 시스템 오픈 안내입니다.\n\n회원 여러분의 편리한 논문 투고를 돕기 위해 신규 온라인 논문투고 시스템이 도입되었습니다.\n앞으로 새로운 시스템을 이용하여 논문을 접수해 주시기 바랍니다.", author: "관리인", email: "admin@gugak.go.kr" },
     { id: 3, type: "notice", category: "안내", title: "한국음악학회 제50권 2호 원문 서비스 오픈", file: false, date: "2026. 02. 15", views: 85, content: "안녕하십니까, 한국음악학회입니다.\n\n한국음악학회 학회지 제50권 2호의 원문 서비스가 홈페이지를 통해 개시되었습니다.\n원문은 회원 로그인 후 열람 및 다운로드 받으실 수 있습니다.", author: "관리인", email: "admin@gugak.go.kr" },
     { id: 2, type: "notice", category: "일반", title: "2026년도 신임 임원진 선출 결과 공고", file: true, date: "2026. 01. 30", views: 120, content: "2026년도 신임 임원진 선출 결과 공고입니다.\n\n자세한 임원진 구성표는 첨부된 PDF 파일을 참조해 주시기 바랍니다.\n올해 학회를 이끌어 주실 분들께 큰 응원 부탁드립니다.", author: "관리인", email: "admin@gugak.go.kr" },
-    { id: 1, type: "notice", category: "안내", title: "학회 연회비 납부 계좌 변경 안내", file: false, date: "2026. 01. 20", views: 214, content: "학회 연회비 납부 계좌가 다음과 같이 변경되었습니다.\n\n- 은행: 신한은행\n- 계좌번호: 140-015-967840\n- 예금주: 한국음악학회 박범훈\n\n회원 여러분께서는 연회비 송금 시 착오 없으시길 바랍니다.", author: "관리인", email: "admin@gugak.go.kr" }
+    { id: 1, type: "notice", category: "안내", title: "학회 연회비 납부 계좌 변경 안내", file: false, date: "2026. 05. 29", views: 214, content: "학회 연회비 납부 계좌가 다음과 같이 변경되었습니다.\n\n- 은행: 신한은행\n- 계좌번호: 140-015-967840\n- 예금주: 한국음악학회 박범훈\n\n회원 여러분께서는 연회비 송금 시 착오 없으시길 바랍니다.", author: "관리인", email: "admin@gugak.go.kr" }
 ];
 
 const DEFAULT_FREEBOARD = [
@@ -84,7 +84,7 @@ let noticeSearchType = "all";
 let freeboardSearchQuery = "";
 let freeboardSearchType = "all";
 
-const DATA_VERSION = "v2026-05-29";
+const DATA_VERSION = "v2026-05-29b";
 
 function initStorage() {
     if (localStorage.getItem("notice_posts_version") !== DATA_VERSION) {
@@ -484,6 +484,12 @@ function openWriteModal(type, editPostId = null) {
         `;
     }
     
+    // Auto-fill today's date in the date display field
+    const todayObj = new Date();
+    const todayStr = `${todayObj.getFullYear()}. ${String(todayObj.getMonth() + 1).padStart(2, '0')}. ${String(todayObj.getDate()).padStart(2, '0')}`;
+    const dateDisplayEl = document.getElementById("post-date-display");
+    if (dateDisplayEl) dateDisplayEl.value = todayStr;
+
     // Set Title text depending on Create or Edit
     const writeModalTitle = document.getElementById("write-modal-title");
     
