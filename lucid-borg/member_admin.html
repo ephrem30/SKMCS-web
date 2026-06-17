@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="styles_v2.css">
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Sheets DB Client -->
+    <script src="db.js"></script>
     <script>
         // Security Access Guard Routine (Execute immediately to prevent blank content flash)
         (function() {
@@ -248,6 +250,20 @@
                         </div>
                     </div>
 
+                    <!-- Special Administrator Database Reset Panel (Visible only to Special Admins) -->
+                    <div id="special-admin-reset-panel" style="display: none; margin-bottom: 30px; background-color: #fff0f0; border: 1.5px solid #ffcccc; border-radius: 6px; padding: 20px;">
+                        <h4 style="margin: 0 0 10px 0; font-size: 1.1rem; font-weight: 800; color: #b03228; display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-triangle-exclamation" style="color: #cb3c31;"></i> 시스템 데이터 초기화 (특별 관리자 전용)
+                        </h4>
+                        <p style="margin: 0 0 15px 0; font-size: 0.85rem; color: #555; line-height: 1.5;">
+                            등록된 모든 회원 목록과 관리인이 등록한 공지사항 및 자유게시판 글을 <strong>최초의 기본 Mock 데이터 상태로 리셋</strong>합니다.<br>
+                            이 작업은 로컬 데이터베이스를 기본값으로 완전히 덮어씌우므로 되돌릴 수 없습니다.
+                        </p>
+                        <button type="button" class="btn-solid" onclick="handleSystemReset()" style="padding: 10px 20px; font-size: 0.85rem; font-weight: 700; background-color: #cb3c31; border-color: #cb3c31; display: inline-flex; align-items: center; gap: 6px; border-radius: 4px; color: white; cursor: pointer; border: 1px solid #cb3c31; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#b03228'; this.style.borderColor='#b03228';" onmouseout="this.style.backgroundColor='#cb3c31'; this.style.borderColor='#cb3c31';">
+                            <i class="fa-solid fa-arrows-rotate"></i> 시스템 데이터 초기화 실행
+                        </button>
+                    </div>
+
                     <!-- Search Filter Box -->
                     <div class="board-search-box" style="margin-bottom: 25px; background-color: var(--bg-offwhite); display: flex; justify-content: center; align-items: center; padding: 15px 20px;">
                         <div style="display: flex; gap: 15px; align-items: center; justify-content: center; flex-wrap: wrap; width: 100%; max-width: 700px;">
@@ -333,52 +349,41 @@
 
     <script src="share.js"></script>
     <script>
-        // 1. Fetch Users Data from LocalStorage
+        // ====================================================
+        // 회원관리 대시보드 — Google Sheets DB 기반
+        // ====================================================
         let registeredUsers = [];
-        const registeredUsersStr = localStorage.getItem("registered_users");
-        if (registeredUsersStr) {
-            registeredUsers = JSON.parse(registeredUsersStr);
-        }
 
-        // 2. Fetch Logged in User to prevent self-deletion or self-demotion
+        // 2. 현재 로그인한 관리자 이메일
         let currentAdminEmail = "";
-        const loggedInUserStr = localStorage.getItem("logged_in_user");
-        if (loggedInUserStr) {
-            try {
-                const user = JSON.parse(loggedInUserStr);
-                currentAdminEmail = user.email.toLowerCase();
-            } catch (e) {}
+        const _sessionStr = localStorage.getItem("logged_in_user");
+        if (_sessionStr) {
+            try { currentAdminEmail = JSON.parse(_sessionStr).email.toLowerCase(); } catch(e) {}
         }
 
-        // 3. Render Dashboard Statistics
+        // 3. 통계 렌더링
         function renderStats() {
             const total = registeredUsers.length;
             const admin = registeredUsers.filter(u => u.role === "admin").length;
             const staff = registeredUsers.filter(u => ["secretary", "editor", "president"].includes(u.role)).length;
             const regular = registeredUsers.filter(u => ["member", "lifetime", "research"].includes(u.role)).length;
-
             document.getElementById("stat-total-users").textContent = total;
             document.getElementById("stat-admin-users").textContent = admin;
             document.getElementById("stat-staff-users").textContent = staff;
             document.getElementById("stat-regular-users").textContent = regular;
         }
 
-        // 4. Render Dynamic User List Table
+        // 4. 회원 목록 테이블 렌더링
         function renderUserList() {
             const roleFilter = document.getElementById("search-filter-role").value;
             const keyword = document.getElementById("search-keyword").value.toLowerCase().trim();
             const tbody = document.getElementById("user-admin-list-tbody");
             tbody.innerHTML = "";
 
-            // Filtering
             let filteredUsers = registeredUsers;
-
-            if (roleFilter !== "all") {
-                filteredUsers = filteredUsers.filter(u => u.role === roleFilter);
-            }
-
+            if (roleFilter !== "all") filteredUsers = filteredUsers.filter(u => u.role === roleFilter);
             if (keyword !== "") {
-                filteredUsers = filteredUsers.filter(u => 
+                filteredUsers = filteredUsers.filter(u =>
                     (u.name && u.name.toLowerCase().includes(keyword)) ||
                     (u.email && u.email.toLowerCase().includes(keyword)) ||
                     (u.affiliation && u.affiliation.toLowerCase().includes(keyword)) ||
@@ -389,41 +394,34 @@
             document.getElementById("filter-user-count").textContent = filteredUsers.length;
 
             if (filteredUsers.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 30px; color: var(--text-muted);">검색 조건에 일치하는 회원이 없습니다.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--text-muted);">검색 조건에 일치하는 회원이 없습니다.</td></tr>`;
                 return;
             }
 
-            // Role selection mapping
             const roleOptions = [
-                { value: "admin", label: "최고관리인" },
-                { value: "secretary", label: "학회간사" },
-                { value: "editor", label: "편집위원장" },
-                { value: "president", label: "학회회장" },
-                { value: "reviewer", label: "심사위원" },
-                { value: "member", label: "일반회원" },
-                { value: "research", label: "연구회원" },
-                { value: "lifetime", label: "평생회원" }
+                { value: "admin", label: "최고관리인" }, { value: "secretary", label: "학회간사" },
+                { value: "editor", label: "편집위원장" }, { value: "president", label: "학회회장" },
+                { value: "reviewer", label: "심사위원" }, { value: "member", label: "일반회원" },
+                { value: "research", label: "연구회원" }, { value: "lifetime", label: "평생회원" },
+                { value: "group", label: "단체회원" }, { value: "special", label: "특별회원" }
             ];
 
             filteredUsers.forEach(user => {
                 const tr = document.createElement("tr");
-                const isSelf = user.email.toLowerCase() === currentAdminEmail;
-
-                // Build Role Select Options
-                let selectHtml = `<select onchange="changeUserRole('${user.email}', this.value)" style="padding: 4px 8px; font-size: 0.85rem; border-radius: 4px;" ${isSelf ? 'disabled' : ''}>`;
+                const isSelf = (user.email || "").toLowerCase() === currentAdminEmail;
+                let selectHtml = `<select onchange="changeUserRole('${user.email}', this.value)" style="padding:4px 8px;font-size:0.85rem;border-radius:4px;" ${isSelf ? 'disabled' : ''}>`;
                 roleOptions.forEach(opt => {
                     selectHtml += `<option value="${opt.value}" ${user.role === opt.value ? 'selected' : ''}>${opt.label}</option>`;
                 });
                 selectHtml += `</select>`;
-
                 tr.innerHTML = `
-                    <td style="font-weight: 700; color: var(--text-dark);">${user.name} ${isSelf ? ' <span style="font-size:0.75rem; color:var(--color-red); font-weight:normal;">(본인)</span>' : ''}</td>
-                    <td>${user.email}</td>
-                    <td>${user.affiliation || "-"}</td>
-                    <td>${user.phone || "-"}</td>
+                    <td style="font-weight:700;color:var(--text-dark);">${user.name || '-'} ${isSelf ? '<span style="font-size:0.75rem;color:var(--color-red);font-weight:normal;">(본인)</span>' : ''}</td>
+                    <td>${user.email || '-'}</td>
+                    <td>${user.affiliation || '-'}</td>
+                    <td>${user.phone || '-'}</td>
                     <td>${selectHtml}</td>
-                    <td style="text-align: center;">
-                        <button type="button" class="btn-remove-author" onclick="deleteUser('${user.email}')" style="margin:0; padding: 6px 12px; font-size: 0.8rem; border-radius:4px; font-weight:bold;" ${isSelf ? 'disabled style="color:#ccc; cursor:not-allowed;"' : ''}>
+                    <td style="text-align:center;">
+                        <button type="button" class="btn-remove-author" onclick="deleteUser('${user.email}')" style="margin:0;padding:6px 12px;font-size:0.8rem;border-radius:4px;font-weight:bold;" ${isSelf ? 'disabled style="color:#ccc;cursor:not-allowed;"' : ''}>
                             <i class="fa-solid fa-user-minus"></i> 탈퇴
                         </button>
                     </td>
@@ -432,55 +430,44 @@
             });
         }
 
-        // 5. Change Role Event Handler
-        function changeUserRole(email, newRole) {
-            const userIndex = registeredUsers.findIndex(u => u.email.toLowerCase() === email.toLowerCase());
-            if (userIndex !== -1) {
-                const prevRole = registeredUsers[userIndex].role;
+        // 5. 권한 변경 (Sheets API)
+        async function changeUserRole(email, newRole) {
+            const userIndex = registeredUsers.findIndex(u => (u.email||'').toLowerCase() === email.toLowerCase());
+            if (userIndex === -1) return;
+            const userName = registeredUsers[userIndex].name;
+            try {
+                const res = await window.DB_updateUserRole(email, newRole);
+                if (!res.ok) { alert("오류: " + res.error); return; }
                 registeredUsers[userIndex].role = newRole;
-                
-                // Commit to localStorage
-                localStorage.setItem("registered_users", JSON.stringify(registeredUsers));
-                
-                // If the updated user is also the one currently logged in (unlikely to trigger if self-disabled, but for safety), sync session
-                const loggedInUserStr = localStorage.getItem("logged_in_user");
-                if (loggedInUserStr) {
-                    try {
-                        const loggedUser = JSON.parse(loggedInUserStr);
-                        if (loggedUser.email.toLowerCase() === email.toLowerCase()) {
-                            loggedUser.role = newRole;
-                            localStorage.setItem("logged_in_user", JSON.stringify(loggedUser));
-                        }
-                    } catch (e) {}
-                }
-
-                alert(`${registeredUsers[userIndex].name}님의 권한이 성공적으로 변경되었습니다.`);
+                alert(`${userName}님의 권한이 '${newRole}'(으)로 변경되었습니다.`);
                 renderStats();
                 renderUserList();
+            } catch(e) {
+                alert("서버 연결 오류: " + e.message);
             }
         }
 
-        // 6. Delete User Event Handler
-        function deleteUser(email) {
-            const user = registeredUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
+        // 6. 회원 삭제 (Sheets API)
+        async function deleteUser(email) {
+            const user = registeredUsers.find(u => (u.email||'').toLowerCase() === email.toLowerCase());
             if (!user) return;
-
-            if (confirm(`정말로 ${user.name} (${user.email}) 회원을 강제 탈퇴 처리하시겠습니까?\n이 작업은 로컬 데이터베이스에서 회원을 영구 삭제하며 되돌릴 수 없습니다.`)) {
-                registeredUsers = registeredUsers.filter(u => u.email.toLowerCase() !== email.toLowerCase());
-                
-                // Commit to localStorage
-                localStorage.setItem("registered_users", JSON.stringify(registeredUsers));
-                
-                alert(`${user.name} 회원의 탈퇴 처리가 완료되었습니다.`);
+            if (!confirm(`정말로 ${user.name} (${user.email}) 회원을 탈퇴 처리하시겠습니까?`)) return;
+            try {
+                const res = await window.DB_deleteUser(email);
+                if (!res.ok) { alert("오류: " + res.error); return; }
+                registeredUsers = registeredUsers.filter(u => (u.email||'').toLowerCase() !== email.toLowerCase());
+                alert(`${user.name} 회원 탈퇴 처리가 완료되었습니다.`);
                 renderStats();
                 renderUserList();
+            } catch(e) {
+                alert("서버 연결 오류: " + e.message);
             }
         }
 
-        // 7. Data Sync (Export / Import)
+        // 7. 데이터 동기화 (Export)
         function exportSyncData() {
             const data = {
-                registered_users: localStorage.getItem("registered_users"),
+                registered_users: JSON.stringify(registeredUsers),
                 notice_posts: localStorage.getItem("notice_posts"),
                 freeboard_posts: localStorage.getItem("freeboard_posts")
             };
@@ -490,44 +477,61 @@
             textarea.value = base64Str;
             textarea.removeAttribute("readonly");
             textarea.select();
-            
             navigator.clipboard.writeText(base64Str).then(() => {
-                alert("동기화 데이터 코드가 클립보드에 복사되었습니다!\n이 코드를 카카오톡, 이메일 등으로 모바일 기기에 보낸 후 적용해 보세요.");
+                alert("데이터 코드가 클립보드에 복사되었습니다!");
                 textarea.setAttribute("readonly", "true");
-            }).catch(err => {
-                alert("코드가 생성되었습니다. 텍스트 박스의 내용을 전체 선택하여 복사해 주세요.");
+            }).catch(() => {
+                alert("텍스트 박스의 내용을 전체 선택하여 복사해 주세요.");
                 textarea.setAttribute("readonly", "true");
             });
         }
 
         function importSyncData() {
-            const base64Str = prompt("복사해온 동기화 데이터 코드를 여기에 입력해 주세요:");
-            if (!base64Str) return;
+            alert("이제 데이터는 Google Sheets에 자동 저장됩니다. 별도 가져오기가 필요하지 않습니다.");
+        }
 
+        // 8. 페이지 초기화 — Sheets에서 회원 목록 로드
+        async function initPage() {
+            const tbody = document.getElementById("user-admin-list-tbody");
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> 회원 목록을 불러오는 중...</td></tr>`;
             try {
-                const jsonStr = decodeURIComponent(escape(atob(base64Str.trim())));
-                const data = JSON.parse(jsonStr);
-                
-                if (data.registered_users) {
-                    localStorage.setItem("registered_users", data.registered_users);
-                }
-                if (data.notice_posts) {
-                    localStorage.setItem("notice_posts", data.notice_posts);
-                }
-                if (data.freeboard_posts) {
-                    localStorage.setItem("freeboard_posts", data.freeboard_posts);
-                }
-
-                alert("데이터 연동 및 복원이 완료되었습니다!\n페이지를 새로고침하여 바뀐 데이터를 로드합니다.");
-                window.location.reload();
-            } catch (e) {
-                alert("올바르지 않은 동기화 코드 형식입니다. 다시 확인해 주세요.");
+                // 관리자 기본 계정 시드 (최초 1회)
+                await window.DB_seedAdminAccounts();
+                // 전체 회원 목록 로드
+                registeredUsers = await window.DB_getUsers();
+                console.log("[member_admin] 로드된 회원 수:", registeredUsers.length);
+                renderStats();
+                renderUserList();
+            } catch(e) {
+                console.error("회원 목록 로드 실패:", e);
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px;color:red;">회원 목록 로드 실패: ${e.message}</td></tr>`;
             }
         }
 
-        // Initialize Page
-        renderStats();
-        renderUserList();
+        initPage();
+
+        // 특별 관리자 패널 표시
+        const loggedInUser = localStorage.getItem("logged_in_user");
+        if (loggedInUser) {
+            try {
+                const userObj = JSON.parse(loggedInUser);
+                if (window.isSpecialAdmin && window.isSpecialAdmin(userObj)) {
+                    const resetPanel = document.getElementById("special-admin-reset-panel");
+                    if (resetPanel) resetPanel.style.display = "block";
+                }
+            } catch(e) {}
+        }
+
+        window.handleSystemReset = function() {
+            if (confirm("정말로 전체 시스템을 초기화하시겠습니까? 이 작업은 복구할 수 없습니다.")) {
+                if (window.resetSystemDatabase) {
+                    window.resetSystemDatabase();
+                    alert("초기화가 완료되었습니다.");
+                    window.location.href = "login.html";
+                }
+            }
+        };
     </script>
 </body>
 </html>
+

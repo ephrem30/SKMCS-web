@@ -467,14 +467,22 @@
     </div>
 
     <!-- Scripts -->
+    <script src="db.js"></script>
     <script src="share.js"></script>
     <script>
-        // Load registered users from localStorage
+        // Load registered users from Google Sheets DB
         let registeredUsers = [];
-        try {
-            registeredUsers = JSON.parse(localStorage.getItem("registered_users") || "[]");
-        } catch (e) {
-            console.error("Error parsing registered_users:", e);
+
+        async function loadAndRender() {
+            const tbody = document.getElementById("directory-list-tbody");
+            if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> 회원 목록을 불러오는 중...</td></tr>`;
+            try {
+                registeredUsers = await window.DB_getUsers();
+                renderDirectoryList();
+            } catch(e) {
+                console.error("회원 목록 로드 실패:", e);
+                if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;color:red;">회원 목록 로드 실패: ${e.message}</td></tr>`;
+            }
         }
 
         const roleLabels = {
@@ -622,7 +630,7 @@
             const dateStr = `${date.getFullYear()}. ${String(date.getMonth() + 1).padStart(2, '0')}. ${String(date.getDate()).padStart(2, '0')}`;
             document.getElementById("print-date-stamp").textContent = `명부 출력 일시: ${dateStr}`;
             
-            renderDirectoryList();
+            loadAndRender();
         });
     </script>
 </body>

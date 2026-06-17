@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="styles_v2.css">
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Sheets DB Client -->
+    <script src="db.js"></script>
     <style>
         /* Specific CSS rules for Registration wizard */
         .agree-title {
@@ -827,8 +829,8 @@
             }
         }
 
-        // Email duplicate check
-        function checkEmailDuplicate() {
+        // Email duplicate check (Google Sheets DB 기반)
+        async function checkEmailDuplicate() {
             const emailInput = document.getElementById("reg-email");
             const email = emailInput.value.trim();
             if (!email) {
@@ -842,30 +844,30 @@
                 return;
             }
 
-            // Simulate database checking from localStorage
-            const localUsersStr = localStorage.getItem("registered_users");
-            let users = [];
-            if (localUsersStr) {
-                try { users = JSON.parse(localUsersStr); } catch(e) {}
-            }
+            const checkBtn = document.getElementById("btn-check-email");
+            if (checkBtn) { checkBtn.disabled = true; checkBtn.textContent = "확인 중..."; }
 
-            // Also check default mock emails to prevent overrides
-            const existingEmails = ["admin@gugak.go.kr", "reviewer@gugak.go.kr", "member@dgu.ac.kr"];
-            const isDuplicate = existingEmails.includes(email.toLowerCase()) || users.some(u => u.email.toLowerCase() === email.toLowerCase());
-
-            if (isDuplicate) {
-                alert("이미 등록된 이메일 주소입니다. 다른 이메일을 사용해 주십시오.");
-                emailInput.focus();
-                isEmailChecked = false;
-            } else {
-                alert("사용 가능한 이메일 주소입니다.");
-                isEmailChecked = true;
-                emailInput.readOnly = true;
+            try {
+                const exists = await window.DB_checkEmail(email);
+                if (exists) {
+                    alert("이미 등록된 이메일 주소입니다. 다른 이메일을 사용해 주십시오.");
+                    emailInput.focus();
+                    isEmailChecked = false;
+                } else {
+                    alert("사용 가능한 이메일 주소입니다.");
+                    isEmailChecked = true;
+                    emailInput.readOnly = true;
+                }
+            } catch(e) {
+                console.error("이메일 확인 오류:", e);
+                alert("서버 연결 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+            } finally {
+                if (checkBtn) { checkBtn.disabled = false; checkBtn.textContent = "중복확인"; }
             }
         }
 
         // Next step click
-        function handleNextStep() {
+        async function handleNextStep() {
             if (currentRegStep === 1) {
                 const agreeChecked = document.getElementById("agree-checkbox").checked;
                 if (!agreeChecked) {
@@ -931,46 +933,46 @@
                     return;
                 }
 
-                // Save user credentials into localStorage
-                const localUsersStr = localStorage.getItem("registered_users");
-                let users = [];
-                if (localUsersStr) {
-                    try { users = JSON.parse(localUsersStr); } catch(e) {}
-                }
+                // Google Sheets DB에 회원가입 저장
+                const nextBtn = document.getElementById("btn-next-step") || document.querySelector(".reg-btn-next");
+                if (nextBtn) { nextBtn.disabled = true; nextBtn.textContent = "저장 중..."; }
 
-                users.push({
-                    email: email,
-                    password: pw, // Demo simple security
-                    name: name,
-                    role: role,
-                    affiliation: aff,
-                    phone: phone,
-                    birth: birth,
-                    address: homeAddress || workAddress, // Fallback for compatibility
-                    
-                    // Detailed Admission Form fields
-                    position: position,
-                    career: career,
-                    education: {
-                        university: eduUniv,
-                        univMajor: eduUnivMajor,
-                        graduate: eduGrad,
-                        gradMajor: eduGradMajor,
-                        gradCourse: eduGradCourse
-                    },
-                    home: {
-                        phone: homePhone,
-                        address: homeAddress
-                    },
-                    work: {
-                        phone: workPhone,
-                        address: workAddress
+                try {
+                    const result = await window.DB_addUser({
+                        email: email,
+                        password: pw,
+                        name: name,
+                        role: role,
+                        affiliation: aff,
+                        phone: phone,
+                        birth: birth,
+                        address: homeAddress || workAddress,
+                        position: position,
+                        career: career,
+                        edu_university: eduUniv,
+                        edu_univ_major: eduUnivMajor,
+                        edu_graduate: eduGrad,
+                        edu_grad_major: eduGradMajor,
+                        edu_grad_course: eduGradCourse,
+                        home_phone: homePhone,
+                        home_address: homeAddress,
+                        work_phone: workPhone,
+                        work_address: workAddress,
+                        registered_at: new Date().toISOString()
+                    });
+
+                    if (result.ok) {
+                        currentRegStep = 3;
+                        updateRegStepUI();
+                    } else {
+                        alert("회원가입 오류: " + (result.error || "알 수 없는 오류"));
                     }
-                });
-                localStorage.setItem("registered_users", JSON.stringify(users));
-
-                currentRegStep = 3;
-                updateRegStepUI();
+                } catch(e) {
+                    console.error("회원가입 저장 오류:", e);
+                    alert("서버 연결 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+                } finally {
+                    if (nextBtn) { nextBtn.disabled = false; nextBtn.textContent = "다음 단계"; }
+                }
             }
         }
 

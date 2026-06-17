@@ -10,6 +10,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Google Sheets DB Client -->
+    <script src="db.js"></script>
 
     <style>
         /* ── Design Tokens (matching styles_v2.css) ── */
@@ -334,20 +336,27 @@
         /* Password toggle */
         .pw-toggle {
             position: absolute;
-            right: 14px;
+            right: 4px;
             top: 50%;
             transform: translateY(-50%);
+            width: 34px;
+            height: 34px;
             cursor: pointer;
             color: #bbb;
             font-size: 0.85rem;
             background: none;
             border: none;
-            padding: 4px;
-            transition: color 0.2s;
+            border-radius: 6px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s, background 0.2s;
+            z-index: 1;
         }
-        .pw-toggle:hover { color: var(--color-red); }
+        .pw-toggle:hover { color: var(--color-red); background: rgba(203,60,49,0.06); }
         .input-wrap:has(.pw-toggle) .form-input {
-            padding-right: 42px;
+            padding-right: 46px;
         }
 
         /* Options row */
@@ -726,63 +735,58 @@
         const saved      = localStorage.getItem('saved_id');
         if (saved) { idInput.value = saved; rememberCb.checked = true; }
 
-        // Login form submit (demo)
-        function handleLogin(e) {
+        // Login form submit (Google Sheets DB 기반)
+        async function handleLogin(e) {
             e.preventDefault();
             const btn = document.getElementById('login-btn');
             const pw = pwInput.value;
-
             const email = idInput.value.trim();
-            const emailLower = email.toLowerCase();
-            
-            // Check registered_users in localStorage
-            const localUsersStr = localStorage.getItem("registered_users");
-            let users = [];
-            if (localUsersStr) {
-                try { users = JSON.parse(localUsersStr); } catch(err) {}
-            }
-            
-            // Find if there is a match
-            const matchedUser = users.find(u => u.email.toLowerCase() === emailLower);
-            
-            let role = '';
-            let name = '';
-            
-            if (matchedUser) {
-                if (matchedUser.password !== pw) {
-                    alert("비밀번호가 올바르지 않습니다.");
-                    pwInput.value = "";
-                    pwInput.focus();
-                    return;
-                }
-                role = matchedUser.role;
-                name = matchedUser.name;
-            } else {
-                alert("등록된 회원이 아니거나 비밀번호가 올바르지 않습니다.");
+
+            if (!email || !pw) {
+                alert("이메일과 비밀번호를 입력해주세요.");
                 return;
             }
-            
+
             btn.innerHTML = '<span class="spinner"></span> 로그인 중...';
-            btn.disabled  = true;
-            
-            localStorage.setItem('logged_in_user', JSON.stringify({ email: email, name: name, role: role }));
+            btn.disabled = true;
 
-            if (rememberCb.checked) {
-                localStorage.setItem('saved_id', idInput.value);
-            } else {
-                localStorage.removeItem('saved_id');
-            }
+            try {
+                const res = await window.DB_login(email, pw);
 
-            // Simulate network delay then redirect
-            setTimeout(() => {
+                if (!res.ok) {
+                    alert(res.error || "로그인에 실패했습니다.");
+                    pwInput.value = "";
+                    pwInput.focus();
+                    btn.innerHTML = '로그인';
+                    btn.disabled = false;
+                    return;
+                }
+
+                // 로그인 성공 — 세션 저장
+                const user = res.user;
+                localStorage.setItem('logged_in_user', JSON.stringify({
+                    email: user.email,
+                    name: user.name,
+                    role: user.role
+                }));
+
+                if (rememberCb.checked) {
+                    localStorage.setItem('saved_id', email);
+                } else {
+                    localStorage.removeItem('saved_id');
+                }
+
+                // 리다이렉트
                 const urlParams = new URLSearchParams(window.location.search);
                 const redirectUrl = urlParams.get('redirect');
-                if (redirectUrl) {
-                    window.location.href = redirectUrl;
-                } else {
-                    window.location.href = 'index.html';
-                }
-            }, 1400);
+                window.location.href = redirectUrl || 'index.html';
+
+            } catch(err) {
+                console.error("로그인 오류:", err);
+                alert("서버 연결 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+                btn.innerHTML = '로그인';
+                btn.disabled = false;
+            }
         }
 
 
