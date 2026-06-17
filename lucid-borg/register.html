@@ -736,7 +736,18 @@
                                         </button>
                                     </div>
                                     <input type="text" id="reg-work-addr2" class="input-text-standard" placeholder="상세주소 입력 (예: 문화관 2층 학회사무국)">
-                                </div>
+                            </div>
+
+                            <!-- Section 5: 증빙 및 제출 서류 -->
+                            <div class="form-section-title">
+                                <i class="fa-solid fa-file-pdf"></i> 증빙 및 가입 원서 파일 첨부
+                            </div>
+                            <div class="form-input-box" style="background: #fafafa; border: 1px solid var(--border-color); border-radius: 6px; padding: 15px; margin-bottom: 20px;">
+                                <label class="form-input-label" for="reg-file">회원가입 서류 (HWP, PDF, 이미지 등) <span style="color: var(--color-red);">*</span></label>
+                                <input type="file" id="reg-file" class="input-text-standard" accept=".pdf,.hwp,.docx,.doc,.jpg,.jpeg,.png,.zip" style="padding: 10px; background: white;" required>
+                                <span style="font-size: 0.8rem; display: block; margin-top: 6px; color: var(--text-muted);">
+                                    * 파일 형식: PDF, HWP, Word(DOCX), ZIP, 이미지 파일 등 (최대 10MB)
+                                </span>
                             </div>
 
                         </div>
@@ -866,6 +877,20 @@
             }
         }
 
+        // 파일 Base64 변환 헬퍼
+        function getBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => {
+                    // data:application/pdf;base64, 형식에서 base64 데이터만 추출
+                    const base64String = reader.result.split(',')[1];
+                    resolve(base64String);
+                };
+                reader.onerror = error => reject(error);
+            });
+        }
+
         // Next step click
         async function handleNextStep() {
             if (currentRegStep === 1) {
@@ -933,9 +958,39 @@
                     return;
                 }
 
+                // 파일 입력 확인
+                const fileInput = document.getElementById("reg-file");
+                const file = fileInput.files[0];
+                if (!file) {
+                    alert("회원가입 신청 서류 파일을 첨부해 주십시오.");
+                    fileInput.focus();
+                    return;
+                }
+                if (file.size > 10 * 1024 * 1024) {
+                    alert("서류 파일 용량은 최대 10MB까지 가능합니다.");
+                    return;
+                }
+
                 // Google Sheets DB에 회원가입 저장
-                const nextBtn = document.getElementById("btn-next-step") || document.querySelector(".reg-btn-next");
-                if (nextBtn) { nextBtn.disabled = true; nextBtn.textContent = "저장 중..."; }
+                const nextBtn = document.getElementById("btn-next") || document.getElementById("btn-next-step") || document.querySelector(".reg-btn-next");
+                if (nextBtn) { nextBtn.disabled = true; nextBtn.textContent = "파일 변환 중..."; }
+
+                let fileData = null;
+                try {
+                    const base64Data = await getBase64(file);
+                    fileData = {
+                        base64: base64Data,
+                        name: file.name,
+                        mimeType: file.type
+                    };
+                } catch(err) {
+                    console.error("파일 변환 에러:", err);
+                    alert("파일 처리 중 오류가 발생했습니다: " + err.message);
+                    if (nextBtn) { nextBtn.disabled = false; nextBtn.textContent = "가입 완료하기"; }
+                    return;
+                }
+
+                if (nextBtn) { nextBtn.textContent = "저장 중..."; }
 
                 try {
                     const result = await window.DB_addUser({
@@ -958,6 +1013,7 @@
                         home_address: homeAddress,
                         work_phone: workPhone,
                         work_address: workAddress,
+                        fileData: fileData,
                         registered_at: new Date().toISOString()
                     });
 
@@ -971,7 +1027,7 @@
                     console.error("회원가입 저장 오류:", e);
                     alert("서버 연결 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
                 } finally {
-                    if (nextBtn) { nextBtn.disabled = false; nextBtn.textContent = "다음 단계"; }
+                    if (nextBtn) { nextBtn.disabled = false; nextBtn.textContent = "가입 완료하기"; }
                 }
             }
         }

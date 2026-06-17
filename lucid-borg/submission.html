@@ -413,6 +413,7 @@
                                         <th class="col-title">논문 제목</th>
                                         <th class="col-date" style="width: 130px; text-align: center;">제출일</th>
                                         <th class="col-status" style="width: 120px; text-align: center;">진행 상태</th>
+                                        <th class="col-delete admin-only-col" style="width: 70px; text-align: center; display: none;">삭제</th>
                                     </tr>
                                 </thead>
                                 <tbody id="history-table-body">
@@ -478,26 +479,12 @@
                             심사위원 및 편집진 권한으로 로그인하셨습니다. 배정된 논문 심사 대상 리스트를 확인하시고 논문 파일을 다운로드하여 검토를 진행해 주시기 바랍니다. 심사 후에는 상세 페이지에서 **심사의견서 및 평가 보고서 파일**을 업로드해 주십시오.
                         </p>
                         
-                        <!-- Reviewer Table -->
-                        <div class="board-top-info" style="margin-bottom: 15px;">
+                        <!-- Reviewer Card List -->
+                        <div class="reviewer-board-topbar">
                             <span class="total">심사 배정 논문: <strong id="reviewer-list-count">0</strong>건</span>
                         </div>
-                        <div class="table-responsive">
-                            <table class="board-table" id="reviewer-board-table" style="width:100%; border-collapse: collapse; margin-bottom: 20px;">
-                                <thead>
-                                    <tr>
-                                        <th class="col-num" style="width: 80px;">번호</th>
-                                        <th class="col-journal" style="width: 140px;">구분/저널</th>
-                                        <th class="col-title">논문 제목(국문)</th>
-                                        <th class="col-download" style="width: 120px; text-align: center;">논문 다운로드</th>
-                                        <th class="col-status" style="width: 100px; text-align: center;">진행상태</th>
-                                        <th class="col-action" style="width: 150px; text-align: center;">심사의견 제출현황</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="reviewer-list-tbody">
-                                    <!-- Populated dynamically via JS -->
-                                </tbody>
-                            </table>
+                        <div id="reviewer-card-list">
+                            <!-- Populated dynamically via JS -->
                         </div>
                     </div>
                 </div>
@@ -723,6 +710,20 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- Special Administrator Database Reset Panel (Visible only to Special Admins) -->
+                        <div id="special-admin-reset-panel" style="display: none; margin-top: 30px; background-color: #fff0f0; border: 1.5px solid #ffcccc; border-radius: 6px; padding: 20px;">
+                            <h4 style="margin: 0 0 10px 0; font-size: 1.1rem; font-weight: 800; color: #b03228; display: flex; align-items: center; gap: 8px;">
+                                <i class="fa-solid fa-triangle-exclamation" style="color: #cb3c31;"></i> 시스템 데이터 초기화 (특별 관리자 전용)
+                            </h4>
+                            <p style="margin: 0 0 15px 0; font-size: 0.85rem; color: #555; line-height: 1.5;">
+                                등록된 모든 회원 목록과 관리인이 등록한 공지사항 및 자유게시판 글을 <strong>최초의 기본 Mock 데이터 상태로 리셋</strong>합니다.<br>
+                                이 작업은 로컬 데이터베이스를 기본값으로 완전히 덮어씌우므로 되돌릴 수 없습니다.
+                            </p>
+                            <button type="button" class="btn-solid" onclick="handleSystemReset()" style="padding: 10px 20px; font-size: 0.85rem; font-weight: 700; background-color: #cb3c31; border-color: #cb3c31; display: inline-flex; align-items: center; gap: 6px; border-radius: 4px; color: white; cursor: pointer; border: 1px solid #cb3c31; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#b03228'; this.style.borderColor='#b03228';" onmouseout="this.style.backgroundColor='#cb3c31'; this.style.borderColor='#cb3c31';">
+                                <i class="fa-solid fa-arrows-rotate"></i> 시스템 데이터 초기화 실행
+                            </button>
                         </div>
                     </div>
                 </div>

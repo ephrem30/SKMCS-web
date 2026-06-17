@@ -56,9 +56,12 @@ function initUploadedMaterials() {
     }
 }
 
+// Immediately initialize databases when script is loaded to prevent timing issues
+initRegisteredUsers();
+initUploadedMaterials();
 
 document.addEventListener("DOMContentLoaded", () => {
-    // 0. Initialize databases
+    // 0. Initialize databases (redundant check for safety)
     initRegisteredUsers();
     initUploadedMaterials();
 
@@ -788,6 +791,11 @@ function renderHistoryTable() {
             historyDesc.textContent = "투고하신 논문의 심사 단계별 진행 현황을 실시간으로 확인하실 수 있습니다.";
         }
     }
+
+    // Show/hide admin-only delete column header
+    document.querySelectorAll(".admin-only-col").forEach(el => {
+        el.style.display = isAdmin ? "table-cell" : "none";
+    });
     
     const submissions = getSubmissions();
     
@@ -806,11 +814,13 @@ function renderHistoryTable() {
         const isOwn = sub.author_email === user.email || (sub.authors && sub.authors.some(a => a.email === user.email));
         return isOwn;
     });
+
+    const colSpan = isAdmin ? 6 : 5;
         
     if (filteredSubmissions.length === 0) {
         tableBody.innerHTML = `
             <tr>
-                <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 30px 0;">
+                <td colspan="${colSpan}" style="text-align: center; color: var(--text-muted); padding: 30px 0;">
                     ${isAuthorized ? '접수된 논문이 없습니다.' : '투고하신 논문이 없습니다.'}
                 </td>
             </tr>
@@ -833,6 +843,18 @@ function renderHistoryTable() {
         const titleHtml = isAuthorized 
             ? `<div><strong>${escapeHtml(sub.title_ko)}</strong></div><div style="font-size: 0.8rem; color: #888; margin-top: 4px;"><i class="fa-solid fa-user"></i> 제출자: ${escapeHtml(sub.author_email)}</div>`
             : `<strong>${escapeHtml(sub.title_ko)}</strong>`;
+
+        // Admin delete button cell
+        const deleteCellHtml = isAdmin ? `
+            <td class="col-delete admin-only-col" style="text-align: center; vertical-align: middle;">
+                <button class="btn-row-delete" data-id="${escapeHtml(sub.id)}" title="삭제"
+                    style="background: #cb3c31; color: white; border: none; border-radius: 4px;
+                           padding: 5px 9px; font-size: 0.78rem; cursor: pointer; line-height: 1;
+                           display: inline-flex; align-items: center; gap: 4px; font-weight: 700;
+                           transition: background 0.15s;">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            </td>` : '';
             
         row.innerHTML = `
             <td class="col-num" style="font-family: 'Poppins', sans-serif; font-weight: 500;">${filteredSubmissions.length - index}</td>
@@ -842,17 +864,64 @@ function renderHistoryTable() {
             <td class="col-status" style="text-align: center;">
                 <span class="status-badge ${badgeClass}">${escapeHtml(sub.status)}</span>
             </td>
+            ${deleteCellHtml}
         `;
         
-        row.addEventListener("click", () => {
+        // Row click opens modal (but not delete button)
+        row.addEventListener("click", (e) => {
+            if (e.target.closest(".btn-row-delete")) return;
             openDetailModal(sub.id);
         });
+
+        // Delete button click
+        if (isAdmin) {
+            const deleteBtn = row.querySelector(".btn-row-delete");
+            if (deleteBtn) {
+                deleteBtn.addEventListener("mouseenter", function() { this.style.background = "#b03228"; });
+                deleteBtn.addEventListener("mouseleave", function() { this.style.background = "#cb3c31"; });
+                deleteBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    deleteSubmissionFromBoard(sub.id);
+                });
+            }
+        }
         
         tableBody.appendChild(row);
     });
 }
 
+// Delete submission directly from the board (Admin only - soft delete)
+function deleteSubmissionFromBoard(id) {
+    if (!confirm("이 논문 투고 내역을 삭제하시겠습니까?\n삭제 후 관리자 패널에서 복구할 수 있습니다.")) return;
+
+    const submissions = getSubmissions();
+    const idx = submissions.findIndex(s => s.id === id);
+    if (idx === -1) return;
+
+    submissions[idx].deleted = true;
+    submissions[idx].deleted_at = new Date().toISOString();
+    localStorage.setItem("submissions_data", JSON.stringify(submissions));
+
+    // Refresh tables
+    renderHistoryTable();
+    if (typeof renderReviewerSpaceTable === 'function') renderReviewerSpaceTable();
+
+    // Small toast-style notice
+    const toast = document.createElement("div");
+    toast.textContent = "논문이 삭제되었습니다. (관리자 패널에서 복구 가능)";
+    toast.style.cssText = `
+        position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+        background: #333; color: white; padding: 12px 22px; border-radius: 8px;
+        font-size: 0.9rem; font-weight: 600; z-index: 99999;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.25); pointer-events: none;
+        animation: fadeInUp 0.25s ease;
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
 // Open paper detail and admin moderation modal
+
 function openDetailModal(id) {
     const submissions = getSubmissions();
     const sub = submissions.find(s => s.id === id);
@@ -1248,90 +1317,99 @@ window.downloadReviewFile = function(idx, event) {
     alert(`[파일 다운로드] ${file.name} (${file.size}) 파일이 성공적으로 다운로드되었습니다.`);
 };
 
-// Render Reviewer Space Table
+// Render Reviewer Space — Card Layout
 function renderReviewerSpaceTable() {
-    const tableBody = document.getElementById("reviewer-list-tbody");
-    const countEl = document.getElementById("reviewer-list-count");
-    if (!tableBody) return;
-    
-    tableBody.innerHTML = "";
-    
-    const submissions = getSubmissions();
+    const cardList = document.getElementById("reviewer-card-list");
+    const countEl  = document.getElementById("reviewer-list-count");
+    if (!cardList) return;
+
+    cardList.innerHTML = "";
+
+    const submissions    = getSubmissions();
     const loggedInUserStr = localStorage.getItem("logged_in_user");
     let loggedInUser = null;
     if (loggedInUserStr) {
-        try {
-            loggedInUser = JSON.parse(loggedInUserStr);
-        } catch(e) {}
+        try { loggedInUser = JSON.parse(loggedInUserStr); } catch(e) {}
     }
-    
-    // Reviewers and Admins only see submissions explicitly assigned to them in the Reviewer Space
+
+    // Filter: reviewer/admin sees only their assigned papers
     const reviewerSubmissions = submissions.filter(sub => {
-        if (sub.deleted) return false; // Exclude soft-deleted papers
+        if (sub.deleted) return false;
         if (loggedInUser && (loggedInUser.role === 'reviewer' || ADMIN_ROLES.includes(loggedInUser.role))) {
             return sub.reviewer_email === loggedInUser.email;
         }
         return true;
     });
-    
+
     if (countEl) countEl.textContent = reviewerSubmissions.length;
-    
+
     if (reviewerSubmissions.length === 0) {
-        tableBody.innerHTML = `
-            <tr>
-                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px 0;">
-                    배정된 심사 대상 논문이 없습니다.
-                </td>
-            </tr>
-        `;
+        cardList.innerHTML = `
+            <div class="reviewer-empty">
+                <i class="fa-solid fa-inbox"></i>
+                <p>배정된 심사 대상 논문이 없습니다.</p>
+            </div>`;
         return;
     }
-    
+
     reviewerSubmissions.sort((a, b) => b.id.localeCompare(a.id));
-    
+
     reviewerSubmissions.forEach((sub, index) => {
-        const row = document.createElement("tr");
-        row.setAttribute("data-id", sub.id);
-        row.style.cursor = "pointer";
-        
+        // Status
         let badgeClass = "submitted";
-        if (sub.status === "심사중") badgeClass = "reviewing";
+        if (sub.status === "심사중")   badgeClass = "reviewing";
         else if (sub.status === "게재확정") badgeClass = "accepted";
-        else if (sub.status === "반려") badgeClass = "rejected";
-        
+        else if (sub.status === "반려")    badgeClass = "rejected";
+
+        // Review files
         const fileCount = sub.review_files ? sub.review_files.length : 0;
-        const uploadStatusHtml = fileCount > 0 
-            ? `<span style="color: var(--color-green); font-weight: 700;"><i class="fa-solid fa-file-circle-check"></i> 제출완료 (${fileCount}건)</span>` 
-            : `<span style="color: var(--text-muted); font-size: 0.85rem;"><i class="fa-solid fa-cloud-arrow-up"></i> 미제출</span>`;
-            
+        const uploadHtml = fileCount > 0
+            ? `<span class="reviewer-upload-status done"><i class="fa-solid fa-file-circle-check"></i> 제출완료 (${fileCount}건)</span>`
+            : `<span class="reviewer-upload-status pending"><i class="fa-solid fa-cloud-arrow-up"></i> 미제출</span>`;
+
+        // Download button
         let realFile = "통도사 새벽예불의 전승 양상과 현대적 의의 - 양영진.pdf";
         if (sub.file_manuscript.toLowerCase().includes("daegeum")) {
             realFile = "국악관현악에서 B♭대금과 E♭대금의 - 정지훈.pdf";
         } else if (sub.file_manuscript.toLowerCase().includes("gayageum")) {
             realFile = "신라의 범패 통도소리 의미와 가치 - 윤소희.pdf";
         }
-        
         const downloadName = sub.file_manuscript.replace(/\.docx?$/i, ".pdf");
-        const downloadBtnHtml = `<a href="${encodeURI(realFile)}" download="${escapeHtml(downloadName)}" class="btn-outline" style="padding: 4px 10px; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;" onclick="event.stopPropagation();"><i class="fa-solid fa-file-arrow-down"></i> 다운로드</a>`;
 
-        row.innerHTML = `
-            <td class="col-num" style="font-family: 'Poppins', sans-serif; font-weight: 500;">${submissions.length - index}</td>
-            <td class="col-journal">${escapeHtml(sub.journal)} (${escapeHtml(sub.category)})</td>
-            <td class="col-title" style="text-align: left; font-weight: 700;">${escapeHtml(sub.title_ko)}</td>
-            <td class="col-download" style="text-align: center;">${downloadBtnHtml}</td>
-            <td class="col-status" style="text-align: center;">
+        // Card
+        const card = document.createElement("div");
+        card.className = "reviewer-card";
+        card.setAttribute("data-id", sub.id);
+        card.innerHTML = `
+            <div class="reviewer-card-header">
+                <span class="reviewer-card-num">${reviewerSubmissions.length - index}</span>
+                <span class="reviewer-card-journal">${escapeHtml(sub.journal)} · ${escapeHtml(sub.category)}</span>
                 <span class="status-badge ${badgeClass}">${escapeHtml(sub.status)}</span>
-            </td>
-            <td class="col-action" style="text-align: center;">${uploadStatusHtml}</td>
+            </div>
+            <div class="reviewer-card-title">${escapeHtml(sub.title_ko)}</div>
+            <div class="reviewer-card-meta">
+                <span><i class="fa-solid fa-user"></i> ${escapeHtml(sub.author_email)}</span>
+                <span><i class="fa-solid fa-calendar"></i> ${sub.date || ''}</span>
+            </div>
+            <div class="reviewer-card-actions">
+                <a href="${encodeURI(realFile)}" download="${escapeHtml(downloadName)}"
+                   class="btn-outline reviewer-dl-btn"
+                   onclick="event.stopPropagation();">
+                    <i class="fa-solid fa-file-arrow-down"></i> 논문 다운로드
+                </a>
+                ${uploadHtml}
+            </div>
         `;
-        
-        row.addEventListener("click", () => {
+
+        card.addEventListener("click", (e) => {
+            if (e.target.closest(".reviewer-dl-btn")) return;
             openDetailModal(sub.id);
         });
-        
-        tableBody.appendChild(row);
+
+        cardList.appendChild(card);
     });
 }
+
 
 // Initialize Admin Space: Bind sub-tabs and controls
 function initAdminSpace() {
@@ -1435,6 +1513,18 @@ function initAdminSpace() {
     } else {
         const papersBtn = document.querySelector('.admin-sub-tab-btn[data-sub="papers"]');
         if (papersBtn) papersBtn.click();
+    }
+
+    // Show special admin reset panel if applicable
+    const loggedInUser = localStorage.getItem("logged_in_user");
+    if (loggedInUser) {
+        try {
+            const userObj = JSON.parse(loggedInUser);
+            if (window.isSpecialAdmin && window.isSpecialAdmin(userObj)) {
+                const resetPanel = document.getElementById("special-admin-reset-panel");
+                if (resetPanel) resetPanel.style.display = "block";
+            }
+        } catch(e) {}
     }
 }
 

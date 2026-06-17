@@ -30,7 +30,8 @@ function getOrCreateSheet(name) {
         "email","name","password","role","affiliation","phone","birth",
         "position","career","address","home_phone","home_address",
         "work_phone","work_address","edu_university","edu_univ_major",
-        "edu_graduate","edu_grad_major","edu_grad_course","registered_at"
+        "edu_graduate","edu_grad_major","edu_grad_course","registered_at",
+        "document_url"
       ]);
     } else if (name === SHEET_NAMES.notices || name === SHEET_NAMES.freeboard) {
       sheet.appendRow([
@@ -112,6 +113,18 @@ function doPost(e) {
         const existing = sheetToJson(sheet);
         const dup = existing.find(u => u.email && u.email.toLowerCase() === (data.email || "").toLowerCase());
         if (dup) return makeResponse({ ok: false, error: "이미 등록된 이메일입니다." });
+
+        // 제출서류 파일이 함께 전달된 경우 구글 드라이브에 저장 처리
+        if (data.fileData) {
+          data.document_url = uploadFileToDrive(data.fileData, data.name || "미상");
+          delete data.fileData; // 스프레드시트에는 base64 원본을 쓰지 않고 파일 링크만 쓰기 위해 삭제
+        }
+
+        // 스프레드시트 컬럼 헤더에 document_url이 없을 경우 자동으로 맨 끝에 헤더 추가 (구버전 호환)
+        if (headers.indexOf("document_url") === -1) {
+          headers.push("document_url");
+          sheet.getRange(1, headers.length).setValue("document_url");
+        }
       }
       data.created_at = new Date().toISOString();
       const row = headers.map(h => {
@@ -188,5 +201,34 @@ function doPost(e) {
 
   } catch (err) {
     return makeResponse({ ok: false, error: err.message });
+  }
+}
+
+// ── 구글 드라이브 파일 저장 헬퍼 (회원가입 서류용) ──
+function uploadFileToDrive(fileData, userName) {
+  try {
+    const folderName = "한국음악학회_회원가입서류";
+    const folders = DriveApp.getFoldersByName(folderName);
+    let folder;
+    if (folders.hasNext()) {
+      folder = folders.next();
+    } else {
+      folder = DriveApp.createFolder(folderName);
+    }
+    
+    // 파일명 포맷: [년월일]_[성명]_[파일명]
+    const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+    const fileName = dateStr + "_" + userName + "_" + fileData.name;
+    
+    const decoded = Utilities.base64Decode(fileData.base64);
+    const blob = Utilities.newBlob(decoded, fileData.mimeType, fileName);
+    const file = folder.createFile(blob);
+    
+    // 파일 링크 누구나 열 수 있게 공유 권한 설정 (Viewer 권한)
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    
+    return file.getUrl();
+  } catch (err) {
+    throw new Error("드라이브 서류 업로드 실패: " + err.message);
   }
 }

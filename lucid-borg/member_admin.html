@@ -300,11 +300,12 @@
                             <thead>
                                 <tr>
                                     <th style="width: 15%;">이름</th>
-                                    <th style="width: 25%;">이메일 (ID)</th>
-                                    <th style="width: 20%;">소속기관</th>
+                                    <th style="width: 23%;">이메일 (ID)</th>
+                                    <th style="width: 15%;">소속기관</th>
                                     <th style="width: 15%;">연락처</th>
-                                    <th style="width: 15%;">권한설정</th>
-                                    <th style="width: 10%; text-align: center;">관리</th>
+                                    <th style="width: 12%;">제출서류</th>
+                                    <th style="width: 12%;">권한설정</th>
+                                    <th style="width: 8%; text-align: center;">관리</th>
                                 </tr>
                             </thead>
                             <tbody id="user-admin-list-tbody">
@@ -394,7 +395,7 @@
             document.getElementById("filter-user-count").textContent = filteredUsers.length;
 
             if (filteredUsers.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--text-muted);">검색 조건에 일치하는 회원이 없습니다.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text-muted);">검색 조건에 일치하는 회원이 없습니다.</td></tr>`;
                 return;
             }
 
@@ -414,11 +415,18 @@
                     selectHtml += `<option value="${opt.value}" ${user.role === opt.value ? 'selected' : ''}>${opt.label}</option>`;
                 });
                 selectHtml += `</select>`;
+
+                // 제출 서류 다운로드/보기 링크 생성
+                const docLinkHtml = user.document_url 
+                    ? `<a href="${user.document_url}" target="_blank" style="padding:4px 8px;font-size:0.8rem;border:1.5px solid var(--color-blue);color:var(--color-blue);background:white;border-radius:4px;text-decoration:none;display:inline-flex;align-items:center;gap:4px;font-weight:bold;"><i class="fa-solid fa-file-pdf"></i> 서류보기</a>` 
+                    : `<span style="color:#bbb;font-size:0.8rem;">미제출</span>`;
+
                 tr.innerHTML = `
                     <td style="font-weight:700;color:var(--text-dark);">${user.name || '-'} ${isSelf ? '<span style="font-size:0.75rem;color:var(--color-red);font-weight:normal;">(본인)</span>' : ''}</td>
                     <td>${user.email || '-'}</td>
                     <td>${user.affiliation || '-'}</td>
                     <td>${user.phone || '-'}</td>
+                    <td style="text-align:center;">${docLinkHtml}</td>
                     <td>${selectHtml}</td>
                     <td style="text-align:center;">
                         <button type="button" class="btn-remove-author" onclick="deleteUser('${user.email}')" style="margin:0;padding:6px 12px;font-size:0.8rem;border-radius:4px;font-weight:bold;" ${isSelf ? 'disabled style="color:#ccc;cursor:not-allowed;"' : ''}>

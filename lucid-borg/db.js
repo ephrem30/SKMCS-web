@@ -23,6 +23,20 @@ async function _dbPost(body) {
     return json; // { ok, message/error }
 }
 
+// ── 내부: POST 요청 (대용량 전송 - GET 방식의 길이 제한 회피용 직접 POST 호출) ──
+async function _dbPostDirect(body) {
+    const res = await fetch(DB_URL, {
+        method: "POST",
+        headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+        },
+        body: JSON.stringify(body)
+    });
+    if (!res.ok) throw new Error("네트워크 오류: " + res.status);
+    const json = await res.json();
+    return json; // { ok, message/error }
+}
+
 
 // ============================================================
 // 1. 회원 (users)
@@ -41,7 +55,7 @@ window.DB_checkEmail = async function(email) {
 
 /** 회원가입 */
 window.DB_addUser = async function(userData) {
-    return await _dbPost({ action: "add", sheet: "users", data: userData });
+    return await _dbPostDirect({ action: "add", sheet: "users", data: userData });
 };
 
 /** 로그인 인증 */
