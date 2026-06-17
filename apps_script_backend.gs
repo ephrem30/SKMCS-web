@@ -156,9 +156,16 @@ function doPost(e) {
     if (action === "login") {
       const sheet2 = getOrCreateSheet(SHEET_NAMES.users);
       const users = sheetToJson(sheet2);
-      const user = users.find(u =>
-        u.email && u.email.toLowerCase() === (data.email || "").toLowerCase()
-      );
+      const inputEmail = (data.email || "").toLowerCase().trim();
+      const user = users.find(u => {
+        if (!u.email) return false;
+        const dbEmail = u.email.toLowerCase().trim();
+        // 1. 이메일 전체가 일치하는 경우
+        if (dbEmail === inputEmail) return true;
+        // 2. 골뱅이(@) 없이 ID만 입력한 경우, dbEmail의 ID 부분과 일치하는지 확인 (예: admin -> admin@gmail.com)
+        if (!inputEmail.includes("@") && dbEmail.split("@")[0] === inputEmail) return true;
+        return false;
+      });
       if (!user) return makeResponse({ ok: false, error: "등록된 회원이 아닙니다." });
       if (user.password !== data.password) return makeResponse({ ok: false, error: "비밀번호가 올바르지 않습니다." });
       // 비밀번호 제거 후 반환
