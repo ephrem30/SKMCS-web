@@ -8,20 +8,21 @@ const DB_URL = "https://script.google.com/macros/s/AKfycbxZx3MAitf9B35uQlpwYRCOk
 // ── 내부: GET 요청 ──
 async function _dbGet(sheet) {
     const res = await fetch(`${DB_URL}?action=get&sheet=${sheet}`);
+    if (!res.ok) throw new Error("네트워크 오류: " + res.status);
     const json = await res.json();
     if (!json.ok) throw new Error(json.error || "DB 읽기 실패");
     return json.data || [];
 }
 
-// ── 내부: POST 요청 ──
+// ── 내부: POST 요청 (GET 파라미터 방식으로 CORS 우회) ──
 async function _dbPost(body) {
-    const res = await fetch(DB_URL, {
-        method: "POST",
-        body: JSON.stringify(body)
-    });
+    const encoded = encodeURIComponent(JSON.stringify(body));
+    const res = await fetch(`${DB_URL}?post_data=${encoded}`);
+    if (!res.ok) throw new Error("네트워크 오류: " + res.status);
     const json = await res.json();
     return json; // { ok, message/error }
 }
+
 
 // ============================================================
 // 1. 회원 (users)

@@ -61,9 +61,16 @@ function sheetToJson(sheet) {
   });
 }
 
-// ── GET 요청 처리 (데이터 읽기) ──
+// ── GET 요청 처리 (데이터 읽기 + POST 우회) ──
 function doGet(e) {
   try {
+    // POST 데이터가 GET 파라미터로 전달된 경우 처리 (CORS 우회)
+    if (e.parameter.post_data) {
+      const body = JSON.parse(decodeURIComponent(e.parameter.post_data));
+      const fakeEvent = { postData: { contents: JSON.stringify(body) } };
+      return doPost(fakeEvent);
+    }
+
     const action = e.parameter.action || "get";
     const sheetKey = e.parameter.sheet;
 
@@ -84,6 +91,7 @@ function doGet(e) {
     return makeResponse({ ok: false, error: err.message });
   }
 }
+
 
 // ── POST 요청 처리 (쓰기/수정/삭제) ──
 function doPost(e) {
