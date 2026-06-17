@@ -126,7 +126,29 @@ function doPost(e) {
           sheet.getRange(1, headers.length).setValue("document_url");
         }
       }
+
+      // 논문 투고 파일이 함께 전달된 경우 구글 드라이브에 저장 처리
+      if (sheetKey === "submissions") {
+        if (data.file_manuscript_data) {
+          data.file_manuscript = uploadSubmissionFileToDrive(data.file_manuscript_data, data.title_ko || "논문");
+          delete data.file_manuscript_data;
+        }
+        if (data.file_agreement_data) {
+          data.file_agreement = uploadSubmissionFileToDrive(data.file_agreement_data, data.title_ko || "논문");
+          delete data.file_agreement_data;
+        }
+      }
+
       data.created_at = new Date().toISOString();
+      
+      // 스프레드시트 컬럼 헤더에 데이터의 필드가 없을 경우 자동으로 맨 끝에 헤더 추가 (구버전 시트 호환 및 스키마 자동 확장)
+      Object.keys(data).forEach(field => {
+        if (headers.indexOf(field) === -1) {
+          headers.push(field);
+          sheet.getRange(1, headers.length).setValue(field);
+        }
+      });
+
       const row = headers.map(h => {
         // authors 배열은 JSON 문자열로 저장
         if (h === "authors" && Array.isArray(data[h])) return JSON.stringify(data[h]);
@@ -138,6 +160,14 @@ function doPost(e) {
 
     // ── 수정 ──
     if (action === "update") {
+      // 스프레드시트 컬럼 헤더에 수정하려는 필드가 없을 경우 자동으로 맨 끝에 헤더 추가 (구버전 시트 호환 및 스키마 자동 확장)
+      Object.keys(data).forEach(field => {
+        if (headers.indexOf(field) === -1) {
+          headers.push(field);
+          sheet.getRange(1, headers.length).setValue(field);
+        }
+      });
+
       const keyCol = headers.indexOf(key) + 1;
       if (keyCol === 0) return makeResponse({ ok: false, error: "key 컬럼 없음: " + key });
       const colValues = sheet.getRange(2, keyCol, Math.max(sheet.getLastRow()-1,1), 1).getValues();
@@ -230,5 +260,36 @@ function uploadFileToDrive(fileData, userName) {
     return file.getUrl();
   } catch (err) {
     throw new Error("드라이브 서류 업로드 실패: " + err.message);
+  }
+}
+
+// ── 구글 드라이브 파일 저장 헬퍼 (논문 투고 파일용) ──
+function uploadSubmissionFileToDrive(fileData, paperTitle) {
+  try {
+    const folderName = "한국음악학회_논문투고파일";
+    const folders = DriveApp.getFoldersByName(folderName);
+    let folder;
+    if (folders.hasNext()) {
+      folder = folders.next();
+    } else {
+      folder = DriveApp.createFolder(folderName);
+    }
+    
+    // 파일명 포맷: [투고일]_[논문제목(일부)]_[원본파일명]
+    const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+    // 특수문자 제거 및 앞 15자만 추출
+    const cleanTitle = (paperTitle || "논문").substring(0, 15).replace(/[\s\x00-\x1F\x7F<>:"/\\|?*]/g, "_");
+    const fileName = dateStr + "_" + cleanTitle + "_" + fileData.name;
+    
+    const decoded = Utilities.base64Decode(fileData.base64);
+    const blob = Utilities.newBlob(decoded, fileData.mimeType, fileName);
+    const file = folder.createFile(blob);
+    
+    // 링크가 있는 누구나 뷰어로 볼 수 있도록 권한 지정 (Viewer 권한)
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    
+    return file.getUrl();
+  } catch (err) {
+    throw new Error("논문 파일 업로드 실패: " + err.message);
   }
 }

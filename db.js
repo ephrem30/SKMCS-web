@@ -164,7 +164,7 @@ window.DB_getSubmissions = async function() {
 };
 
 window.DB_addSubmission = async function(subData) {
-    return await _dbPost({ action: "add", sheet: "submissions", data: subData });
+    return await _dbPostDirect({ action: "add", sheet: "submissions", data: subData });
 };
 
 window.DB_updateSubmission = async function(id, data) {
