@@ -3,7 +3,7 @@
 // Google Apps Script 백엔드와 통신하는 모든 함수가 여기에 있습니다.
 // ============================================================
 
-const DB_URL = "https://script.google.com/macros/s/AKfycbxZx3MAitf9B35uQlpwYRCOk1kYdx5S89rvtrZz1Bec54Nl9cEVWSdUuehsEUzuQOy0/exec";
+const DB_URL = "https://script.google.com/macros/s/AKfycbZSfV6w0bDTUmeHrqU3sQ-gZHZnhR2wNo9-WJH0sfR1BaYAq6MhlMa2A6TUeWx7wSSTQ/exec";
 
 // ── 내부: GET 요청 ──
 async function _dbGet(sheet) {
