@@ -845,8 +845,10 @@ async function submitPaper() {
         abstract_en: abstractEn,
         keywords: keywords,
         authors: authors,
-        file_manuscript: mFile.name,
+        // 파일명은 임시 저장 (백엔드에서 드라이브 업로드 후 URL로 덮어쓰여짐)
+        file_manuscript: mFile ? mFile.name : "",
         file_agreement: aFile ? aFile.name : "",
+        // base64 인코딩된 파일 데이터 (백엔드에서 드라이브에 저장 후 이 필드는 삭제됨)
         file_manuscript_data: manuscriptFileData,
         file_agreement_data: agreementFileData,
         date: new Date().toISOString().substring(0, 10),
