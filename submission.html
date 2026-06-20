@@ -711,6 +711,20 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Special Administrator Database Reset Panel (Visible only to Special Admins) -->
+                        <div id="special-admin-reset-panel" style="display: none; margin-top: 30px; background-color: #fff0f0; border: 1.5px solid #ffcccc; border-radius: 6px; padding: 20px;">
+                            <h4 style="margin: 0 0 10px 0; font-size: 1.1rem; font-weight: 800; color: #b03228; display: flex; align-items: center; gap: 8px;">
+                                <i class="fa-solid fa-triangle-exclamation" style="color: #cb3c31;"></i> 시스템 데이터 초기화 (특별 관리자 전용)
+                            </h4>
+                            <p style="margin: 0 0 15px 0; font-size: 0.85rem; color: #555; line-height: 1.5;">
+                                등록된 모든 회원 목록과 관리인이 등록한 공지사항 및 자유게시판 글을 <strong>최초의 기본 Mock 데이터 상태로 리셋</strong>합니다.<br>
+                                이 작업은 로컬 데이터베이스를 기본값으로 완전히 덮어씌우므로 되돌릴 수 없습니다.
+                            </p>
+                            <button type="button" class="btn-solid" onclick="handleSystemReset()" style="padding: 10px 20px; font-size: 0.85rem; font-weight: 700; background-color: #cb3c31; border-color: #cb3c31; display: inline-flex; align-items: center; gap: 6px; border-radius: 4px; color: white; cursor: pointer; border: 1px solid #cb3c31; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#b03228'; this.style.borderColor='#b03228';" onmouseout="this.style.backgroundColor='#cb3c31'; this.style.borderColor='#cb3c31';">
+                                <i class="fa-solid fa-arrows-rotate"></i> 시스템 데이터 초기화 실행
+                            </button>
+                        </div>
                     </div>
                 </div>
 

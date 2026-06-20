@@ -1,5 +1,6 @@
 const ALL_AUTHORIZED_ROLES = ["admin", "secretary", "reviewer", "editor", "president"];
 const ADMIN_ROLES = ["admin", "secretary", "editor", "president"];
+let loadedSubmissions = [];
 
 function initRegisteredUsers() {
     const data = localStorage.getItem("registered_users");
@@ -60,13 +61,92 @@ function initUploadedMaterials() {
 initRegisteredUsers();
 initUploadedMaterials();
 
+// 파일 Base64 인코딩 헬퍼 함수
+function getBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => {
+            const base64String = reader.result.split(',')[1];
+            resolve(base64String);
+        };
+        reader.onerror = error => reject(error);
+    });
+}
+
+// 비동기 페이지 초기화 및 시드 데이터 적재
+async function initPageData() {
+    try {
+        loadedSubmissions = await window.DB_getSubmissions();
+        
+        // 스프레드시트가 비어있을 경우 기본 데이터 시드
+        if (loadedSubmissions.length === 0) {
+            console.log("[submission] 스프레드시트 비어있음. 기본 논문 시드 개시...");
+            const defaultSubmissions = [
+                {
+                    id: "SUB-2026-0001",
+                    journal: "한국음악문화",
+                    category: "국악",
+                    title_ko: "국악관현악에서 B♭대금과 E♭대금의 운지법 및 활용 방안 연구",
+                    title_en: "A Study on the Fingering and Application of B♭ Daegeum and E♭ Daegeum in Korean Traditional Orchestra",
+                    abstract_ko: "본 논문은 현대 국악관현악단에서 주로 사용되는 B♭대금과 E♭대금의 음역대 조율 및 다양한 운지법과 실제 악곡에서의 활용 방안을 고찰한다. 특히 가락의 진행 중 변청이나 조바꿈이 일어날 때의 대처 요령을 제시한다.",
+                    abstract_en: "This study investigates the range tuning, various fingerings, and practical application of B♭ Daegeum and E♭ Daegeum in contemporary traditional Korean orchestra music, focusing on scale changes and modulations.",
+                    keywords: "대금, 국악관현악, 운지법, 개량국악기",
+                    authors: [
+                        { name: "정지훈", affiliation: "동국대학교", email: "jihoon@gmail.com", role: "Primary" },
+                        { name: "김철수", affiliation: "서울대학교", email: "chulsoo@gmail.com", role: "Co-Author" }
+                    ],
+                    file_manuscript: "국악관현악에서 B♭대금과 E♭대금의 - 정지훈.pdf",
+                    file_agreement: "agreement.pdf",
+                    date: "2026-05-10",
+                    status: "심사중",
+                    author_email: "jihoon@gmail.com",
+                    reviewer_email: "reviewer@gmail.com",
+                    review_files: []
+                },
+                {
+                    id: "SUB-2026-0002",
+                    journal: "한국음악문화",
+                    category: "이론",
+                    title_ko: "신라의 범패 통도소리 의미와 가치 연구",
+                    title_en: "A Study on the Meaning and Value of Tongdori Beompae in Silla",
+                    abstract_ko: "본 논문은 통도사에서 전승되는 통도소리의 선율적 특징과 신라 시대 범패와의 역사적 상관성을 규명하고, 현대 무형문화유산적 가치를 밝혀내는 것을 목적으로 한다.",
+                    abstract_en: "This study examines the melodic characteristics of Tongdori Beompae preserved at Tongdosa, traces its historical connection back to Silla dynasty Buddhist chants, and evaluates its modern cultural value.",
+                    keywords: "범패, 통도소리, 신라불교, 불교음악",
+                    authors: [
+                        { name: "윤소희", affiliation: "동국대학교", email: "sohee@gmail.com", role: "Primary" }
+                    ],
+                    file_manuscript: "신라의 범패 통도소리 의미와 가치 - 윤소희.pdf",
+                    file_agreement: "agreement2.pdf",
+                    date: "2026-05-12",
+                    status: "접수완료",
+                    author_email: "sohee@gmail.com",
+                    reviewer_email: "",
+                    review_files: []
+                }
+            ];
+            for (const sub of defaultSubmissions) {
+                await window.DB_addSubmission(sub);
+            }
+            loadedSubmissions = await window.DB_getSubmissions();
+        }
+        
+        // 데이터가 성공적으로 로드되면 이력 테이블 및 관리자 뷰 갱신
+        renderHistoryTable();
+        if (typeof renderReviewerSpaceTable === 'function') renderReviewerSpaceTable();
+        if (typeof renderAdminSpaceTable === 'function') renderAdminSpaceTable();
+    } catch(e) {
+        console.error("비동기 논문 데이터 로드 에러:", e);
+    }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     // 0. Initialize databases (redundant check for safety)
     initRegisteredUsers();
     initUploadedMaterials();
 
-    // 1. Initialize submissions database
-    getSubmissions();
+    // 1. Initialize submissions database from Sheets API
+    initPageData();
     
     // 2. Set up tab switching and initial routing
     const tabs = document.querySelectorAll('#submission-tabs a');
@@ -223,7 +303,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Admin status change save button
     const btnSaveStatus = document.getElementById("btn-save-status");
     if (btnSaveStatus) {
-        btnSaveStatus.addEventListener("click", () => {
+        btnSaveStatus.addEventListener("click", async () => {
             if (!currentDetailId) return;
             
             const statusSelect = document.getElementById("admin-status-select");
@@ -233,21 +313,36 @@ document.addEventListener("DOMContentLoaded", () => {
             const newStatus = statusSelect.value;
             const newReviewer = reviewerSelect ? reviewerSelect.value : "";
             
-            const submissions = getSubmissions();
-            const subIndex = submissions.findIndex(s => s.id === currentDetailId);
-            if (subIndex === -1) return;
+            btnSaveStatus.disabled = true;
             
-            submissions[subIndex].status = newStatus;
-            submissions[subIndex].reviewer_email = newReviewer;
-            localStorage.setItem("submissions_data", JSON.stringify(submissions));
-            
-            alert(`논문 상태가 [${newStatus}]으로 변경(저장)되었습니다.`);
-            
-            // Refresh detail view
-            openDetailModal(currentDetailId);
-            
-            // Refresh table
-            renderHistoryTable();
+            try {
+                const res = await window.DB_updateSubmission(currentDetailId, {
+                    status: newStatus,
+                    reviewer_email: newReviewer
+                });
+
+                if (!res.ok) {
+                    alert("상태 변경 저장 실패: " + (res.error || "알 수 없는 오류"));
+                    return;
+                }
+
+                // 메모리 갱신
+                loadedSubmissions = await window.DB_getSubmissions();
+
+                alert(`논문 상태가 [${newStatus}]으로 변경(저장)되었습니다.`);
+                
+                // Refresh detail view
+                openDetailModal(currentDetailId);
+                
+                // Refresh table
+                renderHistoryTable();
+                if (window.renderAdminSpaceTable) window.renderAdminSpaceTable();
+            } catch(err) {
+                console.error("논문 상태 수정 에러:", err);
+                alert("서버 연결 실패로 변경 사항이 저장되지 않았습니다.");
+            } finally {
+                btnSaveStatus.disabled = false;
+            }
         });
     }
     
@@ -262,37 +357,48 @@ document.addEventListener("DOMContentLoaded", () => {
     // Admin submission delete / restore button
     const btnDeleteSub = document.getElementById("btn-delete-submission");
     if (btnDeleteSub) {
-        btnDeleteSub.addEventListener("click", () => {
+        btnDeleteSub.addEventListener("click", async () => {
             if (!currentDetailId) return;
             
             const submissions = getSubmissions();
-            const subIndex = submissions.findIndex(s => s.id === currentDetailId);
-            if (subIndex === -1) return;
+            const sub = submissions.find(s => s.id === currentDetailId);
+            if (!sub) return;
             
-            const sub = submissions[subIndex];
-            if (sub.deleted) {
-                // Restore paper
-                submissions[subIndex].deleted = false;
-                localStorage.setItem("submissions_data", JSON.stringify(submissions));
-                alert("투고 내역이 성공적으로 복구되었습니다.");
+            btnDeleteSub.disabled = true;
+            const targetDeleted = !sub.deleted;
+            
+            if (targetDeleted) {
+                if (!confirm("정말로 이 투고 내역을 삭제하시겠습니까? (삭제된 내역은 '삭제된 논문 보기' 필터를 통해 복구할 수 있습니다)")) {
+                    btnDeleteSub.disabled = false;
+                    return;
+                }
+            }
+
+            try {
+                const res = await window.DB_updateSubmission(currentDetailId, {
+                    deleted: targetDeleted
+                });
+
+                if (!res.ok) {
+                    alert("삭제/복구 처리 실패: " + (res.error || "알 수 없는 오류"));
+                    return;
+                }
+
+                // 메모리 갱신
+                loadedSubmissions = await window.DB_getSubmissions();
+                alert(targetDeleted ? "투고 내역이 삭제되었습니다." : "투고 내역이 성공적으로 복구되었습니다.");
+                
                 closeDetailModal();
-                renderAdminSpaceTable();
+                if (window.renderAdminSpaceTable) window.renderAdminSpaceTable();
                 renderHistoryTable();
                 if (typeof renderReviewerSpaceTable === 'function') {
                     renderReviewerSpaceTable();
                 }
-            } else {
-                // Delete paper (soft delete)
-                if (!confirm("정말로 이 투고 내역을 삭제하시겠습니까? (삭제된 내역은 '삭제된 논문 보기' 필터를 통해 복구할 수 있습니다)")) return;
-                submissions[subIndex].deleted = true;
-                localStorage.setItem("submissions_data", JSON.stringify(submissions));
-                alert("투고 내역이 삭제되었습니다.");
-                closeDetailModal();
-                renderAdminSpaceTable();
-                renderHistoryTable();
-                if (typeof renderReviewerSpaceTable === 'function') {
-                    renderReviewerSpaceTable();
-                }
+            } catch(err) {
+                console.error("논문 삭제/복구 처리 에러:", err);
+                alert("서버 통신 실패로 처리가 반영되지 않았습니다.");
+            } finally {
+                btnDeleteSub.disabled = false;
             }
         });
     }
@@ -655,8 +761,8 @@ function addCoAuthorCard(name = "", affiliation = "", email = "", role = "Co-Aut
     });
 }
 
-// Submit final manuscript data to localStorage
-function submitPaper() {
+// Submit final manuscript data to Sheets & Google Drive
+async function submitPaper() {
     const journal = document.getElementById("paper-journal").value;
     const category = document.getElementById("paper-category").value;
     const titleKo = document.getElementById("paper-title-ko").value.trim();
@@ -689,6 +795,46 @@ function submitPaper() {
     const mFile = window.getManuscriptFile();
     const aFile = window.getAgreementFile();
     
+    const btnNext = document.getElementById("btn-next");
+    if (btnNext) {
+        btnNext.disabled = true;
+        btnNext.textContent = "파일 변환 중...";
+    }
+
+    let manuscriptFileData = null;
+    let agreementFileData = null;
+
+    try {
+        if (mFile) {
+            const mBase64 = await getBase64(mFile);
+            manuscriptFileData = {
+                base64: mBase64,
+                name: mFile.name,
+                mimeType: mFile.type
+            };
+        }
+        if (aFile) {
+            const aBase64 = await getBase64(aFile);
+            agreementFileData = {
+                base64: aBase64,
+                name: aFile.name,
+                mimeType: aFile.type
+            };
+        }
+    } catch (err) {
+        console.error("논문 파일 인코딩 실패:", err);
+        alert("논문 파일 처리 중 오류가 발생했습니다: " + err.message);
+        if (btnNext) {
+            btnNext.disabled = false;
+            btnNext.innerHTML = '제출하기 <i class="fa-solid fa-paper-plane"></i>';
+        }
+        return;
+    }
+
+    if (btnNext) {
+        btnNext.textContent = "논문 등록 중...";
+    }
+
     const newSubmission = {
         id: `SUB-2026-${String(Math.floor(Math.random() * 9000) + 1000)}`,
         journal: journal,
@@ -701,6 +847,8 @@ function submitPaper() {
         authors: authors,
         file_manuscript: mFile.name,
         file_agreement: aFile ? aFile.name : "",
+        file_manuscript_data: manuscriptFileData,
+        file_agreement_data: agreementFileData,
         date: new Date().toISOString().substring(0, 10),
         status: "접수완료",
         author_email: loggedInUser.email,
@@ -708,34 +856,50 @@ function submitPaper() {
         review_files: []
     };
     
-    const submissions = getSubmissions();
-    submissions.push(newSubmission);
-    localStorage.setItem("submissions_data", JSON.stringify(submissions));
-    
-    alert("논문 투고가 완료되었습니다. 투고 내역 페이지로 이동합니다.");
-    
-    // Reset forms
-    document.getElementById("paper-title-ko").value = "";
-    document.getElementById("paper-title-en").value = "";
-    document.getElementById("paper-abstract-ko").value = "";
-    document.getElementById("paper-abstract-en").value = "";
-    document.getElementById("paper-keywords").value = "";
-    document.getElementById("author-aff-1").value = "";
-    document.getElementById("check-ethics").checked = false;
-    document.getElementById("check-copyright").checked = false;
-    document.getElementById("checklist-1").checked = false;
-    document.getElementById("checklist-2").checked = false;
-    document.getElementById("checklist-3").checked = false;
-    
-    // Clear co-authors
-    const coAuthorsContainer = document.getElementById("co-authors-container");
-    if (coAuthorsContainer) coAuthorsContainer.innerHTML = "";
-    
-    // Clear files
-    if (window.clearFiles) window.clearFiles();
-    
-    // Switch to history tab
-    switchTab("history");
+    try {
+        const result = await window.DB_addSubmission(newSubmission);
+        if (!result.ok) {
+            alert("논문 투고 실패: " + (result.error || "알 수 없는 오류"));
+            return;
+        }
+
+        // 메모리 전역 변수 새로고침
+        loadedSubmissions = await window.DB_getSubmissions();
+
+        alert("논문 투고가 완료되었습니다. 투고 내역 페이지로 이동합니다.");
+        
+        // Reset forms
+        document.getElementById("paper-title-ko").value = "";
+        document.getElementById("paper-title-en").value = "";
+        document.getElementById("paper-abstract-ko").value = "";
+        document.getElementById("paper-abstract-en").value = "";
+        document.getElementById("paper-keywords").value = "";
+        document.getElementById("author-aff-1").value = "";
+        document.getElementById("check-ethics").checked = false;
+        document.getElementById("check-copyright").checked = false;
+        document.getElementById("checklist-1").checked = false;
+        document.getElementById("checklist-2").checked = false;
+        document.getElementById("checklist-3").checked = false;
+        
+        // Clear co-authors
+        const coAuthorsContainer = document.getElementById("co-authors-container");
+        if (coAuthorsContainer) coAuthorsContainer.innerHTML = "";
+        
+        // Clear files
+        if (window.clearFiles) window.clearFiles();
+        
+        // Switch to history tab
+        switchTab("history");
+    } catch(e) {
+        console.error("논문 투고 서버 전송 실패:", e);
+        alert("서버 연결 실패로 논문 투고를 완료하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+    } finally {
+        if (btnNext) {
+            btnNext.disabled = false;
+            btnNext.innerHTML = '제출하기 <i class="fa-solid fa-paper-plane"></i>';
+            btnNext.style.backgroundColor = 'var(--color-green)';
+        }
+    }
 }
 
 // Render history board table
@@ -891,33 +1055,44 @@ function renderHistoryTable() {
 }
 
 // Delete submission directly from the board (Admin only - soft delete)
-function deleteSubmissionFromBoard(id) {
+async function deleteSubmissionFromBoard(id) {
     if (!confirm("이 논문 투고 내역을 삭제하시겠습니까?\n삭제 후 관리자 패널에서 복구할 수 있습니다.")) return;
 
-    const submissions = getSubmissions();
-    const idx = submissions.findIndex(s => s.id === id);
-    if (idx === -1) return;
+    try {
+        const res = await window.DB_updateSubmission(id, {
+            deleted: true,
+            deleted_at: new Date().toISOString()
+        });
 
-    submissions[idx].deleted = true;
-    submissions[idx].deleted_at = new Date().toISOString();
-    localStorage.setItem("submissions_data", JSON.stringify(submissions));
+        if (!res.ok) {
+            alert("논문 삭제 실패: " + (res.error || "알 수 없는 오류"));
+            return;
+        }
 
-    // Refresh tables
-    renderHistoryTable();
-    if (typeof renderReviewerSpaceTable === 'function') renderReviewerSpaceTable();
+        // 메모리 갱신
+        loadedSubmissions = await window.DB_getSubmissions();
 
-    // Small toast-style notice
-    const toast = document.createElement("div");
-    toast.textContent = "논문이 삭제되었습니다. (관리자 패널에서 복구 가능)";
-    toast.style.cssText = `
-        position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-        background: #333; color: white; padding: 12px 22px; border-radius: 8px;
-        font-size: 0.9rem; font-weight: 600; z-index: 99999;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.25); pointer-events: none;
-        animation: fadeInUp 0.25s ease;
-    `;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
+        // Refresh tables
+        renderHistoryTable();
+        if (typeof renderReviewerSpaceTable === 'function') renderReviewerSpaceTable();
+        if (window.renderAdminSpaceTable) window.renderAdminSpaceTable();
+
+        // Small toast-style notice
+        const toast = document.createElement("div");
+        toast.textContent = "논문이 삭제되었습니다. (관리자 패널에서 복구 가능)";
+        toast.style.cssText = `
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+            background: #333; color: white; padding: 12px 22px; border-radius: 8px;
+            font-size: 0.9rem; font-weight: 600; z-index: 99999;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.25); pointer-events: none;
+            animation: fadeInUp 0.25s ease;
+        `;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    } catch(err) {
+        console.error("논문 삭제 에러:", err);
+        alert("서버 통신 실패로 논문이 삭제되지 않았습니다.");
+    }
 }
 
 // Open paper detail and admin moderation modal
@@ -981,17 +1156,28 @@ function openDetailModal(id) {
     const fileEl = document.getElementById("detail-file");
 
     if (isAuthorized || isOwner) {
-        // Map mock filename to real PDF files in the workspace
-        let realFile = "통도사 새벽예불의 전승 양상과 현대적 의의 - 양영진.pdf";
-        if (sub.file_manuscript.toLowerCase().includes("daegeum")) {
-            realFile = "국악관현악에서 B♭대금과 E♭대금의 - 정지훈.pdf";
-        } else if (sub.file_manuscript.toLowerCase().includes("gayageum")) {
-            realFile = "신라의 범패 통도소리 의미와 가치 - 윤소희.pdf";
+        let fileLink = sub.file_manuscript;
+        let isDriveLink = (fileLink || "").startsWith("http");
+        
+        let linkHref = fileLink;
+        let downloadAttr = "";
+        let targetAttr = "";
+        
+        if (!isDriveLink) {
+            // Map mock filename to real PDF files in the workspace
+            let realFile = "통도사 새벽예불의 전승 양상과 현대적 의의 - 양영진.pdf";
+            if (sub.file_manuscript.toLowerCase().includes("daegeum")) {
+                realFile = "국악관현악에서 B♭대금과 E♭대금의 - 정지훈.pdf";
+            } else if (sub.file_manuscript.toLowerCase().includes("gayageum")) {
+                realFile = "신라의 범패 통도소리 의미와 가치 - 윤소희.pdf";
+            }
+            linkHref = encodeURI(realFile);
+            downloadAttr = `download="${escapeHtml(sub.file_manuscript.replace(/\.docx?$/i, ".pdf"))}"`;
+        } else {
+            targetAttr = 'target="_blank"';
         }
         
-        const downloadName = sub.file_manuscript.replace(/\.docx?$/i, ".pdf");
-        
-        fileEl.innerHTML = `<i class="fa-solid fa-file-arrow-down"></i> <a href="${encodeURI(realFile)}" download="${escapeHtml(downloadName)}" style="text-decoration: underline; color: var(--color-blue); font-weight: bold;">${escapeHtml(sub.file_manuscript)} (다운로드 가능)</a>`;
+        fileEl.innerHTML = `<i class="fa-solid fa-file-arrow-down"></i> <a href="${linkHref}" ${targetAttr} ${downloadAttr} style="text-decoration: underline; color: var(--color-blue); font-weight: bold;">${escapeHtml(sub.file_manuscript)} (${isDriveLink ? '구글 드라이브' : '다운로드 가능'})</a>`;
     } else {
         fileEl.innerHTML = `<i class="fa-solid fa-file-arrow-down"></i> <a href="#" style="text-decoration: line-through; color: #999; cursor: not-allowed;">${escapeHtml(sub.file_manuscript)} (권한 없음)</a>`;
         fileEl.querySelector("a").addEventListener("click", (e) => {
@@ -1103,64 +1289,9 @@ function closeDetailModal() {
     currentDetailId = null;
 }
 
-// Get/initialize submissions from localStorage
+// Get/initialize submissions from loadedSubmissions memory cache
 function getSubmissions() {
-    let data = localStorage.getItem("submissions_data");
-    let submissions = [];
-    if (data) {
-        try {
-            submissions = JSON.parse(data);
-        } catch (e) {
-            submissions = [];
-        }
-    }
-    if (!submissions || submissions.length === 0) {
-        submissions = [
-            {
-                id: "SUB-2026-0001",
-                journal: "한국음악문화",
-                category: "국악",
-                title_ko: "국악관현악에서 B♭대금과 E♭대금의 운지법 및 활용 방안 연구",
-                title_en: "A Study on the Fingering and Application of B♭ Daegeum and E♭ Daegeum in Korean Traditional Orchestra",
-                abstract_ko: "본 논문은 현대 국악관현악단에서 주로 사용되는 B♭대금과 E♭대금의 음역대 조율 및 다양한 운지법과 실제 악곡에서의 활용 방안을 고찰한다. 특히 가락의 진행 중 변청이나 조바꿈이 일어날 때의 대처 요령을 제시한다.",
-                abstract_en: "This study investigates the range tuning, various fingerings, and practical application of B♭ Daegeum and E♭ Daegeum in contemporary traditional Korean orchestra music, focusing on scale changes and modulations.",
-                keywords: "대금, 국악관현악, 운지법, 개량국악기",
-                authors: [
-                    { name: "정지훈", affiliation: "동국대학교", email: "jihoon@gmail.com", role: "Primary" },
-                    { name: "김철수", affiliation: "서울대학교", email: "chulsoo@gmail.com", role: "Co-Author" }
-                ],
-                file_manuscript: "국악관현악에서 B♭대금과 E♭대금의 - 정지훈.pdf",
-                file_agreement: "agreement.pdf",
-                date: "2026-05-10",
-                status: "심사중",
-                author_email: "jihoon@gmail.com",
-                reviewer_email: "reviewer@gmail.com",
-                review_files: []
-            },
-            {
-                id: "SUB-2026-0002",
-                journal: "한국음악문화",
-                category: "이론",
-                title_ko: "신라의 범패 통도소리 의미와 가치 연구",
-                title_en: "A Study on the Meaning and Value of Tongdori Beompae in Silla",
-                abstract_ko: "본 논문은 통도사에서 전승되는 통도소리의 선율적 특징과 신라 시대 범패와의 역사적 상관성을 규명하고, 현대 무형문화유산적 가치를 밝혀내는 것을 목적으로 한다.",
-                abstract_en: "This study examines the melodic characteristics of Tongdori Beompae preserved at Tongdosa, traces its historical connection back to Silla dynasty Buddhist chants, and evaluates its modern cultural value.",
-                keywords: "범패, 통도소리, 신라불교, 불교음악",
-                authors: [
-                    { name: "윤소희", affiliation: "동국대학교", email: "sohee@gmail.com", role: "Primary" }
-                ],
-                file_manuscript: "신라의 범패 통도소리 의미와 가치 - 윤소희.pdf",
-                file_agreement: "agreement2.pdf",
-                date: "2026-05-12",
-                status: "접수완료",
-                author_email: "sohee@gmail.com",
-                reviewer_email: "",
-                review_files: []
-            }
-        ];
-    }
-    localStorage.setItem("submissions_data", JSON.stringify(submissions));
-    return submissions;
+    return loadedSubmissions;
 }
 
 // Helpers

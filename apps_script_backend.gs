@@ -292,7 +292,56 @@ function handleWrite(body) {
       return makeResponse({ ok: true, exists: exists });
     }
 
+    // ── 논문 파일 전용 업로드 (2단계 분리 전송) ──
+    // 텍스트 데이터 저장 후 파일만 별도로 전송해 드라이브에 업로드하고 시트 URL 갱신
+    if (action === "uploadSubmissionFiles") {
+      const submissionId = body.id;
+      const paperTitle   = body.title_ko || "논문";
+      const msData       = body.file_manuscript_data;
+      const agData       = body.file_agreement_data;
+
+      if (!submissionId) return makeResponse({ ok: false, error: "투고 ID가 없습니다." });
+
+      const subSheet  = getOrCreateSheet(SHEET_NAMES.submissions);
+      const subHeaders = subSheet.getRange(1, 1, 1, subSheet.getLastColumn()).getValues()[0];
+      const idCol     = subHeaders.indexOf("id") + 1;
+      if (idCol === 0) return makeResponse({ ok: false, error: "id 컬럼 없음" });
+
+      const colValues = subSheet.getRange(2, idCol, Math.max(subSheet.getLastRow() - 1, 1), 1).getValues();
+      const rowIdx    = colValues.findIndex(r => String(r[0]) === String(submissionId));
+      if (rowIdx === -1) return makeResponse({ ok: false, error: "해당 투고 레코드를 찾을 수 없습니다: " + submissionId });
+      const actualRow = rowIdx + 2;
+
+      const updateFields = {};
+
+      if (msData && msData.base64) {
+        try {
+          updateFields.file_manuscript = uploadSubmissionFileToDrive(msData, paperTitle, "원고");
+        } catch (e) {
+          Logger.log("원고 업로드 실패: " + e.message);
+          updateFields.file_manuscript = "[업로드 실패] " + msData.name;
+        }
+      }
+      if (agData && agData.base64) {
+        try {
+          updateFields.file_agreement = uploadSubmissionFileToDrive(agData, paperTitle, "저작권동의서");
+        } catch (e) {
+          Logger.log("동의서 업로드 실패: " + e.message);
+          updateFields.file_agreement = "[업로드 실패] " + agData.name;
+        }
+      }
+
+      // 시트 URL 갱신
+      Object.keys(updateFields).forEach(field => {
+        const colIdx = subHeaders.indexOf(field) + 1;
+        if (colIdx > 0) subSheet.getRange(actualRow, colIdx).setValue(updateFields[field]);
+      });
+
+      return makeResponse({ ok: true, message: "파일 업로드 완료", urls: updateFields });
+    }
+
     return makeResponse({ ok: false, error: "Unknown action: " + action });
+
 
   } catch (err) {
     return makeResponse({ ok: false, error: err.message });

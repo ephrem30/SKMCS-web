@@ -859,10 +859,38 @@ async function submitPaper() {
     };
     
     try {
-        const result = await window.DB_addSubmission(newSubmission);
+        // ── 1단계: 파일 데이터 없이 텍스트 정보만 먼저 저장 ──
+        const textOnlySubmission = { ...newSubmission };
+        delete textOnlySubmission.file_manuscript_data;
+        delete textOnlySubmission.file_agreement_data;
+
+        if (btnNext) btnNext.textContent = "논문 정보 저장 중...";
+        const result = await window.DB_addSubmission(textOnlySubmission);
         if (!result.ok) {
             alert("논문 투고 실패: " + (result.error || "알 수 없는 오류"));
             return;
+        }
+
+        // ── 2단계: 파일이 있으면 드라이브에 별도 업로드 ──
+        if (manuscriptFileData || agreementFileData) {
+            if (btnNext) btnNext.textContent = "파일 업로드 중...";
+            try {
+                const filePayload = {
+                    action: "uploadSubmissionFiles",
+                    id: newSubmission.id,
+                    title_ko: titleKo,
+                    file_manuscript_data: manuscriptFileData  || null,
+                    file_agreement_data:  agreementFileData   || null,
+                };
+                const fileResult = await window.DB_uploadSubmissionFiles(filePayload);
+                if (!fileResult.ok) {
+                    console.warn("파일 업로드 경고:", fileResult.error);
+                    // 파일 업로드 실패해도 투고 자체는 완료로 처리
+                }
+            } catch (fileErr) {
+                console.warn("파일 업로드 중 오류 (무시):", fileErr);
+                // 파일 업로드 실패해도 투고 자체는 완료로 처리
+            }
         }
 
         // 메모리 전역 변수 새로고침
@@ -894,7 +922,7 @@ async function submitPaper() {
         switchTab("history");
     } catch(e) {
         console.error("논문 투고 서버 전송 실패:", e);
-        alert("서버 연결 실패로 논문 투고를 완료하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+        alert("서버 연결 실패: " + (e.message || e) + "\n\n브라우저 콘솔(Cmd+Option+I → Console 탭)에서 빨간 오류 메시지를 확인해 주세요.");
     } finally {
         if (btnNext) {
             btnNext.disabled = false;

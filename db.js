@@ -28,9 +28,9 @@ async function _dbPostDirect(body) {
     const res = await fetch(DB_URL, {
         method: "POST",
         headers: {
-            "Content-Type": "text/plain;charset=utf-8"
+            "Content-Type": "application/x-www-form-urlencoded"
         },
-        body: JSON.stringify(body)
+        body: "post_data=" + encodeURIComponent(JSON.stringify(body))
     });
     if (!res.ok) throw new Error("네트워크 오류: " + res.status);
     const json = await res.json();
@@ -166,6 +166,12 @@ window.DB_getSubmissions = async function() {
 window.DB_addSubmission = async function(subData) {
     return await _dbPostDirect({ action: "add", sheet: "submissions", data: subData });
 };
+
+/** 논문 투고 파일만 별도로 드라이브에 업로드하고 시트 URL을 갱신 */
+window.DB_uploadSubmissionFiles = async function(payload) {
+    return await _dbPostDirect(payload);
+};
+
 
 window.DB_updateSubmission = async function(id, data) {
     return await _dbPost({

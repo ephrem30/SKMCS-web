@@ -198,7 +198,10 @@
 
                     <div class="board-top-info" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                         <span class="total">전체 <strong id="notice-total-count">0</strong>건</span>
-                        <button type="button" class="btn-apply" id="btn-write-notice" style="height: 36px; padding: 0 15px; font-size: 0.9rem; background-color: var(--color-green); display: none;"><i class="fa-solid fa-pen"></i> 공지등록</button>
+                        <div style="display: flex; gap: 8px;">
+                            <button type="button" class="btn-apply" id="btn-delete-selected-notice" style="height: 36px; padding: 0 15px; font-size: 0.9rem; background-color: #cb3c31; display: none;"><i class="fa-solid fa-trash-can"></i> 선택 삭제</button>
+                            <button type="button" class="btn-apply" id="btn-write-notice" style="height: 36px; padding: 0 15px; font-size: 0.9rem; background-color: var(--color-green); display: none;"><i class="fa-solid fa-pen"></i> 공지등록</button>
+                        </div>
                     </div>
 
                     <!-- Notice Board Data Table -->
@@ -243,7 +246,10 @@
 
                     <div class="board-top-info" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                         <span class="total">전체 <strong id="freeboard-total-count">0</strong>건</span>
-                        <button type="button" class="btn-apply" id="btn-write-post" style="height: 36px; padding: 0 15px; font-size: 0.9rem; background-color: var(--color-green);"><i class="fa-solid fa-pen"></i> 글쓰기</button>
+                        <div style="display: flex; gap: 8px;">
+                            <button type="button" class="btn-apply" id="btn-delete-selected-freeboard" style="height: 36px; padding: 0 15px; font-size: 0.9rem; background-color: #cb3c31; display: none;"><i class="fa-solid fa-trash-can"></i> 선택 삭제</button>
+                            <button type="button" class="btn-apply" id="btn-write-post" style="height: 36px; padding: 0 15px; font-size: 0.9rem; background-color: var(--color-green);"><i class="fa-solid fa-pen"></i> 글쓰기</button>
+                        </div>
                     </div>
 
                     <!-- Free Board Table -->
@@ -326,10 +332,14 @@
                         </div>
                     </div>
                     <div class="fb-form-row">
-                        <div class="fb-form-group half">
+                        <div class="fb-form-group half" id="group-post-date-display">
                             <label for="post-date-display">등록일</label>
                             <input type="text" id="post-date-display" readonly
                                 style="background:var(--bg-offwhite); color:var(--text-muted); cursor:default; font-weight:600;">
+                        </div>
+                        <div class="fb-form-group half" id="group-post-date-input" style="display: none;">
+                            <label for="post-date-input">등록일시 설정 (관리자)</label>
+                            <input type="datetime-local" id="post-date-input" style="font-weight:600; width: 100%; height: 42px; border: 1px solid var(--border-color, #ccc); padding: 8px; border-radius: 4px; background-color: #fff;">
                         </div>
                     </div>
                     <div class="fb-form-group">

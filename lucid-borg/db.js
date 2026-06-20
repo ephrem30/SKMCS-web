@@ -3,7 +3,7 @@
 // Google Apps Script 백엔드와 통신하는 모든 함수가 여기에 있습니다.
 // ============================================================
 
-const DB_URL = "https://script.google.com/macros/s/AKfycbxZx3MAitf9B35uQlpwYRCOk1kYdx5S89rvtrZz1Bec54Nl9cEVWSdUuehsEUzuQOy0/exec";
+const DB_URL = "https://script.google.com/macros/s/AKfycbxyxapoRrtVW3fIsoiW5Tlr5OIlSSH3BL_ArZHq9MWYkJs93YBZAQ-tRrtvB4BapeBtFA/exec";
 
 // ── 내부: GET 요청 ──
 async function _dbGet(sheet) {
@@ -164,7 +164,7 @@ window.DB_getSubmissions = async function() {
 };
 
 window.DB_addSubmission = async function(subData) {
-    return await _dbPost({ action: "add", sheet: "submissions", data: subData });
+    return await _dbPostDirect({ action: "add", sheet: "submissions", data: subData });
 };
 
 window.DB_updateSubmission = async function(id, data) {

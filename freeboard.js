@@ -87,11 +87,12 @@ let freeboardSearchType = "all";
 const DATA_VERSION = "v2026-05-29b";
 
 function initStorage() {
-    if (localStorage.getItem("notice_posts_version") !== DATA_VERSION) {
+    if (!localStorage.getItem("notice_posts")) {
         localStorage.setItem("notice_posts", JSON.stringify(DEFAULT_NOTICES));
         localStorage.setItem("notice_posts_idx", "7");
-        localStorage.setItem("notice_posts_version", DATA_VERSION);
     }
+    localStorage.setItem("notice_posts_version", DATA_VERSION);
+    
     if (!localStorage.getItem("freeboard_posts")) {
         localStorage.setItem("freeboard_posts", JSON.stringify(DEFAULT_FREEBOARD));
         localStorage.setItem("freeboard_posts_idx", "4");
@@ -181,15 +182,26 @@ function updateTabsUI() {
 
 function renderActiveTab() {
     const user = getLoggedInUser();
+    const isAdmin = user && ADMIN_ROLES.includes(user.role);
     
     if (currentTab === "notice") {
         // Show write notice button only for admin
         const btnWriteNotice = document.getElementById("btn-write-notice");
         if (btnWriteNotice) {
-            btnWriteNotice.style.display = (user && ADMIN_ROLES.includes(user.role)) ? "inline-block" : "none";
+            btnWriteNotice.style.display = isAdmin ? "inline-block" : "none";
+        }
+        // Show bulk delete button only for admin
+        const btnDeleteSelectedNotice = document.getElementById("btn-delete-selected-notice");
+        if (btnDeleteSelectedNotice) {
+            btnDeleteSelectedNotice.style.display = isAdmin ? "inline-block" : "none";
         }
         renderNoticeBoard();
     } else {
+        // Show bulk delete button only for admin
+        const btnDeleteSelectedFreeboard = document.getElementById("btn-delete-selected-freeboard");
+        if (btnDeleteSelectedFreeboard) {
+            btnDeleteSelectedFreeboard.style.display = isAdmin ? "inline-block" : "none";
+        }
         // Free board write button is always visible, but click handler will check login status
         renderFreeBoard();
     }
@@ -201,7 +213,40 @@ function renderActiveTab() {
 function renderNoticeBoard() {
     const notices = JSON.parse(localStorage.getItem("notice_posts") || "[]");
     const user = getLoggedInUser();
+    const isAdmin = user && ADMIN_ROLES.includes(user.role);
     
+    // Toggle thead checkboxes
+    const table = document.querySelector("#section-notice .board-table");
+    if (table) {
+        const thead = table.querySelector("thead");
+        if (thead) {
+            if (isAdmin) {
+                thead.innerHTML = `
+                    <tr>
+                        <th class="col-select" style="width: 40px; text-align: center;"><input type="checkbox" id="notice-select-all"></th>
+                        <th class="col-num">번호</th>
+                        <th class="col-cat">구분</th>
+                        <th class="col-title">제목</th>
+                        <th class="col-file">첨부</th>
+                        <th class="col-year">등록일</th>
+                        <th class="col-view">조회수</th>
+                    </tr>
+                `;
+            } else {
+                thead.innerHTML = `
+                    <tr>
+                        <th class="col-num">번호</th>
+                        <th class="col-cat">구분</th>
+                        <th class="col-title">제목</th>
+                        <th class="col-file">첨부</th>
+                        <th class="col-year">등록일</th>
+                        <th class="col-view">조회수</th>
+                    </tr>
+                `;
+            }
+        }
+    }
+
     // Filter
     let filtered = notices;
     if (noticeSearchQuery) {
@@ -229,7 +274,8 @@ function renderNoticeBoard() {
     if (!tbody) return;
     
     if (paginated.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="col-title" style="text-align: center; padding: 30px; color: var(--text-muted);">등록된 공지사항이 없습니다.</td></tr>`;
+        const colSpan = isAdmin ? 7 : 6;
+        tbody.innerHTML = `<tr><td colspan="${colSpan}" class="col-title" style="text-align: center; padding: 30px; color: var(--text-muted);">등록된 공지사항이 없습니다.</td></tr>`;
     } else {
         tbody.innerHTML = paginated.map(p => {
             const isNoticeRow = p.category === "안내" || p.category === "시스템";
@@ -237,13 +283,17 @@ function renderNoticeBoard() {
             const badgeClass = isNoticeRow ? 'badge red' : 'badge grey';
             const fileIcon = p.file ? '<i class="fa-regular fa-file-pdf"></i>' : '';
             
+            const selectTd = isAdmin ? 
+                `<td class="col-select" style="text-align: center;"><input type="checkbox" class="post-select-chk" data-id="${p.id}" onclick="event.stopPropagation()"></td>` : '';
+            
             return `
                 <tr ${rowStyle}>
+                    ${selectTd}
                     <td class="col-num">${isNoticeRow ? `<span class="${badgeClass}">공지</span>` : p.id}</td>
                     <td class="col-cat">${p.category}</td>
                     <td class="col-title left">
                         <a href="#" onclick="openDetailModal(${p.id}, 'notice', event)" style="font-weight: ${isNoticeRow ? '700' : '500'}; color: var(--text-dark);">${escapeHtml(p.title)}</a>
-                        ${user && ADMIN_ROLES.includes(user.role) ? `<button class="btn-delete-small" onclick="deletePostDirectly(${p.id}, 'notice', event)" title="글 삭제" style="margin-left: 8px; background: none; border: none; color: #cb3c31; cursor: pointer; font-size: 0.85rem; padding: 2px 5px; transition: all 0.2s;" onmouseover="this.style.color='#b03228'" onmouseout="this.style.color='#cb3c31'"><i class="fa-solid fa-trash-can"></i></button>` : ''}
+                        ${isAdmin ? `<button class="btn-delete-small" onclick="deletePostDirectly(${p.id}, 'notice', event)" title="글 삭제" style="margin-left: 8px; background: none; border: none; color: #cb3c31; cursor: pointer; font-size: 0.85rem; padding: 2px 5px; transition: all 0.2s;" onmouseover="this.style.color='#b03228'" onmouseout="this.style.color='#cb3c31'"><i class="fa-solid fa-trash-can"></i></button>` : ''}
                     </td>
                     <td class="col-file">${fileIcon}</td>
                     <td class="col-year">${p.date}</td>
@@ -253,13 +303,55 @@ function renderNoticeBoard() {
         }).join("");
     }
     
+    // Bind select all checkbox
+    const selectAllNotice = document.getElementById("notice-select-all");
+    if (selectAllNotice) {
+        selectAllNotice.addEventListener("change", (e) => {
+            const chks = document.querySelectorAll("#notice-list-tbody .post-select-chk");
+            chks.forEach(chk => chk.checked = e.target.checked);
+        });
+    }
+
     renderPagination("notice", filtered.length, noticePage);
 }
 
 function renderFreeBoard() {
     const posts = JSON.parse(localStorage.getItem("freeboard_posts") || "[]");
     const user = getLoggedInUser();
+    const isAdmin = user && ADMIN_ROLES.includes(user.role);
     
+    // Toggle thead checkboxes
+    const table = document.querySelector("#section-freeboard .board-table");
+    if (table) {
+        const thead = table.querySelector("thead");
+        if (thead) {
+            if (isAdmin) {
+                thead.innerHTML = `
+                    <tr>
+                        <th class="col-select" style="width: 40px; text-align: center;"><input type="checkbox" id="freeboard-select-all"></th>
+                        <th class="col-num" style="width: 8%;">번호</th>
+                        <th class="col-cat" style="width: 15%;">구분</th>
+                        <th class="col-title">제목</th>
+                        <th class="col-year" style="width: 15%;">작성자</th>
+                        <th class="col-year" style="width: 15%;">등록일</th>
+                        <th class="col-view" style="width: 10%;">조회수</th>
+                    </tr>
+                `;
+            } else {
+                thead.innerHTML = `
+                    <tr>
+                        <th class="col-num" style="width: 8%;">번호</th>
+                        <th class="col-cat" style="width: 15%;">구분</th>
+                        <th class="col-title">제목</th>
+                        <th class="col-year" style="width: 15%;">작성자</th>
+                        <th class="col-year" style="width: 15%;">등록일</th>
+                        <th class="col-view" style="width: 10%;">조회수</th>
+                    </tr>
+                `;
+            }
+        }
+    }
+
     // Filter
     let filtered = posts;
     if (freeboardSearchQuery) {
@@ -287,18 +379,23 @@ function renderFreeBoard() {
     if (!tbody) return;
     
     if (paginated.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 30px; color: var(--text-muted);">등록된 게시글이 없습니다.</td></tr>`;
+        const colSpan = isAdmin ? 7 : 6;
+        tbody.innerHTML = `<tr><td colspan="${colSpan}" style="text-align: center; padding: 30px; color: var(--text-muted);">등록된 게시글이 없습니다.</td></tr>`;
     } else {
         tbody.innerHTML = paginated.map(p => {
             const badgeStyle = getCategoryBadgeStyle(p.category);
             
+            const selectTd = isAdmin ? 
+                `<td class="col-select" style="text-align: center;"><input type="checkbox" class="post-select-chk" data-id="${p.id}" onclick="event.stopPropagation()"></td>` : '';
+            
             return `
                 <tr>
+                    ${selectTd}
                     <td class="col-num">${p.id}</td>
                     <td class="col-cat"><span class="badge" style="background-color: ${badgeStyle.bg}; color: ${badgeStyle.color}; font-size: 0.8rem; padding: 3px 8px; border-radius: 3px; font-weight: 700;">${p.category}</span></td>
                     <td class="col-title left">
                         <a href="#" onclick="openDetailModal(${p.id}, 'freeboard', event)" style="color: var(--text-dark);">${escapeHtml(p.title)}</a>
-                        ${user && ADMIN_ROLES.includes(user.role) ? `<button class="btn-delete-small" onclick="deletePostDirectly(${p.id}, 'freeboard', event)" title="글 삭제" style="margin-left: 8px; background: none; border: none; color: #cb3c31; cursor: pointer; font-size: 0.85rem; padding: 2px 5px; transition: all 0.2s;" onmouseover="this.style.color='#b03228'" onmouseout="this.style.color='#cb3c31'"><i class="fa-solid fa-trash-can"></i></button>` : ''}
+                        ${isAdmin ? `<button class="btn-delete-small" onclick="deletePostDirectly(${p.id}, 'freeboard', event)" title="글 삭제" style="margin-left: 8px; background: none; border: none; color: #cb3c31; cursor: pointer; font-size: 0.85rem; padding: 2px 5px; transition: all 0.2s;" onmouseover="this.style.color='#b03228'" onmouseout="this.style.color='#cb3c31'"><i class="fa-solid fa-trash-can"></i></button>` : ''}
                     </td>
                     <td class="col-year">${escapeHtml(p.author)}</td>
                     <td class="col-year">${p.date}</td>
@@ -308,6 +405,15 @@ function renderFreeBoard() {
         }).join("");
     }
     
+    // Bind select all checkbox
+    const selectAllFreeboard = document.getElementById("freeboard-select-all");
+    if (selectAllFreeboard) {
+        selectAllFreeboard.addEventListener("change", (e) => {
+            const chks = document.querySelectorAll("#freeboard-list-tbody .post-select-chk");
+            chks.forEach(chk => chk.checked = e.target.checked);
+        });
+    }
+
     renderPagination("freeboard", filtered.length, freeboardPage);
 }
 
@@ -434,6 +540,21 @@ function initButtonListeners() {
     // Edit & Delete click handlers inside detail modal
     document.getElementById("btn-edit-post").addEventListener("click", handleEditClick);
     document.getElementById("btn-delete-post").addEventListener("click", handleDeleteClick);
+
+    // Bulk Delete Buttons Listener
+    const btnDeleteSelectedNotice = document.getElementById("btn-delete-selected-notice");
+    if (btnDeleteSelectedNotice) {
+        btnDeleteSelectedNotice.addEventListener("click", () => {
+            deleteSelectedPosts("notice");
+        });
+    }
+    
+    const btnDeleteSelectedFreeboard = document.getElementById("btn-delete-selected-freeboard");
+    if (btnDeleteSelectedFreeboard) {
+        btnDeleteSelectedFreeboard.addEventListener("click", () => {
+            deleteSelectedPosts("freeboard");
+        });
+    }
 }
 
 // Modal State Variables
@@ -484,11 +605,31 @@ function openWriteModal(type, editPostId = null) {
         `;
     }
     
+    // Control datetime picker visibility for admins
+    const groupDisplay = document.getElementById("group-post-date-display");
+    const groupInput = document.getElementById("group-post-date-input");
+    const isAdmin = user && ADMIN_ROLES.includes(user.role);
+    
+    if (isAdmin) {
+        if (groupDisplay) groupDisplay.style.display = "none";
+        if (groupInput) groupInput.style.display = "block";
+    } else {
+        if (groupDisplay) groupDisplay.style.display = "block";
+        if (groupInput) groupInput.style.display = "none";
+    }
+
     // Auto-fill today's date in the date display field
     const todayObj = new Date();
     const todayStr = `${todayObj.getFullYear()}. ${String(todayObj.getMonth() + 1).padStart(2, '0')}. ${String(todayObj.getDate()).padStart(2, '0')}`;
     const dateDisplayEl = document.getElementById("post-date-display");
     if (dateDisplayEl) dateDisplayEl.value = todayStr;
+
+    // ISO time string helper for datetime-local value (YYYY-MM-DDTHH:mm)
+    const now = new Date();
+    const offset = now.getTimezoneOffset() * 60000;
+    const localISOTime = (new Date(now - offset)).toISOString().slice(0, 16);
+    const dateInputEl = document.getElementById("post-date-input");
+    if (dateInputEl) dateInputEl.value = localISOTime;
 
     // Set Title text depending on Create or Edit
     const writeModalTitle = document.getElementById("write-modal-title");
@@ -505,6 +646,12 @@ function openWriteModal(type, editPostId = null) {
             document.getElementById("post-author").value = post.author;
             document.getElementById("post-title").value = post.title;
             document.getElementById("post-content").value = post.content;
+
+            if (dateDisplayEl) dateDisplayEl.value = post.date;
+            if (dateInputEl) {
+                const isoVal = parseDateToISOString(post.date);
+                dateInputEl.value = isoVal || localISOTime;
+            }
         }
     } else {
         // Create mode: clear fields
@@ -539,6 +686,7 @@ window.handlePostSubmit = function(event) {
         return;
     }
     
+    const isAdmin = ADMIN_ROLES.includes(user.role);
     const postsKey = type === "notice" ? "notice_posts" : "freeboard_posts";
     const posts = JSON.parse(localStorage.getItem(postsKey) || "[]");
     
@@ -549,7 +697,7 @@ window.handlePostSubmit = function(event) {
         
         if (post) {
             // Check authorization before edit
-            const isAuthorized = ADMIN_ROLES.includes(user.role) || post.email === user.email;
+            const isAuthorized = isAdmin || post.email === user.email;
             if (!isAuthorized) {
                 alert("권한이 없습니다. 본인의 글만 수정할 수 있습니다.");
                 return;
@@ -558,6 +706,15 @@ window.handlePostSubmit = function(event) {
             post.category = category;
             post.title = title;
             post.content = content;
+            
+            // If admin, update post date from input datetime-local value
+            if (isAdmin) {
+                const inputDateVal = document.getElementById("post-date-input").value;
+                if (inputDateVal) {
+                    post.date = formatDateStringToCustom(inputDateVal);
+                }
+            }
+            
             localStorage.setItem(postsKey, JSON.stringify(posts));
             alert("수정되었습니다.");
         }
@@ -566,8 +723,19 @@ window.handlePostSubmit = function(event) {
         const idxKey = type === "notice" ? "notice_posts_idx" : "freeboard_posts_idx";
         const currentIdx = parseInt(localStorage.getItem(idxKey) || "1");
         
-        const dateObj = new Date();
-        const formattedDate = `${dateObj.getFullYear()}. ${String(dateObj.getMonth() + 1).padStart(2, '0')}. ${String(dateObj.getDate()).padStart(2, '0')}`;
+        let formattedDate = "";
+        if (isAdmin) {
+            const inputDateVal = document.getElementById("post-date-input").value;
+            if (inputDateVal) {
+                formattedDate = formatDateStringToCustom(inputDateVal);
+            } else {
+                const dateObj = new Date();
+                formattedDate = `${dateObj.getFullYear()}. ${String(dateObj.getMonth() + 1).padStart(2, '0')}. ${String(dateObj.getDate()).padStart(2, '0')}`;
+            }
+        } else {
+            const dateObj = new Date();
+            formattedDate = `${dateObj.getFullYear()}. ${String(dateObj.getMonth() + 1).padStart(2, '0')}. ${String(dateObj.getDate()).padStart(2, '0')}`;
+        }
         
         const newPost = {
             id: currentIdx,
@@ -765,6 +933,92 @@ window.deletePostDirectly = function(postId, postType, event) {
     if (postType === "notice") {
         renderNoticeBoard();
     } else {
+        renderFreeBoard();
+    }
+};
+
+// --- Custom Additions for Date Handling & Bulk Deletion ---
+
+function parseDateToISOString(dateStr) {
+    if (!dateStr) return "";
+    // Remove dots, and replace multiple spaces
+    const cleaned = dateStr.replace(/\./g, "").replace(/\s+/g, " ").trim();
+    // Example format: "2026 05 29" or "2026 05 29 14:30"
+    const parts = cleaned.split(" ");
+    if (parts.length >= 3) {
+        const yyyy = parts[0];
+        const mm = parts[1].padStart(2, '0');
+        const dd = parts[2].padStart(2, '0');
+        let hh = "00";
+        let mi = "00";
+        if (parts.length >= 4) {
+            const timeParts = parts[3].split(":");
+            if (timeParts.length >= 1) hh = timeParts[0].padStart(2, '0');
+            if (timeParts.length >= 2) mi = timeParts[1].padStart(2, '0');
+        }
+        return `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
+    }
+    return "";
+}
+
+function formatDateStringToCustom(isoStr) {
+    if (!isoStr) return "";
+    // Example isoStr: "2026-06-14T15:30"
+    const parts = isoStr.split("T");
+    if (parts.length === 2) {
+        const datePart = parts[0]; // "2026-06-14"
+        const timePart = parts[1]; // "15:30"
+        const dateItems = datePart.split("-");
+        if (dateItems.length === 3) {
+            return `${dateItems[0]}. ${dateItems[1]}. ${dateItems[2]} ${timePart}`;
+        }
+    } else {
+        const dateItems = isoStr.split("-");
+        if (dateItems.length === 3) {
+            return `${dateItems[0]}. ${dateItems[1]}. ${dateItems[2]}`;
+        }
+    }
+    return isoStr;
+}
+
+window.deleteSelectedPosts = function(postType) {
+    const user = getLoggedInUser();
+    if (!user || !ADMIN_ROLES.includes(user.role)) {
+        alert("삭제 권한이 없습니다.");
+        return;
+    }
+    
+    const tbodyId = postType === "notice" ? "notice-list-tbody" : "freeboard-list-tbody";
+    const checkedBoxes = document.querySelectorAll(`#${tbodyId} .post-select-chk:checked`);
+    
+    if (checkedBoxes.length === 0) {
+        alert("삭제할 글을 선택해 주세요.");
+        return;
+    }
+    
+    if (!confirm(`선택한 ${checkedBoxes.length}개의 글을 정말로 삭제하시겠습니까?`)) {
+        return;
+    }
+    
+    const postsKey = postType === "notice" ? "notice_posts" : "freeboard_posts";
+    const posts = JSON.parse(localStorage.getItem(postsKey) || "[]");
+    
+    const idsToDelete = Array.from(checkedBoxes).map(chk => parseInt(chk.getAttribute("data-id")));
+    const filteredPosts = posts.filter(p => !idsToDelete.includes(p.id));
+    
+    localStorage.setItem(postsKey, JSON.stringify(filteredPosts));
+    alert("선택한 글들이 삭제되었습니다.");
+    
+    // Uncheck select all checkbox
+    const selectAllCheckbox = document.getElementById(postType === "notice" ? "notice-select-all" : "freeboard-select-all");
+    if (selectAllCheckbox) selectAllCheckbox.checked = false;
+    
+    // Refresh board
+    if (postType === "notice") {
+        noticePage = 1;
+        renderNoticeBoard();
+    } else {
+        freeboardPage = 1;
         renderFreeBoard();
     }
 };
