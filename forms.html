@@ -503,8 +503,10 @@
     <script src="db.js"></script>
 
     <!-- ══ 편집 모달 ══ -->
-    <div id="edit-modal" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.55);
-        display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;" onclick="if(event.target===this)_closeEditModal()">
+    <div id="edit-modal"
+        style="position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.55);
+        align-items:center;justify-content:center;padding:20px;box-sizing:border-box;"
+        onclick="if(event.target===this)_closeEditModal()">
     </div>
     <style>
         #edit-modal { display:none; }
