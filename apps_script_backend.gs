@@ -4,18 +4,23 @@
 // ============================================================
 
 const SHEET_NAMES = {
-  users:      "회원목록",
-  notices:    "공지사항",
-  freeboard:  "자유게시판",
-  submissions:"논문투고",
+  users:       "회원목록",
+  notices:     "공지사항",
+  freeboard:   "자유게시판",
+  submissions: "논문투고",
+};
+
+// 구글 드라이브 폴더 이름 상수 (한 곳에서 관리)
+const DRIVE_FOLDER = {
+  members:     "한국음악학회_회원가입서류",
+  submissions: "한국음악학회_논문투고파일",
 };
 
 // ── CORS 헤더 포함 응답 생성 ──
 function makeResponse(data) {
-  const output = ContentService
+  return ContentService
     .createTextOutput(JSON.stringify(data))
     .setMimeType(ContentService.MimeType.JSON);
-  return output;
 }
 
 // ── 시트가 없으면 자동 생성 ──
@@ -24,7 +29,6 @@ function getOrCreateSheet(name) {
   let sheet = ss.getSheetByName(name);
   if (!sheet) {
     sheet = ss.insertSheet(name);
-    // 각 시트에 헤더 설정
     if (name === SHEET_NAMES.users) {
       sheet.appendRow([
         "email","name","password","role","affiliation","phone","birth",
@@ -53,7 +57,7 @@ function getOrCreateSheet(name) {
 // ── 시트 → JSON 배열 변환 ──
 function sheetToJson(sheet) {
   const rows = sheet.getDataRange().getValues();
-  if (rows.length <= 1) return [];   // 헤더만 있으면 빈 배열
+  if (rows.length <= 1) return [];
   const headers = rows[0];
   return rows.slice(1).map(row => {
     const obj = {};
@@ -62,14 +66,42 @@ function sheetToJson(sheet) {
   });
 }
 
+// ── POST 바디 파싱 헬퍼 ──
+// _dbPostDirect 가 보내는 application/x-www-form-urlencoded 형식 지원:
+//   body: "post_data=<URL인코딩된 JSON>"
+// _dbPost 가 보내는 GET 파라미터 우회 방식도 동일하게 처리.
+function parseBody(e) {
+  // 1순위: GET 파라미터에 post_data가 있는 경우 (CORS 우회 GET 방식)
+  if (e.parameter && e.parameter.post_data) {
+    return JSON.parse(decodeURIComponent(e.parameter.post_data));
+  }
+
+  // 2순위: POST body에 데이터가 있는 경우
+  if (e.postData && e.postData.contents) {
+    const raw = e.postData.contents;
+
+    // x-www-form-urlencoded: "post_data=<JSON>"
+    if (raw.startsWith("post_data=")) {
+      const jsonStr = decodeURIComponent(raw.slice("post_data=".length));
+      return JSON.parse(jsonStr);
+    }
+
+    // 순수 JSON body (fallback)
+    return JSON.parse(raw);
+  }
+
+  throw new Error("전송된 데이터가 없습니다.");
+}
+
 // ── GET 요청 처리 (데이터 읽기 + POST 우회) ──
 function doGet(e) {
   try {
-    // POST 데이터가 GET 파라미터로 전달된 경우 처리 (CORS 우회)
-    if (e.parameter.post_data) {
-      const body = JSON.parse(decodeURIComponent(e.parameter.post_data));
-      const fakeEvent = { postData: { contents: JSON.stringify(body) } };
-      return doPost(fakeEvent);
+    // POST 데이터가 GET 파라미터로 전달된 경우 doPost로 위임
+    if (e.parameter && e.parameter.post_data) {
+      const body = parseBody(e);
+      const fakeEvent = { postData: null, parameter: { post_data: JSON.stringify(body) } };
+      // 재파싱 루프를 피하기 위해 직접 doPost에 body 전달
+      return handleWrite(body);
     }
 
     const action = e.parameter.action || "get";
@@ -80,24 +112,31 @@ function doGet(e) {
       if (!sheetName) return makeResponse({ ok: false, error: "unknown sheet: " + sheetKey });
       const sheet = getOrCreateSheet(sheetName);
       const data = sheetToJson(sheet);
-      // 비밀번호는 GET 응답에서 제거 (users 조회 시 보안)
       if (sheetKey === "users") {
         data.forEach(u => { delete u.password; });
       }
       return makeResponse({ ok: true, data: data });
     }
 
-    return makeResponse({ ok: false, error: "Unknown action" });
+    return makeResponse({ ok: false, error: "Unknown GET action" });
   } catch (err) {
     return makeResponse({ ok: false, error: err.message });
   }
 }
 
-
-// ── POST 요청 처리 (쓰기/수정/삭제) ──
+// ── POST 요청 처리 ──
 function doPost(e) {
   try {
-    const body = JSON.parse(e.postData.contents);
+    const body = parseBody(e);
+    return handleWrite(body);
+  } catch (err) {
+    return makeResponse({ ok: false, error: err.message });
+  }
+}
+
+// ── 실제 쓰기 로직 (doGet/doPost 공통 사용) ──
+function handleWrite(body) {
+  try {
     const { action, sheet: sheetKey, data, key, value } = body;
 
     const sheetName = SHEET_NAMES[sheetKey];
@@ -108,40 +147,64 @@ function doPost(e) {
 
     // ── 추가 ──
     if (action === "add") {
-      // 중복 체크 (users: email 기준)
+
+      // [회원가입] 중복 이메일 체크 + 파일 업로드
       if (sheetKey === "users") {
         const existing = sheetToJson(sheet);
-        const dup = existing.find(u => u.email && u.email.toLowerCase() === (data.email || "").toLowerCase());
+        const dup = existing.find(u =>
+          u.email && u.email.toLowerCase() === (data.email || "").toLowerCase()
+        );
         if (dup) return makeResponse({ ok: false, error: "이미 등록된 이메일입니다." });
 
-        // 제출서류 파일이 함께 전달된 경우 구글 드라이브에 저장 처리
-        if (data.fileData) {
-          data.document_url = uploadFileToDrive(data.fileData, data.name || "미상");
-          delete data.fileData; // 스프레드시트에는 base64 원본을 쓰지 않고 파일 링크만 쓰기 위해 삭제
+        // 회원가입 첨부 서류 업로드 (파일이 있을 때만)
+        if (data.fileData && data.fileData.base64) {
+          try {
+            data.document_url = uploadFileToDrive(data.fileData, data.name || "미상");
+          } catch (uploadErr) {
+            // 파일 업로드 실패해도 회원가입 자체는 계속 진행 (URL은 빈값으로 저장)
+            Logger.log("회원가입 파일 업로드 실패(무시): " + uploadErr.message);
+            data.document_url = "";
+          }
+          delete data.fileData;
         }
 
-        // 스프레드시트 컬럼 헤더에 document_url이 없을 경우 자동으로 맨 끝에 헤더 추가 (구버전 호환)
+        // 구버전 스프레드시트에 document_url 컬럼이 없을 경우 자동 추가
         if (headers.indexOf("document_url") === -1) {
           headers.push("document_url");
           sheet.getRange(1, headers.length).setValue("document_url");
         }
       }
 
-      // 논문 투고 파일이 함께 전달된 경우 구글 드라이브에 저장 처리
+      // [논문 투고] 파일 업로드
       if (sheetKey === "submissions") {
-        if (data.file_manuscript_data) {
-          data.file_manuscript = uploadSubmissionFileToDrive(data.file_manuscript_data, data.title_ko || "논문");
+        if (data.file_manuscript_data && data.file_manuscript_data.base64) {
+          try {
+            data.file_manuscript = uploadSubmissionFileToDrive(
+              data.file_manuscript_data, data.title_ko || "논문", "원고"
+            );
+          } catch (uploadErr) {
+            Logger.log("원고 파일 업로드 실패(무시): " + uploadErr.message);
+            data.file_manuscript = "";
+          }
           delete data.file_manuscript_data;
         }
-        if (data.file_agreement_data) {
-          data.file_agreement = uploadSubmissionFileToDrive(data.file_agreement_data, data.title_ko || "논문");
+
+        if (data.file_agreement_data && data.file_agreement_data.base64) {
+          try {
+            data.file_agreement = uploadSubmissionFileToDrive(
+              data.file_agreement_data, data.title_ko || "논문", "저작권동의서"
+            );
+          } catch (uploadErr) {
+            Logger.log("동의서 파일 업로드 실패(무시): " + uploadErr.message);
+            data.file_agreement = "";
+          }
           delete data.file_agreement_data;
         }
       }
 
       data.created_at = new Date().toISOString();
-      
-      // 스프레드시트 컬럼 헤더에 데이터의 필드가 없을 경우 자동으로 맨 끝에 헤더 추가 (구버전 시트 호환 및 스키마 자동 확장)
+
+      // 헤더에 없는 필드가 있으면 자동으로 컬럼 추가 (스키마 자동 확장)
       Object.keys(data).forEach(field => {
         if (headers.indexOf(field) === -1) {
           headers.push(field);
@@ -150,7 +213,6 @@ function doPost(e) {
       });
 
       const row = headers.map(h => {
-        // authors 배열은 JSON 문자열로 저장
         if (h === "authors" && Array.isArray(data[h])) return JSON.stringify(data[h]);
         return data[h] !== undefined ? data[h] : "";
       });
@@ -160,7 +222,6 @@ function doPost(e) {
 
     // ── 수정 ──
     if (action === "update") {
-      // 스프레드시트 컬럼 헤더에 수정하려는 필드가 없을 경우 자동으로 맨 끝에 헤더 추가 (구버전 시트 호환 및 스키마 자동 확장)
       Object.keys(data).forEach(field => {
         if (headers.indexOf(field) === -1) {
           headers.push(field);
@@ -170,9 +231,10 @@ function doPost(e) {
 
       const keyCol = headers.indexOf(key) + 1;
       if (keyCol === 0) return makeResponse({ ok: false, error: "key 컬럼 없음: " + key });
-      const colValues = sheet.getRange(2, keyCol, Math.max(sheet.getLastRow()-1,1), 1).getValues();
+      const colValues = sheet.getRange(2, keyCol, Math.max(sheet.getLastRow() - 1, 1), 1).getValues();
       const rowIdx = colValues.findIndex(r => String(r[0]).toLowerCase() === String(value).toLowerCase());
       if (rowIdx === -1) return makeResponse({ ok: false, error: "해당 레코드를 찾을 수 없습니다." });
+
       const actualRow = rowIdx + 2;
       Object.keys(data).forEach(field => {
         const colIdx = headers.indexOf(field) + 1;
@@ -188,14 +250,14 @@ function doPost(e) {
     if (action === "delete") {
       const keyCol = headers.indexOf(key) + 1;
       if (keyCol === 0) return makeResponse({ ok: false, error: "key 컬럼 없음: " + key });
-      const colValues = sheet.getRange(2, keyCol, Math.max(sheet.getLastRow()-1,1), 1).getValues();
+      const colValues = sheet.getRange(2, keyCol, Math.max(sheet.getLastRow() - 1, 1), 1).getValues();
       const rowIdx = colValues.findIndex(r => String(r[0]).toLowerCase() === String(value).toLowerCase());
       if (rowIdx === -1) return makeResponse({ ok: false, error: "해당 레코드를 찾을 수 없습니다." });
       sheet.deleteRow(rowIdx + 2);
       return makeResponse({ ok: true, message: "삭제 완료" });
     }
 
-    // ── 로그인 인증 (비밀번호 포함 조회) ──
+    // ── 로그인 인증 ──
     if (action === "login") {
       const sheet2 = getOrCreateSheet(SHEET_NAMES.users);
       const users = sheetToJson(sheet2);
@@ -203,15 +265,12 @@ function doPost(e) {
       const user = users.find(u => {
         if (!u.email) return false;
         const dbEmail = u.email.toLowerCase().trim();
-        // 1. 이메일 전체가 일치하는 경우
         if (dbEmail === inputEmail) return true;
-        // 2. 골뱅이(@) 없이 ID만 입력한 경우, dbEmail의 ID 부분과 일치하는지 확인 (예: admin -> admin@gmail.com)
         if (!inputEmail.includes("@") && dbEmail.split("@")[0] === inputEmail) return true;
         return false;
       });
       if (!user) return makeResponse({ ok: false, error: "등록된 회원이 아닙니다." });
       if (user.password !== data.password) return makeResponse({ ok: false, error: "비밀번호가 올바르지 않습니다." });
-      // 비밀번호 제거 후 반환
       const safeUser = Object.assign({}, user);
       delete safeUser.password;
       return makeResponse({ ok: true, user: safeUser });
@@ -234,62 +293,48 @@ function doPost(e) {
   }
 }
 
-// ── 구글 드라이브 파일 저장 헬퍼 (회원가입 서류용) ──
-function uploadFileToDrive(fileData, userName) {
-  try {
-    const folderName = "한국음악학회_회원가입서류";
-    const folders = DriveApp.getFoldersByName(folderName);
-    let folder;
-    if (folders.hasNext()) {
-      folder = folders.next();
-    } else {
-      folder = DriveApp.createFolder(folderName);
-    }
-    
-    // 파일명 포맷: [년월일]_[성명]_[파일명]
-    const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-    const fileName = dateStr + "_" + userName + "_" + fileData.name;
-    
-    const decoded = Utilities.base64Decode(fileData.base64);
-    const blob = Utilities.newBlob(decoded, fileData.mimeType, fileName);
-    const file = folder.createFile(blob);
-    
-    // 파일 링크 누구나 열 수 있게 공유 권한 설정 (Viewer 권한)
-    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-    
-    return file.getUrl();
-  } catch (err) {
-    throw new Error("드라이브 서류 업로드 실패: " + err.message);
-  }
+// ============================================================
+// ── 구글 드라이브 업로드 헬퍼 ──
+// ============================================================
+
+// 지정된 이름의 폴더를 가져오거나 없으면 새로 생성
+function getDriveFolder(folderName) {
+  const folders = DriveApp.getFoldersByName(folderName);
+  if (folders.hasNext()) return folders.next();
+  const newFolder = DriveApp.createFolder(folderName);
+  // 링크가 있는 누구나 뷰어로 접근 가능하도록 설정
+  newFolder.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  return newFolder;
 }
 
-// ── 구글 드라이브 파일 저장 헬퍼 (논문 투고 파일용) ──
-function uploadSubmissionFileToDrive(fileData, paperTitle) {
-  try {
-    const folderName = "한국음악학회_논문투고파일";
-    const folders = DriveApp.getFoldersByName(folderName);
-    let folder;
-    if (folders.hasNext()) {
-      folder = folders.next();
-    } else {
-      folder = DriveApp.createFolder(folderName);
-    }
-    
-    // 파일명 포맷: [투고일]_[논문제목(일부)]_[원본파일명]
-    const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-    // 특수문자 제거 및 앞 15자만 추출
-    const cleanTitle = (paperTitle || "논문").substring(0, 15).replace(/[\s\x00-\x1F\x7F<>:"/\\|?*]/g, "_");
-    const fileName = dateStr + "_" + cleanTitle + "_" + fileData.name;
-    
-    const decoded = Utilities.base64Decode(fileData.base64);
-    const blob = Utilities.newBlob(decoded, fileData.mimeType, fileName);
-    const file = folder.createFile(blob);
-    
-    // 링크가 있는 누구나 뷰어로 볼 수 있도록 권한 지정 (Viewer 권한)
-    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-    
-    return file.getUrl();
-  } catch (err) {
-    throw new Error("논문 파일 업로드 실패: " + err.message);
-  }
+// 파일 base64 → Blob → 드라이브 저장 → 공유 URL 반환
+function saveFileToDrive(fileData, folder, fileName) {
+  const decoded = Utilities.base64Decode(fileData.base64);
+  const blob = Utilities.newBlob(decoded, fileData.mimeType || "application/octet-stream", fileName);
+  const file = folder.createFile(blob);
+  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  return file.getUrl();
+}
+
+// 회원가입 서류 업로드
+// 저장 폴더: 한국음악학회_회원가입서류
+// 파일명 형식: YYYYMMDD_이름_원본파일명
+function uploadFileToDrive(fileData, userName) {
+  const folder = getDriveFolder(DRIVE_FOLDER.members);
+  const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  const safeName = (userName || "미상").replace(/[<>:"/\\|?*\x00-\x1F]/g, "_");
+  const fileName = dateStr + "_" + safeName + "_" + (fileData.name || "서류");
+  return saveFileToDrive(fileData, folder, fileName);
+}
+
+// 논문 투고 파일 업로드
+// 저장 폴더: 한국음악학회_논문투고파일
+// 파일명 형식: YYYYMMDD_논문제목(15자)_구분(원고/저작권동의서)_원본파일명
+function uploadSubmissionFileToDrive(fileData, paperTitle, fileType) {
+  const folder = getDriveFolder(DRIVE_FOLDER.submissions);
+  const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  const cleanTitle = (paperTitle || "논문").substring(0, 15).replace(/[\s\x00-\x1F\x7F<>:"/\\|?*]/g, "_");
+  const label = fileType || "파일";
+  const fileName = dateStr + "_" + cleanTitle + "_" + label + "_" + (fileData.name || "파일");
+  return saveFileToDrive(fileData, folder, fileName);
 }
