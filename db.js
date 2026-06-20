@@ -207,8 +207,30 @@ window.SESSION_clear = function() {
 };
 
 // ============================================================
-// 6. 관리자 계정 시드 (최초 1회 — 빈 Sheets에 기본 계정 등록)
+// 6. 양식파일 (forms)
 // ============================================================
+
+/** 양식 목록 조회 (구글 시트에서 불러오기) */
+window.DB_getForms = async function() {
+    return await _dbGet("forms");
+};
+
+/** 양식 파일 업로드 → 구글 드라이브 저장 후 시트에 URL 등록 */
+window.DB_addFormFile = async function(payload) {
+    // payload: { action:"addFormFile", name, category, fileData:{base64,name,mimeType} }
+    return await _dbPostDirect(payload);
+};
+
+/** 양식 삭제 (시트에서 행 제거, 드라이브 파일은 유지) */
+window.DB_deleteForm = async function(id) {
+    return await _dbPost({
+        action: "delete", sheet: "forms",
+        key: "id", value: id, data: {}
+    });
+};
+
+console.log("[db.js] 데이터베이스 클라이언트 로드 완료 →", DB_URL.substring(0, 60) + "...");
+
 
 window.DB_seedAdminAccounts = async function() {
     const existing = await window.DB_getUsers();

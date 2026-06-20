@@ -500,15 +500,15 @@
     </div>
 
     <script src="share.js"></script>
+    <script src="db.js"></script>
     <script>
     (function () {
         'use strict';
 
         /* ─── Constants ───────────────────────────────────── */
-        const ADMIN_ROLES  = ['admin','secretary','editor','president'];
-        const STORAGE_KEY  = 'forms_uploaded_files_v3';
-        const HIDDEN_KEY   = 'forms_hidden_static_ids';
+        const ADMIN_ROLES = ['admin','secretary','editor','president'];
 
+        // 기본 제공 서식 (로컬 파일 링크 — 변경 불필요)
         const STATIC_FORMS = [
             { id:'S-001', name:'한국음악학회 정회원 입회신청서 양식', category:'입회안내', date:'2026-03-01',
               files:[{ label:'HWP', url:'skmcs_admission_form.hwp', download:'한국음악학회_정회원입회신청서.hwp' },
@@ -526,86 +526,78 @@
         function isAdmin(u) { return u && ADMIN_ROLES.includes(u.role); }
         function esc(s)     { if(!s) return ''; return s.toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
         function fmtBytes(b){ if(b<1024) return b+' B'; if(b<1048576) return (b/1024).toFixed(1)+' KB'; return (b/1048576).toFixed(1)+' MB'; }
-        function fmtDate(d) { return d ? d.replace(/-/g,'. ') : ''; }
-        function extColor(l){ const m={pdf:'#e63946',hwp:'#2b6cb0',docx:'#2e7d32',zip:'#7c3aed',xlsx:'#166534',pptx:'#c2410c'}; return m[l.toLowerCase()]||'#555'; }
-        function fileIcon(l){ const m={pdf:'fa-file-pdf',hwp:'fa-file-word',docx:'fa-file-word',zip:'fa-file-zipper',xlsx:'fa-file-excel',pptx:'fa-file-powerpoint'}; return 'fa-solid '+(m[l.toLowerCase()]||'fa-file'); }
+        function fmtDate(d) { return d ? String(d).slice(0,10).replace(/-/g,'. ') : ''; }
+        function extColor(l){ const m={pdf:'#e63946',hwp:'#2b6cb0',docx:'#2e7d32',zip:'#7c3aed',xlsx:'#166534',pptx:'#c2410c'}; return m[(l||'').toLowerCase()]||'#555'; }
+        function fileIcon(l){ const m={pdf:'fa-file-pdf',hwp:'fa-file-word',docx:'fa-file-word',zip:'fa-file-zipper',xlsx:'fa-file-excel',pptx:'fa-file-powerpoint'}; return 'fa-solid '+(m[(l||'').toLowerCase()]||'fa-file'); }
 
-        /* ─── Storage ────────────────────────────────────── */
-        function getUploaded()   { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch(e) { return []; } }
-        function saveUploaded(d) { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
-        function getHidden()     { try { return JSON.parse(localStorage.getItem(HIDDEN_KEY)) || []; } catch(e) { return []; } }
-        function saveHidden(d)   { localStorage.setItem(HIDDEN_KEY, JSON.stringify(d)); }
+        /* ─── 구글 시트에서 불러온 드라이브 양식 목록 ── */
+        let driveFormsCache = [];
 
-        /* ─── Download from base64 ───────────────────────── */
-        function dlBase64(b64, name, mime) {
-            const bytes = atob(b64), arr = new Uint8Array(bytes.length);
-            for(let i=0;i<bytes.length;i++) arr[i]=bytes.charCodeAt(i);
-            const url = URL.createObjectURL(new Blob([arr],{type:mime||'application/octet-stream'}));
-            const a = Object.assign(document.createElement('a'),{href:url, download:name});
-            document.body.appendChild(a); a.click();
-            setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); },600);
-        }
-
-        /* ─── Storage usage ──────────────────────────────── */
-        function updateStorageIndicator() {
-            const el = document.getElementById('storage-indicator');
-            if (!el) return;
-            const data = localStorage.getItem(STORAGE_KEY) || '';
-            const kb = (data.length * 2 / 1024).toFixed(0);
-            el.textContent = `저장소 사용: ${kb} KB / ~5 MB`;
+        async function loadDriveForms() {
+            try {
+                const rows = await window.DB_getForms();
+                driveFormsCache = rows.map(r => ({
+                    id:       String(r.id || ''),
+                    name:     String(r.name || ''),
+                    category: String(r.category || '기타'),
+                    date:     String(r.date || '').slice(0,10),
+                    files:[{
+                        label:       String(r.file_ext || 'FILE'),
+                        url:         String(r.view_url || ''),
+                        downloadUrl: String(r.download_url || r.view_url || ''),
+                        isDrive:     true
+                    }]
+                }));
+            } catch(e) {
+                console.warn('[Forms] 드라이브 양식 로드 실패:', e);
+                driveFormsCache = [];
+            }
         }
 
         /* ─── Render admin uploaded file cards ───────────── */
         function renderAdminList() {
-            const list    = document.getElementById('admin-file-list');
-            const cnt     = document.getElementById('admin-file-count');
-            const restBtn = document.getElementById('btn-restore-defaults');
+            const list = document.getElementById('admin-file-list');
+            const cnt  = document.getElementById('admin-file-count');
             if (!list) return;
-            const uploaded = getUploaded();
-            const hidden   = getHidden();
-            if (cnt) cnt.textContent = uploaded.length;
-            // Show restore button only if some static forms are hidden
-            if (restBtn) restBtn.style.display = hidden.length > 0 ? 'inline-flex' : 'none';
-            if (uploaded.length === 0) {
-                list.innerHTML = `<div style="padding:20px; text-align:center; color:rgba(255,255,255,0.35); font-size:0.88rem;">
-                    <i class="fa-solid fa-inbox" style="font-size:1.8rem; margin-bottom:8px; display:block; opacity:0.4;"></i>
+            if (cnt) cnt.textContent = driveFormsCache.length;
+            if (driveFormsCache.length === 0) {
+                list.innerHTML = `<div style="padding:20px;text-align:center;color:rgba(255,255,255,0.35);font-size:0.88rem;">
+                    <i class="fa-solid fa-inbox" style="font-size:1.8rem;margin-bottom:8px;display:block;opacity:0.4;"></i>
                     업로드된 파일이 없습니다</div>`;
                 return;
             }
-            list.innerHTML = uploaded.map(f => {
-                const file = f.files[0] || {};
-                const ext  = file.label || '?';
-                const clr  = extColor(ext);
-                return `<div style="display:flex; align-items:center; gap:14px; background:rgba(255,255,255,0.06);
-                    border-radius:10px; padding:12px 16px; transition:background 0.2s;"
+            list.innerHTML = driveFormsCache.map(f => {
+                const entry = f.files[0] || {};
+                const ext   = entry.label || '?';
+                const clr   = extColor(ext);
+                return `<div style="display:flex;align-items:center;gap:14px;background:rgba(255,255,255,0.06);
+                    border-radius:10px;padding:12px 16px;transition:background 0.2s;"
                     onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.06)'">
-                    <div style="width:38px; height:38px; background:${clr}22; border:1px solid ${clr}55;
-                        border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                        <i class="${fileIcon(ext)}" style="color:${clr}; font-size:1rem;"></i>
+                    <div style="width:38px;height:38px;background:${clr}22;border:1px solid ${clr}55;
+                        border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i class="${fileIcon(ext)}" style="color:${clr};font-size:1rem;"></i>
                     </div>
-                    <div style="flex:1; min-width:0;">
-                        <div style="font-weight:700; color:#fff; font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${esc(f.name)}</div>
-                        <div style="font-size:0.75rem; color:rgba(255,255,255,0.45); margin-top:2px;">
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-weight:700;color:#fff;font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(f.name)}</div>
+                        <div style="font-size:0.75rem;color:rgba(255,255,255,0.45);margin-top:2px;">
                             ${esc(f.category)} &nbsp;·&nbsp; ${fmtDate(f.date)} &nbsp;·&nbsp;
-                            <span style="color:${clr}; font-weight:700;">${ext}</span>
-                            ${file.size ? '&nbsp;·&nbsp; '+fmtBytes(file.size) : ''}
+                            <span style="color:${clr};font-weight:700;">${ext}</span>
+                            &nbsp;·&nbsp; <i class="fa-brands fa-google-drive" style="color:#4caf50;"></i> 드라이브
                         </div>
                     </div>
-                    <div style="display:flex; gap:8px; flex-shrink:0;">
-                        <button onclick="_dlUploaded('${esc(f.id)}')"
-                            style="background:rgba(43,138,126,0.3); border:1px solid rgba(43,138,126,0.5); color:#fff;
-                            border-radius:6px; padding:6px 12px; font-size:0.78rem; cursor:pointer; transition:all 0.2s; font-weight:600;"
-                            onmouseover="this.style.background='rgba(43,138,126,0.5)'" onmouseout="this.style.background='rgba(43,138,126,0.3)'"
-                            title="다운로드"><i class="fa-solid fa-download"></i></button>
-                        <button onclick="_delUploaded('${esc(f.id)}')"
-                            style="background:rgba(203,60,49,0.25); border:1px solid rgba(203,60,49,0.4); color:#ff9a9a;
-                            border-radius:6px; padding:6px 12px; font-size:0.78rem; cursor:pointer; transition:all 0.2s; font-weight:600;"
+                    <div style="display:flex;gap:8px;flex-shrink:0;">
+                        <a href="${esc(entry.downloadUrl)}" target="_blank"
+                            style="background:rgba(43,138,126,0.3);border:1px solid rgba(43,138,126,0.5);color:#fff;
+                            border-radius:6px;padding:6px 12px;font-size:0.78rem;text-decoration:none;font-weight:600;"
+                            title="다운로드"><i class="fa-solid fa-download"></i></a>
+                        <button onclick="_delDriveForm('${esc(f.id)}')"
+                            style="background:rgba(203,60,49,0.25);border:1px solid rgba(203,60,49,0.4);color:#ff9a9a;
+                            border-radius:6px;padding:6px 12px;font-size:0.78rem;cursor:pointer;font-weight:600;"
                             onmouseover="this.style.background='rgba(203,60,49,0.5)'" onmouseout="this.style.background='rgba(203,60,49,0.25)'"
                             title="삭제"><i class="fa-solid fa-trash-can"></i></button>
                     </div>
                 </div>`;
             }).join('');
-            updateStorageIndicator();
         }
 
         /* ─── Render public download table ──────────────── */
@@ -614,13 +606,11 @@
             const cntEl  = document.getElementById('forms-total-count');
             const admCol = document.querySelectorAll('.forms-admin-col');
             if (!tbody) return;
-            const user   = getUser();
-            const admin  = isAdmin(user);
+            const user  = getUser();
+            const admin = isAdmin(user);
             admCol.forEach(el => el.style.display = admin ? 'table-cell' : 'none');
 
-            const hidden = getHidden();
-            const visibleStatic = STATIC_FORMS.filter(f => !hidden.includes(f.id));
-            const all = [...visibleStatic, ...getUploaded()];
+            const all = [...STATIC_FORMS, ...driveFormsCache];
             if (cntEl) cntEl.textContent = all.length;
             tbody.innerHTML = '';
 
@@ -629,34 +619,35 @@
             all.forEach((form, idx) => {
                 const row  = document.createElement('tr');
                 const clr  = catColors[form.category] || '#666';
-                const badges = (form.files||[]).map(f=>`<span class="form-badge badge-${f.label.toLowerCase()}" style="background:${extColor(f.label)}18;color:${extColor(f.label)};">${esc(f.label)}</span>`).join(' ');
+                const badges = (form.files||[]).map(f=>`<span class="form-badge badge-${(f.label||'').toLowerCase()}" style="background:${extColor(f.label)}18;color:${extColor(f.label)};">${esc(f.label)}</span>`).join(' ');
                 const btns = (form.files||[]).map(f => {
-                    if (f.base64) {
-                        return `<button class="btn-download-form" onclick="_dlUploaded('${esc(form.id)}')"
-                            style="background:${extColor(f.label)}; border:none; cursor:pointer; border-radius:6px;
-                            padding:7px 13px; color:#fff; font-size:0.8rem; font-weight:700; display:inline-flex; align-items:center; gap:5px; transition:opacity 0.2s;"
-                            onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
-                            <i class="fa-solid fa-file-arrow-down"></i> ${esc(f.label)}
-                        </button>`;
+                    if (f.isDrive) {
+                        // 구글 드라이브 파일: 새 탭에서 직접 다운로드
+                        return `<a href="${esc(f.downloadUrl)}" target="_blank"
+                            class="btn-download-form"
+                            style="background:${extColor(f.label)};border:none;border-radius:6px;padding:7px 13px;color:#fff;
+                            font-size:0.8rem;font-weight:700;display:inline-flex;align-items:center;gap:5px;text-decoration:none;">
+                            <i class="fa-brands fa-google-drive"></i> ${esc(f.label)}
+                        </a>`;
                     }
+                    // 로컬 정적 파일
                     return `<a href="${encodeURI(f.url)}" class="btn-download-form" download="${esc(f.download||f.url)}"
-                        style="background:${extColor(f.label)}; border-radius:6px; padding:7px 13px; color:#fff; font-size:0.8rem;
-                        font-weight:700; display:inline-flex; align-items:center; gap:5px; text-decoration:none; transition:opacity 0.2s;"
-                        onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                        style="background:${extColor(f.label)};border-radius:6px;padding:7px 13px;color:#fff;font-size:0.8rem;
+                        font-weight:700;display:inline-flex;align-items:center;gap:5px;text-decoration:none;">
                         <i class="fa-solid fa-file-arrow-down"></i> ${esc(f.label)}
                     </a>`;
                 }).join(' ');
+
                 const delBtn = admin
                     ? `<button onclick="_delForm('${esc(form.id)}')"
-                        style="background:none;border:none;color:#cb3c31;cursor:pointer;font-size:0.9rem;padding:4px 8px;border-radius:4px;transition:color 0.2s;"
-                        onmouseover="this.style.color='#8b0000'" onmouseout="this.style.color='#cb3c31'" title="삭제">
-                        <i class="fa-solid fa-trash-can"></i></button>` : '';
+                        style="background:none;border:none;color:#cb3c31;cursor:pointer;font-size:0.9rem;padding:4px 8px;border-radius:4px;"
+                        title="삭제"><i class="fa-solid fa-trash-can"></i></button>` : '';
 
                 row.innerHTML = `
-                    <td style="font-family:'Poppins',sans-serif; font-weight:600; color:var(--text-muted); font-size:0.88rem;">${idx+1}</td>
+                    <td style="font-family:'Poppins',sans-serif;font-weight:600;color:var(--text-muted);font-size:0.88rem;">${idx+1}</td>
                     <td>
-                        <div style="font-weight:700; color:var(--text-dark); margin-bottom:3px; line-height:1.4;">${esc(form.name)}</div>
-                        <div style="font-size:0.75rem; color:var(--text-muted);">${fmtDate(form.date)}</div>
+                        <div style="font-weight:700;color:var(--text-dark);margin-bottom:3px;line-height:1.4;">${esc(form.name)}</div>
+                        <div style="font-size:0.75rem;color:var(--text-muted);">${fmtDate(form.date)}${form.files[0]&&form.files[0].isDrive ? ' &nbsp;<i class="fa-brands fa-google-drive" style="color:#4caf50;" title="구글 드라이브"></i>' : ''}</div>
                     </td>
                     <td><span style="display:inline-block;padding:3px 9px;border-radius:4px;font-size:0.75rem;font-weight:700;background:${clr}18;color:${clr};">${esc(form.category)}</span></td>
                     <td><div style="display:flex;gap:4px;flex-wrap:wrap;">${badges}</div></td>
@@ -673,38 +664,29 @@
 
         function renderAll() { renderTable(); renderAdminList(); }
 
-        /* ─── Global actions ─────────────────────────────── */
-        window._dlUploaded = function(id) {
-            const f = getUploaded().find(x => x.id === id);
-            if (!f) return alert('파일을 찾을 수 없습니다.');
-            const entry = f.files[0];
-            if (!entry || !entry.base64) return alert('파일 데이터가 없습니다.');
-            dlBase64(entry.base64, entry.download || f.name, entry.mime);
-        };
-        window._delForm = function(id) {
-            if (!confirm('이 서식을 목록에서 삭제하시겠습니까?\n(업로드 파일은 완전 삭제, 기본 서식은 숨김 처리됩니다)')) return;
+        /* ─── Global delete actions ───────────────────────── */
+        window._delForm = async function(id) {
             if (id.startsWith('S-')) {
-                // Hide static form
-                const h = getHidden();
-                if (!h.includes(id)) { h.push(id); saveHidden(h); }
-            } else {
-                // Remove uploaded form
-                saveUploaded(getUploaded().filter(x => x.id !== id));
+                alert('기본 서식은 삭제할 수 없습니다.');
+                return;
             }
-            renderAll();
+            if (!confirm('이 양식을 목록에서 삭제하시겠습니까?\n(구글 드라이브 파일은 유지됩니다)')) return;
+            try {
+                const res = await window.DB_deleteForm(id);
+                if (!res.ok) { alert('삭제 실패: ' + res.error); return; }
+                driveFormsCache = driveFormsCache.filter(f => f.id !== id);
+                renderAll();
+                showToast('양식이 삭제되었습니다.');
+            } catch(e) { alert('삭제 오류: ' + e.message); }
         };
-        window._restoreDefaults = function() {
-            if (!confirm('숨겨진 기본 서식을 모두 복원하시겠습니까?')) return;
-            saveHidden([]);
-            renderAll();
-        };
+        window._delDriveForm = window._delForm;
 
-        /* ─── Upload Panel state ─────────────────────────── */
+        /* ─── Upload state ────────────────────────────────── */
         let pickedFile = null;
 
         function setPicked(file) {
             if (!file) return;
-            if (file.size > 10*1024*1024) { alert('파일 크기가 10MB를 초과합니다.'); return; }
+            if (file.size > 30*1024*1024) { alert('파일 크기가 30MB를 초과합니다.'); return; }
             pickedFile = file;
             const ext = file.name.split('.').pop().toUpperCase();
             const clr = extColor(ext);
@@ -713,7 +695,6 @@
             document.getElementById('up-preview-size').textContent = fmtBytes(file.size);
             document.getElementById('up-preview').style.display = 'flex';
             document.getElementById('up-dropzone').style.display = 'none';
-            // auto-fill name
             const nameEl = document.getElementById('up-name');
             if (!nameEl.value.trim()) nameEl.value = file.name.replace(/\.[^.]+$/,'');
         }
@@ -728,78 +709,100 @@
             document.getElementById('up-progress-bar').style.width = '0%';
         }
 
-        function doUpload() {
+        function showToast(msg) {
+            const t = document.createElement('div');
+            t.textContent = msg;
+            t.style.cssText = `position:fixed;bottom:28px;left:50%;transform:translateX(-50%);
+                background:var(--color-green);color:#fff;padding:13px 24px;border-radius:10px;
+                font-size:0.9rem;font-weight:700;z-index:99999;box-shadow:0 6px 24px rgba(0,0,0,0.2);pointer-events:none;`;
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 3200);
+        }
+
+        async function doUpload() {
             const name = document.getElementById('up-name').value.trim();
             const cat  = document.getElementById('up-category').value;
-            if (!name)      { alert('서식명을 입력해 주세요.'); return; }
-            if (!pickedFile){ alert('업로드할 파일을 선택해 주세요.'); return; }
+            if (!name)       { alert('서식명을 입력해 주세요.'); return; }
+            if (!pickedFile) { alert('업로드할 파일을 선택해 주세요.'); return; }
 
             const submitBtn = document.getElementById('up-submit');
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 처리 중...';
-            document.getElementById('up-progress-wrap').style.display = 'block';
 
             const bar   = document.getElementById('up-progress-bar');
             const label = document.getElementById('up-progress-label');
             const pct   = document.getElementById('up-progress-pct');
+            document.getElementById('up-progress-wrap').style.display = 'block';
+            label.textContent = '파일 읽는 중...';
+            bar.style.width = '10%'; pct.textContent = '10%';
 
-            const reader = new FileReader();
-            reader.onprogress = e => {
-                if (e.lengthComputable) {
-                    const p = Math.round(e.loaded/e.total*90);
-                    bar.style.width = p+'%'; pct.textContent = p+'%';
-                }
-            };
-            reader.onload = e => {
+            try {
+                // 1) base64 변환
+                const base64 = await new Promise((res, rej) => {
+                    const r = new FileReader();
+                    r.onload  = e => res(e.target.result.split(',')[1]);
+                    r.onerror = rej;
+                    r.readAsDataURL(pickedFile);
+                });
+                bar.style.width = '40%'; pct.textContent = '40%';
+                label.textContent = '드라이브에 업로드 중...';
+
+                // 2) 백엔드 드라이브 업로드
+                const result = await window.DB_addFormFile({
+                    action:   'addFormFile',
+                    name:     name,
+                    category: cat,
+                    fileData: {
+                        base64:   base64,
+                        name:     pickedFile.name,
+                        mimeType: pickedFile.type || 'application/octet-stream'
+                    }
+                });
+
                 bar.style.width = '100%'; pct.textContent = '100%';
+
+                if (!result.ok) {
+                    alert('업로드 실패: ' + (result.error || '알 수 없는 오류'));
+                    return;
+                }
+
                 label.textContent = '등록 완료!';
-                const ext = pickedFile.name.split('.').pop().toUpperCase();
-                const rec = {
-                    id: 'U-'+Date.now(),
-                    name, category: cat,
-                    date: new Date().toISOString().split('T')[0],
-                    files: [{ label: ext, base64: e.target.result.split(',')[1],
-                               mime: pickedFile.type||'application/octet-stream',
-                               download: pickedFile.name, size: pickedFile.size }]
-                };
-                const arr = getUploaded(); arr.push(rec); saveUploaded(arr);
+
+                // 3) 캐시 갱신 후 테이블 재렌더
+                await loadDriveForms();
 
                 setTimeout(() => {
                     resetUploadPanel();
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> 업로드 등록';
                     renderAll();
+                    showToast(`"${name}" 파일이 구글 드라이브에 등록되었습니다.`);
+                }, 600);
 
-                    // toast
-                    const t = document.createElement('div');
-                    t.textContent = `"${name}" 파일이 등록되었습니다.`;
-                    t.style.cssText = `position:fixed;bottom:28px;left:50%;transform:translateX(-50%);
-                        background:var(--color-green);color:#fff;padding:13px 24px;border-radius:10px;
-                        font-size:0.9rem;font-weight:700;z-index:99999;box-shadow:0 6px 24px rgba(0,0,0,0.2);
-                        animation:fadeInUp 0.25s ease;pointer-events:none;`;
-                    document.body.appendChild(t);
-                    setTimeout(() => t.remove(), 3200);
-                }, 800);
-            };
-            reader.onerror = () => {
-                alert('파일 읽기 오류가 발생했습니다.');
+            } catch(e) {
+                alert('업로드 오류: ' + e.message);
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> 업로드 등록';
-            };
-            reader.readAsDataURL(pickedFile);
+            }
         }
 
         /* ─── Init ───────────────────────────────────────── */
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             const user  = getUser();
             const admin = isAdmin(user);
 
-            // Show admin panel
             if (admin) document.getElementById('admin-upload-panel').style.display = 'block';
 
+            // 로딩 표시
+            const tbody = document.getElementById('forms-list-tbody');
+            if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted);">
+                <i class="fa-solid fa-spinner fa-spin" style="font-size:1.5rem;margin-bottom:8px;display:block;"></i>양식 목록을 불러오는 중...</td></tr>`;
+
+            // 드라이브 양식 불러오기
+            await loadDriveForms();
             renderAll();
 
-            /* Upload button → scroll to panel (admin) or gate */
+            /* Upload button */
             document.getElementById('btn-upload-form').addEventListener('click', () => {
                 if (!user) {
                     if (confirm('파일 업로드는 관리자 로그인이 필요합니다.\n로그인 페이지로 이동하시겠습니까?'))
@@ -808,13 +811,14 @@
                 }
                 if (!admin) { alert('파일 업로드는 관리자 계정만 가능합니다.'); return; }
                 document.getElementById('admin-upload-panel').scrollIntoView({ behavior:'smooth', block:'start' });
-                document.getElementById('up-dropzone').style.borderColor = 'var(--color-green)';
-                setTimeout(() => document.getElementById('up-dropzone').style.borderColor = 'rgba(255,255,255,0.25)', 1200);
+                const dz = document.getElementById('up-dropzone');
+                dz.style.borderColor = 'var(--color-green)';
+                setTimeout(() => dz.style.borderColor = 'rgba(255,255,255,0.25)', 1200);
             });
 
-            /* Dropzone click & drag */
-            const dz  = document.getElementById('up-dropzone');
-            const fi  = document.getElementById('up-file-input');
+            /* Dropzone */
+            const dz = document.getElementById('up-dropzone');
+            const fi = document.getElementById('up-file-input');
             dz.addEventListener('click', () => fi.click());
             fi.addEventListener('change', e => { if(e.target.files[0]) setPicked(e.target.files[0]); });
             dz.addEventListener('dragover', e => { e.preventDefault(); dz.style.borderColor='var(--color-green)'; dz.style.background='rgba(43,138,126,0.1)'; });
@@ -825,17 +829,13 @@
                 if(e.dataTransfer.files[0]) setPicked(e.dataTransfer.files[0]);
             });
 
-            /* Clear picked file */
             document.getElementById('up-clear').addEventListener('click', () => {
                 pickedFile = null; fi.value = '';
                 document.getElementById('up-preview').style.display = 'none';
                 document.getElementById('up-dropzone').style.display = 'block';
             });
 
-            /* Submit */
             document.getElementById('up-submit').addEventListener('click', doUpload);
-
-            /* Hover on submit btn */
             const sb = document.getElementById('up-submit');
             sb.addEventListener('mouseenter', () => sb.style.background = '#1a5c52');
             sb.addEventListener('mouseleave', () => sb.style.background = 'var(--color-green)');
