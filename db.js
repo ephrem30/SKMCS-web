@@ -229,6 +229,15 @@ window.DB_deleteForm = async function(id) {
     });
 };
 
+/** 양식 이름/구분 수정 (시트 해당 행 업데이트) */
+window.DB_updateForm = async function(id, updates) {
+    return await _dbPost({
+        action: "update", sheet: "forms",
+        key: "id", value: id,
+        data: updates
+    });
+};
+
 console.log("[db.js] 데이터베이스 클라이언트 로드 완료 →", DB_URL.substring(0, 60) + "...");
 
 

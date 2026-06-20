@@ -501,14 +501,28 @@
 
     <script src="share.js"></script>
     <script src="db.js"></script>
+
+    <!-- ══ 편집 모달 ══ -->
+    <div id="edit-modal" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.55);
+        display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;" onclick="if(event.target===this)_closeEditModal()">
+    </div>
+    <style>
+        #edit-modal { display:none; }
+        #edit-modal.open { display:flex; }
+    </style>
+
     <script>
     (function () {
         'use strict';
 
         /* ─── Constants ───────────────────────────────────── */
-        const ADMIN_ROLES = ['admin','secretary','editor','president'];
+        const ADMIN_ROLES   = ['admin','secretary','editor','president'];
+        const HIDDEN_KEY    = 'forms_hidden_ids_v4';       // 숨긴 정적 서식 ID 목록
+        const OVERRIDE_KEY  = 'forms_overrides_v4';        // 정적 서식 이름/구분 오버라이드
 
-        // 기본 제공 서식 (로컬 파일 링크 — 변경 불필요)
+        const CATEGORIES = ['양식모음','입회안내','논문투고','심사위원','기타'];
+
+        // 기본 제공 서식 (로컬 파일 링크)
         const STATIC_FORMS = [
             { id:'S-001', name:'한국음악학회 정회원 입회신청서 양식', category:'입회안내', date:'2026-03-01',
               files:[{ label:'HWP', url:'skmcs_admission_form.hwp', download:'한국음악학회_정회원입회신청서.hwp' },
@@ -530,7 +544,28 @@
         function extColor(l){ const m={pdf:'#e63946',hwp:'#2b6cb0',docx:'#2e7d32',zip:'#7c3aed',xlsx:'#166534',pptx:'#c2410c'}; return m[(l||'').toLowerCase()]||'#555'; }
         function fileIcon(l){ const m={pdf:'fa-file-pdf',hwp:'fa-file-word',docx:'fa-file-word',zip:'fa-file-zipper',xlsx:'fa-file-excel',pptx:'fa-file-powerpoint'}; return 'fa-solid '+(m[(l||'').toLowerCase()]||'fa-file'); }
 
-        /* ─── 구글 시트에서 불러온 드라이브 양식 목록 ── */
+        /* ─── localStorage (정적 서식 관리) ─────────────── */
+        function getHidden()    { try { return JSON.parse(localStorage.getItem(HIDDEN_KEY))  || []; } catch(e) { return []; } }
+        function saveHidden(d)  { localStorage.setItem(HIDDEN_KEY, JSON.stringify(d)); }
+        function getOverrides() { try { return JSON.parse(localStorage.getItem(OVERRIDE_KEY))|| {}; } catch(e) { return {}; } }
+        function saveOverrides(d){ localStorage.setItem(OVERRIDE_KEY, JSON.stringify(d)); }
+
+        /* ─── 정적 서식에 오버라이드 적용 ────────────── */
+        function applyOverrides() {
+            const ov = getOverrides();
+            const hidden = getHidden();
+            return STATIC_FORMS
+                .filter(f => !hidden.includes(f.id))
+                .map(f => {
+                    if (!ov[f.id]) return f;
+                    return Object.assign({}, f, {
+                        name:     ov[f.id].name     || f.name,
+                        category: ov[f.id].category || f.category
+                    });
+                });
+        }
+
+        /* ─── 드라이브 양식 캐시 ─────────────────────── */
         let driveFormsCache = [];
 
         async function loadDriveForms() {
@@ -554,16 +589,158 @@
             }
         }
 
-        /* ─── Render admin uploaded file cards ───────────── */
+        /* ─── Toast ──────────────────────────────────── */
+        function showToast(msg, color) {
+            const t = document.createElement('div');
+            t.textContent = msg;
+            t.style.cssText = `position:fixed;bottom:28px;left:50%;transform:translateX(-50%);
+                background:${color||'var(--color-green)'};color:#fff;padding:13px 24px;border-radius:10px;
+                font-size:0.9rem;font-weight:700;z-index:99999;box-shadow:0 6px 24px rgba(0,0,0,0.2);pointer-events:none;`;
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 3000);
+        }
+
+        /* ─── 편집 모달 ──────────────────────────────── */
+        let _editTarget = null; // { id, isStatic }
+
+        window._openEditModal = function(id) {
+            const isStatic = id.startsWith('S-');
+            const allForms = [...applyOverrides(), ...driveFormsCache];
+            const form = allForms.find(f => f.id === id);
+            if (!form) return;
+            _editTarget = { id, isStatic };
+
+            const catOptions = CATEGORIES.map(c =>
+                `<option value="${c}" ${c===form.category?'selected':''}>${c}</option>`
+            ).join('');
+
+            const modal = document.getElementById('edit-modal');
+            modal.innerHTML = `
+            <div style="background:#fff;border-radius:16px;padding:32px;width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,0.25);">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+                    <h3 style="margin:0;font-size:1.1rem;font-weight:800;color:#1a1a1a;">
+                        <i class="fa-solid fa-pen" style="color:var(--color-green);margin-right:8px;"></i>서식 정보 수정
+                    </h3>
+                    <button onclick="_closeEditModal()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:#888;line-height:1;">×</button>
+                </div>
+                ${isStatic ? '<div style="background:#fff8e1;border:1px solid #f0b136;border-radius:8px;padding:10px 14px;margin-bottom:20px;font-size:0.82rem;color:#7d6200;"><i class="fa-solid fa-circle-info"></i> 기본 서식은 이름·구분만 변경할 수 있습니다. 변경 사항은 이 기기에 저장됩니다.</div>' : ''}
+                <div style="margin-bottom:18px;">
+                    <label style="display:block;font-size:0.82rem;font-weight:700;color:#555;margin-bottom:6px;">서식명 <span style="color:#e63946;">*</span></label>
+                    <input id="edit-name" type="text" value="${esc(form.name)}"
+                        style="width:100%;padding:11px 14px;border:1.5px solid #ddd;border-radius:8px;font-size:0.9rem;font-family:inherit;box-sizing:border-box;outline:none;transition:border-color 0.2s;"
+                        onfocus="this.style.borderColor='var(--color-green)'" onblur="this.style.borderColor='#ddd'">
+                </div>
+                <div style="margin-bottom:24px;">
+                    <label style="display:block;font-size:0.82rem;font-weight:700;color:#555;margin-bottom:6px;">구분</label>
+                    <select id="edit-category"
+                        style="width:100%;padding:11px 14px;border:1.5px solid #ddd;border-radius:8px;font-size:0.9rem;font-family:inherit;box-sizing:border-box;outline:none;background:#fff;cursor:pointer;transition:border-color 0.2s;"
+                        onfocus="this.style.borderColor='var(--color-green)'" onblur="this.style.borderColor='#ddd'">
+                        ${catOptions}
+                    </select>
+                </div>
+                <div style="display:flex;gap:10px;justify-content:flex-end;">
+                    <button onclick="_closeEditModal()"
+                        style="padding:10px 20px;border:1.5px solid #ddd;border-radius:8px;background:#fff;font-size:0.88rem;font-weight:700;cursor:pointer;color:#555;">취소</button>
+                    <button id="edit-save-btn" onclick="_saveEdit()"
+                        style="padding:10px 24px;background:var(--color-green);border:none;border-radius:8px;color:#fff;font-size:0.88rem;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:8px;">
+                        <i class="fa-solid fa-floppy-disk"></i> 저장
+                    </button>
+                </div>
+            </div>`;
+            modal.classList.add('open');
+        };
+
+        window._closeEditModal = function() {
+            document.getElementById('edit-modal').classList.remove('open');
+            _editTarget = null;
+        };
+
+        window._saveEdit = async function() {
+            if (!_editTarget) return;
+            const newName = document.getElementById('edit-name').value.trim();
+            const newCat  = document.getElementById('edit-category').value;
+            if (!newName) { alert('서식명을 입력해 주세요.'); return; }
+
+            const btn = document.getElementById('edit-save-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 저장 중...';
+
+            const { id, isStatic } = _editTarget;
+
+            if (isStatic) {
+                // 정적 서식: localStorage 오버라이드
+                const ov = getOverrides();
+                ov[id] = { name: newName, category: newCat };
+                saveOverrides(ov);
+                _closeEditModal();
+                renderAll();
+                showToast('서식 정보가 수정되었습니다.');
+            } else {
+                // 드라이브 서식: 백엔드 Sheet 업데이트
+                try {
+                    const res = await window.DB_updateForm(id, { name: newName, category: newCat });
+                    if (!res.ok) { alert('수정 실패: ' + res.error); btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-floppy-disk"></i> 저장'; return; }
+                    // 캐시 업데이트
+                    const f = driveFormsCache.find(x => x.id === id);
+                    if (f) { f.name = newName; f.category = newCat; }
+                    _closeEditModal();
+                    renderAll();
+                    showToast('서식 정보가 수정되었습니다.');
+                } catch(e) {
+                    alert('수정 오류: ' + e.message);
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> 저장';
+                }
+            }
+        };
+
+        /* ─── 삭제 ───────────────────────────────────── */
+        window._delForm = async function(id) {
+            if (id.startsWith('S-')) {
+                // 정적 서식: localStorage 숨김
+                if (!confirm('이 서식을 목록에서 숨기겠습니까?\n(관리자 패널에서 복원할 수 있습니다)')) return;
+                const h = getHidden();
+                if (!h.includes(id)) { h.push(id); saveHidden(h); }
+                renderAll();
+                showToast('서식이 숨겨졌습니다.');
+            } else {
+                // 드라이브 서식: 백엔드 삭제
+                if (!confirm('이 양식을 삭제하시겠습니까?\n(구글 드라이브 파일은 유지됩니다)')) return;
+                try {
+                    const res = await window.DB_deleteForm(id);
+                    if (!res.ok) { alert('삭제 실패: ' + res.error); return; }
+                    driveFormsCache = driveFormsCache.filter(f => f.id !== id);
+                    renderAll();
+                    showToast('양식이 삭제되었습니다.');
+                } catch(e) { alert('삭제 오류: ' + e.message); }
+            }
+        };
+        window._delDriveForm = window._delForm;
+
+        /* ─── 숨겨진 기본 서식 복원 ─────────────────── */
+        window._restoreDefaults = function() {
+            if (!confirm('숨겨진 기본 서식을 모두 복원하시겠습니까?')) return;
+            saveHidden([]);
+            renderAll();
+            showToast('기본 서식이 복원되었습니다.');
+        };
+
+        /* ─── 관리자 패널 목록 렌더 ─────────────────── */
         function renderAdminList() {
-            const list = document.getElementById('admin-file-list');
-            const cnt  = document.getElementById('admin-file-count');
+            const list    = document.getElementById('admin-file-list');
+            const cnt     = document.getElementById('admin-file-count');
+            const restBtn = document.getElementById('btn-restore-defaults');
             if (!list) return;
-            if (cnt) cnt.textContent = driveFormsCache.length;
-            if (driveFormsCache.length === 0) {
+
+            const hidden = getHidden();
+            const total  = driveFormsCache.length;
+            if (cnt) cnt.textContent = total;
+            if (restBtn) restBtn.style.display = hidden.length > 0 ? 'inline-flex' : 'none';
+
+            if (total === 0) {
                 list.innerHTML = `<div style="padding:20px;text-align:center;color:rgba(255,255,255,0.35);font-size:0.88rem;">
                     <i class="fa-solid fa-inbox" style="font-size:1.8rem;margin-bottom:8px;display:block;opacity:0.4;"></i>
-                    업로드된 파일이 없습니다</div>`;
+                    업로드된 드라이브 파일이 없습니다</div>`;
                 return;
             }
             list.innerHTML = driveFormsCache.map(f => {
@@ -590,7 +767,12 @@
                             style="background:rgba(43,138,126,0.3);border:1px solid rgba(43,138,126,0.5);color:#fff;
                             border-radius:6px;padding:6px 12px;font-size:0.78rem;text-decoration:none;font-weight:600;"
                             title="다운로드"><i class="fa-solid fa-download"></i></a>
-                        <button onclick="_delDriveForm('${esc(f.id)}')"
+                        <button onclick="_openEditModal('${esc(f.id)}')"
+                            style="background:rgba(240,177,54,0.2);border:1px solid rgba(240,177,54,0.4);color:#f0b136;
+                            border-radius:6px;padding:6px 12px;font-size:0.78rem;cursor:pointer;font-weight:600;"
+                            onmouseover="this.style.background='rgba(240,177,54,0.4)'" onmouseout="this.style.background='rgba(240,177,54,0.2)'"
+                            title="수정"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="_delForm('${esc(f.id)}')"
                             style="background:rgba(203,60,49,0.25);border:1px solid rgba(203,60,49,0.4);color:#ff9a9a;
                             border-radius:6px;padding:6px 12px;font-size:0.78rem;cursor:pointer;font-weight:600;"
                             onmouseover="this.style.background='rgba(203,60,49,0.5)'" onmouseout="this.style.background='rgba(203,60,49,0.25)'"
@@ -600,7 +782,7 @@
             }).join('');
         }
 
-        /* ─── Render public download table ──────────────── */
+        /* ─── 공개 테이블 렌더 ───────────────────────── */
         function renderTable() {
             const tbody  = document.getElementById('forms-list-tbody');
             const cntEl  = document.getElementById('forms-total-count');
@@ -610,7 +792,8 @@
             const admin = isAdmin(user);
             admCol.forEach(el => el.style.display = admin ? 'table-cell' : 'none');
 
-            const all = [...STATIC_FORMS, ...driveFormsCache];
+            const visibleStatic = applyOverrides();
+            const all = [...visibleStatic, ...driveFormsCache];
             if (cntEl) cntEl.textContent = all.length;
             tbody.innerHTML = '';
 
@@ -622,15 +805,12 @@
                 const badges = (form.files||[]).map(f=>`<span class="form-badge badge-${(f.label||'').toLowerCase()}" style="background:${extColor(f.label)}18;color:${extColor(f.label)};">${esc(f.label)}</span>`).join(' ');
                 const btns = (form.files||[]).map(f => {
                     if (f.isDrive) {
-                        // 구글 드라이브 파일: 새 탭에서 직접 다운로드
-                        return `<a href="${esc(f.downloadUrl)}" target="_blank"
-                            class="btn-download-form"
+                        return `<a href="${esc(f.downloadUrl)}" target="_blank" class="btn-download-form"
                             style="background:${extColor(f.label)};border:none;border-radius:6px;padding:7px 13px;color:#fff;
                             font-size:0.8rem;font-weight:700;display:inline-flex;align-items:center;gap:5px;text-decoration:none;">
                             <i class="fa-brands fa-google-drive"></i> ${esc(f.label)}
                         </a>`;
                     }
-                    // 로컬 정적 파일
                     return `<a href="${encodeURI(f.url)}" class="btn-download-form" download="${esc(f.download||f.url)}"
                         style="background:${extColor(f.label)};border-radius:6px;padding:7px 13px;color:#fff;font-size:0.8rem;
                         font-weight:700;display:inline-flex;align-items:center;gap:5px;text-decoration:none;">
@@ -638,10 +818,16 @@
                     </a>`;
                 }).join(' ');
 
-                const delBtn = admin
-                    ? `<button onclick="_delForm('${esc(form.id)}')"
-                        style="background:none;border:none;color:#cb3c31;cursor:pointer;font-size:0.9rem;padding:4px 8px;border-radius:4px;"
-                        title="삭제"><i class="fa-solid fa-trash-can"></i></button>` : '';
+                // 관리자 버튼: 수정 + 삭제 (모든 서식)
+                const adminBtns = admin ? `
+                    <button onclick="_openEditModal('${esc(form.id)}')"
+                        style="background:none;border:none;color:#d4a017;cursor:pointer;font-size:0.88rem;padding:4px 7px;border-radius:4px;transition:color 0.2s;"
+                        onmouseover="this.style.color='#a07800'" onmouseout="this.style.color='#d4a017'" title="수정">
+                        <i class="fa-solid fa-pen"></i></button>
+                    <button onclick="_delForm('${esc(form.id)}')"
+                        style="background:none;border:none;color:#cb3c31;cursor:pointer;font-size:0.88rem;padding:4px 7px;border-radius:4px;transition:color 0.2s;"
+                        onmouseover="this.style.color='#8b0000'" onmouseout="this.style.color='#cb3c31'" title="삭제">
+                        <i class="fa-solid fa-trash-can"></i></button>` : '';
 
                 row.innerHTML = `
                     <td style="font-family:'Poppins',sans-serif;font-weight:600;color:var(--text-muted);font-size:0.88rem;">${idx+1}</td>
@@ -652,7 +838,7 @@
                     <td><span style="display:inline-block;padding:3px 9px;border-radius:4px;font-size:0.75rem;font-weight:700;background:${clr}18;color:${clr};">${esc(form.category)}</span></td>
                     <td><div style="display:flex;gap:4px;flex-wrap:wrap;">${badges}</div></td>
                     <td style="text-align:center;"><div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;">${btns}</div></td>
-                    ${admin ? `<td class="forms-admin-col" style="text-align:center;">${delBtn}</td>` : ''}
+                    ${admin ? `<td class="forms-admin-col" style="text-align:center;white-space:nowrap;">${adminBtns}</td>` : ''}
                 `;
                 tbody.appendChild(row);
             });
@@ -664,24 +850,7 @@
 
         function renderAll() { renderTable(); renderAdminList(); }
 
-        /* ─── Global delete actions ───────────────────────── */
-        window._delForm = async function(id) {
-            if (id.startsWith('S-')) {
-                alert('기본 서식은 삭제할 수 없습니다.');
-                return;
-            }
-            if (!confirm('이 양식을 목록에서 삭제하시겠습니까?\n(구글 드라이브 파일은 유지됩니다)')) return;
-            try {
-                const res = await window.DB_deleteForm(id);
-                if (!res.ok) { alert('삭제 실패: ' + res.error); return; }
-                driveFormsCache = driveFormsCache.filter(f => f.id !== id);
-                renderAll();
-                showToast('양식이 삭제되었습니다.');
-            } catch(e) { alert('삭제 오류: ' + e.message); }
-        };
-        window._delDriveForm = window._delForm;
-
-        /* ─── Upload state ────────────────────────────────── */
+        /* ─── 업로드 ─────────────────────────────────── */
         let pickedFile = null;
 
         function setPicked(file) {
@@ -709,16 +878,6 @@
             document.getElementById('up-progress-bar').style.width = '0%';
         }
 
-        function showToast(msg) {
-            const t = document.createElement('div');
-            t.textContent = msg;
-            t.style.cssText = `position:fixed;bottom:28px;left:50%;transform:translateX(-50%);
-                background:var(--color-green);color:#fff;padding:13px 24px;border-radius:10px;
-                font-size:0.9rem;font-weight:700;z-index:99999;box-shadow:0 6px 24px rgba(0,0,0,0.2);pointer-events:none;`;
-            document.body.appendChild(t);
-            setTimeout(() => t.remove(), 3200);
-        }
-
         async function doUpload() {
             const name = document.getElementById('up-name').value.trim();
             const cat  = document.getElementById('up-category').value;
@@ -737,7 +896,6 @@
             bar.style.width = '10%'; pct.textContent = '10%';
 
             try {
-                // 1) base64 변환
                 const base64 = await new Promise((res, rej) => {
                     const r = new FileReader();
                     r.onload  = e => res(e.target.result.split(',')[1]);
@@ -747,7 +905,6 @@
                 bar.style.width = '40%'; pct.textContent = '40%';
                 label.textContent = '드라이브에 업로드 중...';
 
-                // 2) 백엔드 드라이브 업로드
                 const result = await window.DB_addFormFile({
                     action:   'addFormFile',
                     name:     name,
@@ -760,17 +917,10 @@
                 });
 
                 bar.style.width = '100%'; pct.textContent = '100%';
-
-                if (!result.ok) {
-                    alert('업로드 실패: ' + (result.error || '알 수 없는 오류'));
-                    return;
-                }
-
+                if (!result.ok) { alert('업로드 실패: ' + (result.error || '알 수 없는 오류')); submitBtn.disabled=false; submitBtn.innerHTML='<i class="fa-solid fa-cloud-arrow-up"></i> 업로드 등록'; return; }
                 label.textContent = '등록 완료!';
 
-                // 3) 캐시 갱신 후 테이블 재렌더
                 await loadDriveForms();
-
                 setTimeout(() => {
                     resetUploadPanel();
                     submitBtn.disabled = false;
@@ -786,23 +936,20 @@
             }
         }
 
-        /* ─── Init ───────────────────────────────────────── */
+        /* ─── Init ───────────────────────────────────── */
         document.addEventListener('DOMContentLoaded', async () => {
             const user  = getUser();
             const admin = isAdmin(user);
 
             if (admin) document.getElementById('admin-upload-panel').style.display = 'block';
 
-            // 로딩 표시
             const tbody = document.getElementById('forms-list-tbody');
             if (tbody) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted);">
                 <i class="fa-solid fa-spinner fa-spin" style="font-size:1.5rem;margin-bottom:8px;display:block;"></i>양식 목록을 불러오는 중...</td></tr>`;
 
-            // 드라이브 양식 불러오기
             await loadDriveForms();
             renderAll();
 
-            /* Upload button */
             document.getElementById('btn-upload-form').addEventListener('click', () => {
                 if (!user) {
                     if (confirm('파일 업로드는 관리자 로그인이 필요합니다.\n로그인 페이지로 이동하시겠습니까?'))
@@ -816,7 +963,6 @@
                 setTimeout(() => dz.style.borderColor = 'rgba(255,255,255,0.25)', 1200);
             });
 
-            /* Dropzone */
             const dz = document.getElementById('up-dropzone');
             const fi = document.getElementById('up-file-input');
             dz.addEventListener('click', () => fi.click());
@@ -842,5 +988,4 @@
         });
     })();
     </script>
-</body>
-</html>
+
