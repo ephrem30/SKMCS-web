@@ -851,7 +851,7 @@ async function submitPaper() {
         // base64 인코딩된 파일 데이터 (백엔드에서 드라이브에 저장 후 이 필드는 삭제됨)
         file_manuscript_data: manuscriptFileData,
         file_agreement_data: agreementFileData,
-        date: new Date().toISOString().substring(0, 10),
+        date: new Date().toISOString(),   // 전체 ISO 타임스탬프 (날짜+시간)
         status: "접수완료",
         author_email: loggedInUser.email,
         reviewer_email: "",
@@ -1054,7 +1054,7 @@ function renderHistoryTable() {
             <td class="col-num" style="font-family: 'Poppins', sans-serif; font-weight: 500;">${filteredSubmissions.length - index}</td>
             <td class="col-journal">${escapeHtml(sub.journal)} (${escapeHtml(sub.category)})</td>
             <td class="col-title" style="text-align: left;">${titleHtml}</td>
-            <td class="col-date" style="text-align: center; font-family: 'Poppins', sans-serif;">${sub.date}</td>
+            <td class="col-date" style="text-align: center; font-family: 'Poppins', sans-serif;">${formatDateTime(sub.date)}</td>
             <td class="col-status" style="text-align: center;">
                 <span class="status-badge ${badgeClass}">${escapeHtml(sub.status)}</span>
             </td>
@@ -1176,7 +1176,7 @@ function openDetailModal(id) {
     document.getElementById("detail-abstract-ko").textContent = sub.abstract_ko;
     document.getElementById("detail-abstract-en").textContent = sub.abstract_en;
     document.getElementById("detail-keywords").textContent = sub.keywords;
-    document.getElementById("detail-date").textContent = sub.date;
+    document.getElementById("detail-date").textContent = formatDateTime(sub.date);
     
     // Authors listing
     const authorsStr = sub.authors.map(a => `${escapeHtml(a.name)} (${escapeHtml(a.affiliation)}, ${escapeHtml(a.email)}) - [${a.role === 'Primary' ? '주저자' : (a.role === 'Co-Author' ? '공동저자' : '교신저자')}]`).join("<br>");
@@ -1344,6 +1344,31 @@ function escapeHtml(str) {
         .replace(/'/g, "&#039;");
 }
 
+/**
+ * ISO 타임스탬프 또는 날짜 문자열을 "YYYY. MM. DD. HH:MM" 형식으로 반환
+ * 시간 정보가 없으면 날짜만 표시
+ */
+function formatDateTime(dateStr) {
+    if (!dateStr) return '-';
+    try {
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return String(dateStr).slice(0, 10);
+        const yyyy = d.getFullYear();
+        const mm   = String(d.getMonth() + 1).padStart(2, '0');
+        const dd   = String(d.getDate()).padStart(2, '0');
+        const hh   = String(d.getHours()).padStart(2, '0');
+        const min  = String(d.getMinutes()).padStart(2, '0');
+        // 시간 정보가 없으면 (00:00이면 날짜-only로 간주) 날짜만
+        const isDateOnly = String(dateStr).length <= 10;
+        if (isDateOnly || (hh === '00' && min === '00')) {
+            return `${yyyy}. ${mm}. ${dd}.`;
+        }
+        return `${yyyy}. ${mm}. ${dd}. ${hh}:${min}`;
+    } catch(e) {
+        return String(dateStr).slice(0, 10);
+    }
+}
+
 function updateAdminTabVisibility() {
     const tabReviewer = document.getElementById("tab-reviewer-space");
     const tabAdmin = document.getElementById("tab-admin-space");
@@ -1429,9 +1454,12 @@ window.renderAdminSpaceTable = function() {
         else if (sub.status === "게재확정") badgeClass = "accepted";
         else if (sub.status === "반려") badgeClass = "rejected";
         
-        const fileCount = sub.review_files ? sub.review_files.length : 0;
+        // 실제 자료 건수: 심사의견서(review_files) + 저작권동의서(file_agreement 드라이브 URL)
+        const reviewFileCount = sub.review_files ? sub.review_files.length : 0;
+        const hasAgreement = sub.file_agreement && String(sub.file_agreement).startsWith('http') ? 1 : 0;
+        const fileCount = reviewFileCount + hasAgreement;
         const uploadStatusHtml = fileCount > 0 
-            ? `<span style="color: var(--color-green); font-weight: 700;"><i class="fa-solid fa-file-circle-check"></i> 의견서 ${fileCount}건</span>` 
+            ? `<span style="color: var(--color-green); font-weight: 700;"><i class="fa-solid fa-file-circle-check"></i> 자료 ${fileCount}건</span>` 
             : `<span style="color: var(--text-muted); font-size: 0.85rem;"><i class="fa-solid fa-cloud-arrow-up"></i> 자료 등록</span>`;
             
         // Map mock filename to real PDF files in the workspace
