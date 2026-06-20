@@ -212,9 +212,15 @@ function handleWrite(body) {
         }
       });
 
+      // 전화번호 필드 목록 — 구글 시트가 숫자로 인식해 앞자리 0을 삭제하는 것을 방지하기 위해
+      // 저장 전에 문자열 앞에 아포스트로피(')를 붙여 강제로 텍스트 셀로 저장합니다.
+      const PHONE_FIELDS = ["phone", "home_phone", "work_phone"];
       const row = headers.map(h => {
         if (h === "authors" && Array.isArray(data[h])) return JSON.stringify(data[h]);
-        return data[h] !== undefined ? data[h] : "";
+        const v = data[h] !== undefined ? data[h] : "";
+        // 전화번호 필드이고 값이 있으면 앞에 ' 붙여 텍스트로 강제 저장
+        if (PHONE_FIELDS.includes(h) && v !== "") return "'" + String(v);
+        return v;
       });
       sheet.appendRow(row);
       return makeResponse({ ok: true, message: "저장 완료" });

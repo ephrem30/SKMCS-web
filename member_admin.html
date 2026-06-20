@@ -407,6 +407,28 @@
                 { value: "group", label: "단체회원" }, { value: "special", label: "특별회원" }
             ];
 
+            // 전화번호 표시 포맷 함수 (숫자만 있거나 앞자리 0이 빠진 경우도 복원)
+            function formatPhone(raw) {
+                if (!raw) return "-";
+                const s = String(raw).replace(/\D/g, "");
+                if (!s) return raw;
+                // 앞자리 0이 없으면 붙이기 (스프레드시트에서 숫자로 저장된 경우)
+                const digits = s.startsWith("0") ? s : "0" + s;
+                if (digits.length === 11) {
+                    return digits.slice(0,3) + "-" + digits.slice(3,7) + "-" + digits.slice(7);
+                } else if (digits.length === 10) {
+                    if (digits.startsWith("02")) {
+                        return digits.slice(0,2) + "-" + digits.slice(2,6) + "-" + digits.slice(6);
+                    } else {
+                        return digits.slice(0,3) + "-" + digits.slice(3,6) + "-" + digits.slice(6);
+                    }
+                } else if (digits.length === 9 && digits.startsWith("02")) {
+                    return digits.slice(0,2) + "-" + digits.slice(2,5) + "-" + digits.slice(5);
+                }
+                // 이미 하이픈이 있는 경우 또는 변환 불가 → 원본 반환
+                return String(raw);
+            }
+
             filteredUsers.forEach(user => {
                 const tr = document.createElement("tr");
                 const isSelf = (user.email || "").toLowerCase() === currentAdminEmail;
@@ -425,7 +447,7 @@
                     <td style="font-weight:700;color:var(--text-dark);">${user.name || '-'} ${isSelf ? '<span style="font-size:0.75rem;color:var(--color-red);font-weight:normal;">(본인)</span>' : ''}</td>
                     <td>${user.email || '-'}</td>
                     <td>${user.affiliation || '-'}</td>
-                    <td>${user.phone || '-'}</td>
+                    <td>${formatPhone(user.phone)}</td>
                     <td style="text-align:center;">${docLinkHtml}</td>
                     <td>${selectHtml}</td>
                     <td style="text-align:center;">

@@ -909,7 +909,28 @@
                 const pwChk = document.getElementById("reg-pw-chk").value;
                 const name = document.getElementById("reg-name").value.trim();
                 const birth = document.getElementById("reg-birth").value;
-                const phone = document.getElementById("reg-phone").value.trim();
+                // 전화번호 포맷 함수: 숫자만 추출 후 010-XXXX-XXXX 또는 0X-XXXX-XXXX 형태로 변환
+                function formatPhone(raw) {
+                    if (!raw) return "";
+                    const digits = raw.replace(/\D/g, ""); // 숫자만 추출
+                    if (digits.length === 11) {
+                        // 010-XXXX-XXXX (휴대폰)
+                        return digits.slice(0,3) + "-" + digits.slice(3,7) + "-" + digits.slice(7);
+                    } else if (digits.length === 10) {
+                        // 02-XXXX-XXXX 또는 0XX-XXX-XXXX
+                        if (digits.startsWith("02")) {
+                            return digits.slice(0,2) + "-" + digits.slice(2,6) + "-" + digits.slice(6);
+                        } else {
+                            return digits.slice(0,3) + "-" + digits.slice(3,6) + "-" + digits.slice(6);
+                        }
+                    } else if (digits.length === 9 && digits.startsWith("02")) {
+                        // 02-XXX-XXXX
+                        return digits.slice(0,2) + "-" + digits.slice(2,5) + "-" + digits.slice(5);
+                    }
+                    // 변환 불가한 경우 원본 반환
+                    return raw.trim();
+                }
+                const phone = formatPhone(document.getElementById("reg-phone").value.trim());
                 const aff = document.getElementById("reg-aff").value.trim();
                 const role = document.getElementById("reg-type").value;
                 
@@ -921,7 +942,7 @@
                 const eduGrad = document.getElementById("reg-edu-grad").value.trim();
                 const eduGradMajor = document.getElementById("reg-edu-grad-major").value.trim();
                 const eduGradCourse = document.getElementById("reg-edu-grad-course").value;
-                const homePhone = document.getElementById("reg-home-phone").value.trim();
+                const homePhone = formatPhone(document.getElementById("reg-home-phone").value.trim());
                 
                 // Combine Home Zipcode, Address1, Address2
                 const homeZip = document.getElementById("reg-home-zip").value.trim();
@@ -932,7 +953,7 @@
                     homeAddress = `[${homeZip}] ${homeAddr1}${homeAddr2 ? " " + homeAddr2 : ""}`;
                 }
                 
-                const workPhone = document.getElementById("reg-work-phone").value.trim();
+                const workPhone = formatPhone(document.getElementById("reg-work-phone").value.trim());
                 
                 // Combine Work Zipcode, Address1, Address2
                 const workZip = document.getElementById("reg-work-zip").value.trim();
