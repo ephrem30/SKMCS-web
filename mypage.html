@@ -85,6 +85,20 @@
         .role-reviewer { background: rgba(240,177,54,0.25); color: #ffe08a; border: 1px solid rgba(240,177,54,0.4); }
         .role-editor   { background: rgba(42,95,165,0.3); color: #a0beff; border: 1px solid rgba(42,95,165,0.5); }
 
+        /* 인증 / 미인증 배지 */
+        .regular-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 9px;
+            border-radius: 20px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+        .regular-badge.certified   { background: rgba(46,125,50,0.3); color: #81c784; border: 1px solid rgba(46,125,50,0.5); }
+        .regular-badge.uncertified { background: rgba(120,120,120,0.2); color: #aaa; border: 1px solid rgba(120,120,120,0.35); }
+
         .profile-meta {
             padding: 18px 20px;
             font-size: 0.82rem;
@@ -727,8 +741,9 @@
                                 <div class="profile-card-header">
                                     <div class="avatar-circle" id="avatar-initials">?</div>
                                     <div class="profile-name" id="pc-name">-</div>
-                                    <div style="margin-top:6px;">
+                                    <div style="margin-top:6px; display:flex; align-items:center; justify-content:center; gap:6px; flex-wrap:wrap;">
                                         <span class="profile-role-badge" id="pc-role-badge">-</span>
+                                        <span class="regular-badge" id="pc-regular-badge">-</span>
                                     </div>
                                 </div>
                                 <div class="profile-meta">
@@ -1211,6 +1226,18 @@
             const badge = document.getElementById('pc-role-badge');
             badge.textContent = roleInfo.label;
             badge.className = 'profile-role-badge ' + roleInfo.cls;
+
+            // 인증 / 미인증 배지
+            const OFFICER_ROLES = ['admin','secretary','reviewer','editor','president'];
+            const isRegular = OFFICER_ROLES.includes(u.role) || String(u.is_regular) === 'true';
+            const regularBadge = document.getElementById('pc-regular-badge');
+            if (isRegular) {
+                regularBadge.textContent = '✔ 정회원 인증';
+                regularBadge.className = 'regular-badge certified';
+            } else {
+                regularBadge.textContent = '□ 미인증';
+                regularBadge.className = 'regular-badge uncertified';
+            }
 
             // Info panel
             const set = (id, val) => { const el=document.getElementById(id); if(el) el.textContent = val||'-'; };
