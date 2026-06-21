@@ -163,11 +163,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     <span class="util-user" style="color: var(--text-muted); margin-right: 15px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 5px;">
                         <i class="fa-regular fa-user"></i> <strong>${user.name}</strong> (${displayRole})님
                     </span>
-                    <a href="mypage.html" class="util-link"><i class="fa-solid fa-id-card"></i> 마이페이지</a>
+                    <a href="mypage.html" class="util-link" id="mypage-nav-link" style="position:relative;">
+                        <i class="fa-solid fa-id-card"></i> 마이페이지
+                    </a>
                     <a href="#" id="btn-logout" class="util-link"><i class="fa-solid fa-right-from-bracket"></i> 로그아웃</a>
                     <a href="sitemap.html" class="util-link"><i class="fa-solid fa-sitemap"></i> 사이트맵</a>
                 `;
-                
+
                 const btnLogout = document.getElementById("btn-logout");
                 if (btnLogout) {
                     btnLogout.addEventListener("click", (e) => {
@@ -175,6 +177,49 @@ document.addEventListener("DOMContentLoaded", () => {
                         localStorage.removeItem("logged_in_user");
                         window.location.href = "login.html";
                     });
+                }
+
+                // ── 정회원 승인 대기 알림 뱃지 (간사·편집위원장·최고관리자만) ──
+                const NOTIFY_ROLES = ['admin', 'secretary', 'editor', 'president'];
+                if (NOTIFY_ROLES.includes(user.role)) {
+                    setTimeout(() => {
+                        if (!window.DB_getUsers) return;
+                        window.DB_getUsers().then(users => {
+                            const OFFICER_ROLES = ['admin','secretary','reviewer','editor','president'];
+                            const pending = users.filter(u =>
+                                !OFFICER_ROLES.includes(u.role) &&
+                                String(u.is_regular) !== 'true'
+                            ).length;
+
+                            if (pending > 0) {
+                                const mypageLink = document.getElementById('mypage-nav-link');
+                                if (mypageLink) {
+                                    const badge = document.createElement('span');
+                                    badge.id = 'pending-approval-badge';
+                                    badge.textContent = pending;
+                                    badge.style.cssText = `
+                                        position: absolute;
+                                        top: -8px;
+                                        right: -12px;
+                                        background: #e53935;
+                                        color: #fff;
+                                        border-radius: 50%;
+                                        width: 18px;
+                                        height: 18px;
+                                        font-size: 0.65rem;
+                                        font-weight: 800;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        line-height: 1;
+                                        font-family: 'Poppins', sans-serif;
+                                        box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+                                    `;
+                                    mypageLink.appendChild(badge);
+                                }
+                            }
+                        }).catch(() => {});
+                    }, 800);
                 }
             }
 
