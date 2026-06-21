@@ -1192,9 +1192,10 @@
 
         /* ── Populate profile card & panels ── */
         function populateAll(u) {
-            // Avatar initials
-            const initials = (u.name || '?').replace(/\s/g,'').slice(0,2);
-            document.getElementById('avatar-initials').textContent = initials;
+            // Avatar initials — 성(첫 글자) 제외, 이름만 표시
+            const cleanName = (u.name || '').replace(/\s/g, '');
+            const givenName = cleanName.length > 1 ? cleanName.slice(1) : cleanName;
+            document.getElementById('avatar-initials').textContent = givenName || '?';
 
             // Profile card
             document.getElementById('pc-name').textContent = u.name || '-';
