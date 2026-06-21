@@ -502,11 +502,11 @@
             'special': '특별회원'
         };
 
-        // 소속기관 포맷터: '무형문화재 제 N호' 뒤 자동 줄바꿈
+        // 소속기관 포맷터: '무형문화재' 다음 줄바꿈 (제 N호 보존회는 동일행)
         function formatAffiliation(raw) {
             if (!raw) return '-';
-            // 패턴: 무형문화재 제 N호  또는  무형문화재 N호  → 뒤에 <br> 삽입
-            return String(raw).replace(/(무형문화재\s*(?:제\s*)?\d+호)/g, '$1<br>');
+            // 패턴: '무형문화재' 뒤에 즐바꿈 삽입 (^무형문화재다음 공백 포함)
+            return String(raw).replace(/(무형문화재)\s*/g, '$1<br>');
         }
 
         // 전화번호 포맷터: Google Sheets에서 0이 삭제된 경우도 복원

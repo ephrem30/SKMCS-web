@@ -392,10 +392,10 @@
                 { value: "group", label: "단체회원" }, { value: "special", label: "특별회원" }
             ];
 
-            // 소속기관 포맷터: '무형문화재 제 N호' 뒤 자동 줄바꿈
+            // 소속기관 포맷터: '무형문화재' 다음 줄바꿈
             function formatAffiliation(raw) {
                 if (!raw) return '-';
-                return String(raw).replace(/(무형문화재\s*(?:제\s*)?\d+호)/g, '$1<br>');
+                return String(raw).replace(/(무형문화재)\s*/g, '$1<br>');
             }
 
             // 전화번호 표시 포맷 함수 (숫자만 있거나 앞자리 0이 빠진 경우도 복원)
