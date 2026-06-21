@@ -762,13 +762,9 @@
                     return;
                 }
 
-                // 로그인 성공 — 세션 저장
+                // 로그인 성공 — 전체 프로필 세션 저장 (마이페이지에서 가입 정보 바로 표시)
                 const user = res.user;
-                localStorage.setItem('logged_in_user', JSON.stringify({
-                    email: user.email,
-                    name: user.name,
-                    role: user.role
-                }));
+                localStorage.setItem('logged_in_user', JSON.stringify(user));
 
                 if (rememberCb.checked) {
                     localStorage.setItem('saved_id', email);
