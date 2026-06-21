@@ -430,7 +430,7 @@
                 tr.innerHTML = `
                     <td style="font-weight:700;color:var(--text-dark);">${user.name || '-'} ${isSelf ? '<span style="font-size:0.75rem;color:var(--color-red);font-weight:normal;">(본인)</span>' : ''}</td>
                     <td>${user.email || '-'}</td>
-                    <td>${user.affiliation || '-'}</td>
+                    <td style="word-break: keep-all; overflow-wrap: break-word; line-height: 1.45;">${user.affiliation || '-'}</td>
                     <td>${formatPhone(user.phone)}</td>
                     <td style="text-align:center;">${docLinkHtml}</td>
                     <td>${selectHtml}</td>

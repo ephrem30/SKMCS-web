@@ -25,6 +25,8 @@ body {
     background-color: var(--bg-white);
     overflow-x: hidden;
     letter-spacing: -0.02em;
+    word-break: keep-all;
+    overflow-wrap: break-word;
 }
 
 a {
