@@ -103,6 +103,17 @@ window.DB_changePassword = async function(email, currentPw, newPw) {
     });
 };
 
+/** 입회신청서 업로드 — 파일을 Drive에 저장 후 document_url 업데이트 */
+window.DB_uploadMemberDocument = async function(email, userName, fileData) {
+    // fileData: { base64, name, mimeType }
+    return await _dbPostDirect({
+        action: "uploadMemberDocument",
+        email: email,
+        userName: userName,
+        fileData: fileData
+    });
+};
+
 // ============================================================
 // 2. 공지사항 (notices)
 // ============================================================

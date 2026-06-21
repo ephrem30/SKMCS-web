@@ -925,6 +925,44 @@
                                         <input type="text" class="mp-input" id="edit-work-addr2" placeholder="상세주소 입력 (예: 문화관 2층 학회사무국)">
                                     </div>
 
+                                    <!-- 입회신청서 업로드 -->
+                                    <div class="mp-section-title"><i class="fa-solid fa-file-arrow-up"></i> 입회신청서 제출</div>
+                                    <div style="background:#f8f9fa;border:1.5px dashed var(--border-color);border-radius:10px;padding:20px 22px;">
+                                        <div id="doc-current-wrap" style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;display:flex;align-items:center;gap:8px;">
+                                            <i class="fa-solid fa-paperclip" style="color:var(--color-green);"></i>
+                                            <span id="doc-current-text">현재 제출된 서류 없음</span>
+                                        </div>
+                                        <div class="mp-form-group" style="margin-bottom:12px;">
+                                            <label class="mp-form-label">
+                                                파일 선택 <span style="font-weight:400;color:var(--text-muted);">(PDF, HWP, Word, 이미지, ZIP — 최대 10MB)</span>
+                                            </label>
+                                            <input type="file" id="doc-file-input" class="mp-input"
+                                                   accept=".pdf,.hwp,.hwpx,.docx,.doc,.jpg,.jpeg,.png,.zip"
+                                                   style="padding:10px;background:#fff;"
+                                                   onchange="docFileSelected(this)">
+                                        </div>
+                                        <div id="doc-file-info" style="display:none;font-size:0.82rem;color:#555;margin-bottom:12px;padding:8px 12px;background:#fff;border:1px solid var(--border-color);border-radius:6px;">
+                                            <i class="fa-solid fa-file" style="color:var(--color-green);margin-right:6px;"></i>
+                                            <span id="doc-file-name"></span>
+                                            <span id="doc-file-size" style="color:var(--text-muted);margin-left:8px;"></span>
+                                        </div>
+                                        <div id="doc-progress-wrap" style="display:none;margin-bottom:12px;">
+                                            <div style="height:5px;background:#e0e0e0;border-radius:5px;overflow:hidden;">
+                                                <div id="doc-progress-bar" style="height:100%;width:0%;background:var(--color-green);border-radius:5px;transition:width 0.4s;"></div>
+                                            </div>
+                                            <div id="doc-progress-text" style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;">업로드 중...</div>
+                                        </div>
+                                        <div class="mp-alert" id="doc-alert" style="margin-bottom:12px;"></div>
+                                        <button type="button" class="btn-mp-primary" id="btn-upload-doc" onclick="uploadDocument()" disabled
+                                                style="background:var(--color-blue);">
+                                            <i class="fa-solid fa-upload"></i> 입회신청서 업로드
+                                        </button>
+                                        <div style="font-size:0.76rem;color:var(--text-muted);margin-top:10px;line-height:1.7;">
+                                            ※ 이미 제출하신 경우, 새 파일을 업로드하면 기존 서류 URL이 교체됩니다.<br>
+                                            ※ 파일은 한국음악학회 구글 드라이브에 안전하게 저장됩니다.
+                                        </div>
+                                    </div>
+
                                     <div class="btn-row">
                                         <button class="btn-mp-primary" id="btn-save-profile" onclick="saveProfile()">
                                             <i class="fa-solid fa-floppy-disk"></i> 변경사항 저장
@@ -1199,7 +1237,107 @@
             setVal('edit-home-phone',     u.home_phone);
             setVal('edit-work-phone-2',   u.work_phone);
             // 자택/직장 주소는 DOMContentLoaded 핸들러에서 분리 처리
+
+            // 기존 입회신청서 표시
+            const docText = document.getElementById('doc-current-text');
+            if (docText) {
+                if (u.document_url) {
+                    docText.innerHTML = `<a href="${u.document_url}" target="_blank" rel="noopener"
+                        style="color:var(--color-green);font-weight:600;text-decoration:underline;text-underline-offset:3px;">
+                        <i class="fa-solid fa-file-lines"></i> 기제출 서류 보기</a>
+                        <span style="color:var(--text-muted);margin-left:6px;">(새 파일 업로드 시 교체됨)</span>`;
+                } else {
+                    docText.textContent = '현재 제출된 서류 없음';
+                }
+            }
         }
+
+        /* ── 파일 선택 시 미리보기 ── */
+        window.docFileSelected = function(input) {
+            const file = input.files[0];
+            const info = document.getElementById('doc-file-info');
+            const btn  = document.getElementById('btn-upload-doc');
+            if (!file) {
+                if (info) info.style.display = 'none';
+                if (btn)  btn.disabled = true;
+                return;
+            }
+            const sizeMB = (file.size / 1024 / 1024).toFixed(2);
+            if (file.size > 10 * 1024 * 1024) {
+                showAlert('doc-alert', '파일 크기가 10MB를 초과합니다. 더 작은 파일을 선택해 주세요.', 'error');
+                input.value = '';
+                if (info) info.style.display = 'none';
+                if (btn)  btn.disabled = true;
+                return;
+            }
+            document.getElementById('doc-file-name').textContent = file.name;
+            document.getElementById('doc-file-size').textContent = `(${sizeMB} MB)`;
+            if (info) info.style.display = 'block';
+            if (btn)  btn.disabled = false;
+            // 이전 알림 숨기기
+            const alert = document.getElementById('doc-alert');
+            if (alert) alert.classList.remove('show');
+        };
+
+        /* ── 입회신청서 업로드 ── */
+        window.uploadDocument = async function() {
+            if (!user) return;
+            const input = document.getElementById('doc-file-input');
+            const file  = input && input.files[0];
+            if (!file) { showAlert('doc-alert', '파일을 먼저 선택해 주세요.', 'error'); return; }
+
+            const btn      = document.getElementById('btn-upload-doc');
+            const progress = document.getElementById('doc-progress-wrap');
+            const bar      = document.getElementById('doc-progress-bar');
+            const pText    = document.getElementById('doc-progress-text');
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 업로드 중...';
+            if (progress) progress.style.display = 'block';
+            if (bar)  bar.style.width = '10%';
+            if (pText) pText.textContent = '파일을 읽는 중...';
+
+            try {
+                // 1) FileReader로 base64 변환
+                const base64 = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload  = e => resolve(e.target.result.split(',')[1]);
+                    reader.onerror = () => reject(new Error('파일 읽기 실패'));
+                    reader.readAsDataURL(file);
+                });
+
+                if (bar)  bar.style.width = '40%';
+                if (pText) pText.textContent = '서버로 전송 중...';
+
+                // 2) DB 함수 호출 (Drive 저장 + document_url 업데이트)
+                const res = await window.DB_uploadMemberDocument(
+                    user.email,
+                    user.name || '미상',
+                    { base64, name: file.name, mimeType: file.type || 'application/octet-stream' }
+                );
+
+                if (bar)  bar.style.width = '100%';
+
+                if (res.ok) {
+                    // 세션 업데이트
+                    const newUser = Object.assign({}, user, { document_url: res.document_url });
+                    if (window.SESSION_set) window.SESSION_set(newUser);
+                    // UI 갱신
+                    populateAll(newUser);
+                    showAlert('doc-alert', '입회신청서가 성공적으로 업로드되었습니다.', 'success');
+                    input.value = '';
+                    document.getElementById('doc-file-info').style.display = 'none';
+                } else {
+                    showAlert('doc-alert', res.error || '업로드 실패. 다시 시도해 주세요.', 'error');
+                }
+            } catch(e) {
+                showAlert('doc-alert', '오류: ' + e.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-upload"></i> 입회신청서 업로드';
+                if (progress) setTimeout(() => { progress.style.display = 'none'; if(bar) bar.style.width = '0%'; }, 1500);
+            }
+        };
 
         function formatPhone(raw) {
             if (!raw) return '-';

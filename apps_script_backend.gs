@@ -102,6 +102,7 @@ function handleWrite(body) {
     // 파일 업로드 전용 액션 (sheet 키 없음)
     if (action === "uploadSubmissionFiles") return handleFileUpload(body);
     if (action === "addFormFile")           return handleFormFileUpload(body);
+    if (action === "uploadMemberDocument")  return handleMemberDocumentUpload(body);
 
     const sheetName = SHEET_NAMES[sheetKey];
     if (!sheetName) return makeResponse({ ok: false, error: "unknown sheet: " + sheetKey });
@@ -247,6 +248,39 @@ function handleFileUpload(body) {
   });
 
   return makeResponse({ ok: true, message: "파일 업로드 완료", urls: updateFields });
+}
+
+// ── 회원 입회신청서 재업로드 (마이페이지에서 추가 제출) ──
+function handleMemberDocumentUpload(body) {
+  const email    = body.email;
+  const userName = body.userName || "미상";
+  const fileData = body.fileData;
+
+  if (!email)                         return makeResponse({ ok: false, error: "이메일이 없습니다." });
+  if (!fileData || !fileData.base64)  return makeResponse({ ok: false, error: "파일 데이터가 없습니다." });
+
+  // 1) Drive에 파일 업로드 (회원가입과 동일한 폴더·함수 사용)
+  let fileUrl = "";
+  try {
+    fileUrl = uploadFileToDrive(fileData, userName);
+  } catch (e) {
+    return makeResponse({ ok: false, error: "드라이브 업로드 실패: " + e.message });
+  }
+
+  // 2) 회원 시트의 document_url 업데이트
+  const sheet   = getOrCreateSheet(SHEET_NAMES.users);
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const keyCol  = headers.indexOf("email") + 1;
+  const urlCol  = headers.indexOf("document_url") + 1;
+  if (keyCol === 0) return makeResponse({ ok: false, error: "email 컬럼 없음" });
+  if (urlCol === 0) return makeResponse({ ok: false, error: "document_url 컬럼 없음" });
+
+  const colValues = sheet.getRange(2, keyCol, Math.max(sheet.getLastRow()-1,1), 1).getValues();
+  const rowIdx    = colValues.findIndex(r => String(r[0]).toLowerCase() === email.toLowerCase());
+  if (rowIdx === -1) return makeResponse({ ok: false, error: "해당 회원을 찾을 수 없습니다." });
+
+  sheet.getRange(rowIdx + 2, urlCol).setValue(fileUrl);
+  return makeResponse({ ok: true, message: "입회신청서 업로드 완료", document_url: fileUrl });
 }
 
 // ── 양식파일 드라이브 업로드 ──
