@@ -1173,11 +1173,15 @@
         /* ── 역할 라벨 ── */
         const ROLE_LABELS = {
             admin:     { label:'최고관리자', cls:'role-admin' },
-            secretary: { label:'간사',       cls:'role-admin' },
-            editor:    { label:'편집위원',   cls:'role-editor' },
+            secretary: { label:'학회간사',   cls:'role-admin' },
+            editor:    { label:'편집위원장', cls:'role-editor' },
             president: { label:'학회회장',   cls:'role-editor' },
             reviewer:  { label:'심사위원',   cls:'role-reviewer' },
-            member:    { label:'일반회원',   cls:'role-member' }
+            member:    { label:'일반회원',   cls:'role-member' },
+            research:  { label:'연구회원',   cls:'role-member' },
+            lifetime:  { label:'평생회원',   cls:'role-member' },
+            group:     { label:'단체회원',   cls:'role-member' },
+            special:   { label:'특별회원',   cls:'role-member' },
         };
 
         /* ── Load user ── */
