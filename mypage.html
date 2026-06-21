@@ -372,44 +372,20 @@
         /* ── Info row (view mode) ── */
         .info-row {
             display: grid;
-            grid-template-columns: 120px 1fr;
+            grid-template-columns: 140px 1fr;
             gap: 0;
             border-bottom: 1px solid var(--border-color);
-            padding: 12px 0;
+            padding: 13px 0;
             align-items: start;
         }
 
-        /* 긴 텍스트(소속, 주소, 경력 등)는 라벨+값을 세로 배치 */
-        .info-row--multiline {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            border-bottom: 1px solid var(--border-color);
-            padding: 12px 0;
-        }
-
-        .info-row--multiline .info-label {
-            font-size: 0.78rem;
-            color: var(--text-muted);
-            font-weight: 700;
-            padding-right: 0;
-        }
-
-        .info-row--multiline .info-value {
-            font-size: 0.9rem;
-            line-height: 1.6;
-            color: var(--text-dark);
-        }
-
-        .info-row:last-child,
-        .info-row--multiline:last-child { border-bottom: none; }
+        .info-row:last-child { border-bottom: none; }
 
         .info-label {
             font-size: 0.82rem;
             font-weight: 700;
             color: var(--text-muted);
             padding-right: 12px;
-            padding-top: 1px;
         }
 
         .info-value {
@@ -801,9 +777,9 @@
                                     <div class="info-row"><span class="info-label">이메일</span><span class="info-value" id="info-email">-</span></div>
                                     <div class="info-row"><span class="info-label">생년월일</span><span class="info-value" id="info-birth">-</span></div>
                                     <div class="info-row"><span class="info-label">휴대전화</span><span class="info-value" id="info-phone">-</span></div>
-                                    <div class="info-row--multiline"><span class="info-label">소속기관</span><span class="info-value" id="info-affiliation">-</span></div>
+                                    <div class="info-row"><span class="info-label">소속기관</span><span class="info-value" id="info-affiliation">-</span></div>
                                     <div class="info-row"><span class="info-label">직위</span><span class="info-value" id="info-position">-</span></div>
-                                    <div class="info-row--multiline"><span class="info-label">주요 경력</span><span class="info-value" id="info-career">-</span></div>
+                                    <div class="info-row"><span class="info-label">주요 경력</span><span class="info-value" id="info-career">-</span></div>
 
                                     <div class="mp-section-title"><i class="fa-solid fa-graduation-cap"></i> 학력</div>
                                     <div class="info-row"><span class="info-label">학부 대학교</span><span class="info-value" id="info-edu-univ">-</span></div>
@@ -814,9 +790,9 @@
 
                                     <div class="mp-section-title"><i class="fa-solid fa-location-dot"></i> 연락처 정보</div>
                                     <div class="info-row"><span class="info-label">자택 전화</span><span class="info-value" id="info-home-phone">-</span></div>
-                                    <div class="info-row--multiline"><span class="info-label">자택 주소</span><span class="info-value" id="info-home-address">-</span></div>
+                                    <div class="info-row"><span class="info-label">자택 주소</span><span class="info-value" id="info-home-address">-</span></div>
                                     <div class="info-row"><span class="info-label">직장 전화</span><span class="info-value" id="info-work-phone">-</span></div>
-                                    <div class="info-row--multiline"><span class="info-label">직장 주소</span><span class="info-value" id="info-work-address">-</span></div>
+                                    <div class="info-row"><span class="info-label">직장 주소</span><span class="info-value" id="info-work-address">-</span></div>
 
                                     <div class="btn-row" style="justify-content:flex-start;">
                                         <button class="btn-mp-primary" onclick="switchPanel('panel-edit')">
