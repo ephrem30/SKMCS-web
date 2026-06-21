@@ -9,6 +9,7 @@ const SHEET_NAMES = {
   freeboard:   "자유게시판",
   submissions: "논문투고",
   forms:       "양식파일",
+  journals:    "학회지",
 };
 
 const DRIVE_FOLDER = {
@@ -36,6 +37,8 @@ function getOrCreateSheet(name) {
       sheet.appendRow(["id","journal","category","title_ko","title_en","abstract_ko","abstract_en","keywords","authors","file_manuscript","file_agreement","date","status","author_email","reviewer_email","created_at"]);
     } else if (name === SHEET_NAMES.forms) {
       sheet.appendRow(["id","name","category","date","view_url","download_url","file_ext","created_at"]);
+    } else if (name === SHEET_NAMES.journals) {
+      sheet.appendRow(["id","volume","number","tonggwon","title","fullTitle","label","bannerInfo","date","cover","pdf","desc","articles","created_at"]);
     }
   }
   return sheet;
@@ -136,7 +139,8 @@ function handleWrite(body) {
 
       const PHONE_FIELDS = ["phone", "home_phone", "work_phone"];
       const row = headers.map(h => {
-        if (h === "authors" && Array.isArray(data[h])) return JSON.stringify(data[h]);
+        if (h === "authors"  && Array.isArray(data[h])) return JSON.stringify(data[h]);
+        if (h === "articles" && Array.isArray(data[h])) return JSON.stringify(data[h]);
         const v = data[h] !== undefined ? data[h] : "";
         if (PHONE_FIELDS.includes(h) && v !== "") return "'" + String(v);
         return v;

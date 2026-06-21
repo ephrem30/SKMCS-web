@@ -361,6 +361,7 @@
     </div>
 
     <script src="share.js"></script>
+    <script src="db.js"></script>
     <script src="journal_data.js"></script>
     <script>
         const selectEl = document.getElementById('archive-select');
@@ -504,32 +505,52 @@
         modal.addEventListener('click', e => { if (e.target === modal) closePdfModal(); });
         document.addEventListener('keydown', e => { if (e.key === 'Escape') closePdfModal(); });
 
-        // 3. Initialize page
-        populateDropdown();
+        // 3. Initialize page — Sheets 우선, localStorage fallback
+        async function initPage() {
+            // 로딩 표시
+            selectEl.innerHTML = '<option>배포호 목록 불러오는 중...</option>';
 
-        // Check if there is an issue ID in URL query parameters
-        const urlParams = new URLSearchParams(window.location.search);
-        const issueId = urlParams.get('id');
-
-        let activeIssue = journalData[0]; // Default to the first issue (Vol. 5 No. 1)
-        if (issueId) {
-            const found = journalData.find(item => item.id === issueId);
-            if (found) {
-                activeIssue = found;
-                selectEl.value = issueId;
+            try {
+                const dbData = await window.DB_getJournals();
+                if (dbData && dbData.length > 0) {
+                    // Sheets 데이터를 localStorage에 캐시로 저장 (버전 업보)
+                    localStorage.setItem("journal_db", JSON.stringify(dbData));
+                    localStorage.setItem("journal_db_version", "sheets");
+                    journalData = dbData;
+                } else {
+                    // Sheets가 비어있으면 localStorage fallback
+                    journalData = JSON.parse(localStorage.getItem("journal_db") || "[]");
+                    if (!journalData.length) journalData = defaultMockJournals;
+                }
+            } catch (err) {
+                console.warn("Sheets 로드 실패, localStorage fallback:", err);
+                journalData = JSON.parse(localStorage.getItem("journal_db") || "[]");
+                if (!journalData.length) journalData = defaultMockJournals;
             }
-        } else {
-            selectEl.value = activeIssue.id;
+
+            populateDropdown();
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const issueId = urlParams.get('id');
+
+            let activeIssue = journalData[0];
+            if (issueId) {
+                const found = journalData.find(item => item.id === issueId);
+                if (found) { activeIssue = found; selectEl.value = issueId; }
+            } else {
+                if (activeIssue) selectEl.value = activeIssue.id;
+            }
+
+            if (activeIssue) displayIssue(activeIssue);
         }
 
-        displayIssue(activeIssue);
+        initPage();
 
         // Listen for selection changes
         selectEl.addEventListener('change', function() {
             const selectedId = this.value;
             const issue = journalData.find(item => item.id === selectedId);
             if (issue) {
-                // Update URL parameter without reloading
                 const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + `?id=${selectedId}`;
                 window.history.pushState({ path: newUrl }, '', newUrl);
                 displayIssue(issue);
@@ -633,7 +654,7 @@
         btnAddArticleRow.addEventListener('click', addArticleInputRow);
 
         // Form Submit Handler
-        uploadForm.addEventListener('submit', function(e) {
+        uploadForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const formData = new FormData(this);
@@ -714,12 +735,47 @@
                 localJournals.push(newIssue);
             }
 
-            // Save and Reload
-            localStorage.setItem("journal_db", JSON.stringify(localJournals));
-            
-            alert(`${title} 업로드가 완료되었습니다.`);
-            closeUploadModal();
-            window.location.reload();
+            // ── Sheets에 저장 (primary) + localStorage 캐시 (fallback) ──
+            let saving = false;
+            if (saving) return;
+            saving = true;
+
+            const btn = uploadForm.querySelector('button[type="submit"]');
+            const origText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 저장 중...';
+            btn.disabled = true;
+
+            try {
+                const res = await window.DB_addJournal(newIssue);
+                if (res && res.ok) {
+                    // localStorage도 업데이트
+                    let localJournals = JSON.parse(localStorage.getItem("journal_db") || "[]");
+                    const dupIdx = localJournals.findIndex(j => j.id === id);
+                    if (dupIdx !== -1) localJournals[dupIdx] = newIssue;
+                    else localJournals.push(newIssue);
+                    localStorage.setItem("journal_db", JSON.stringify(localJournals));
+
+                    alert(`${title} 저장 완료! 학회지 시트에 등록되었습니다.`);
+                    closeUploadModal();
+                    initPage(); // 페이지 재로드 없이 데이터 새로고침
+                } else {
+                    throw new Error((res && res.error) || '저장 실패');
+                }
+            } catch(err) {
+                // Sheets 실패 시 localStorage만에라도 저장
+                let localJournals = JSON.parse(localStorage.getItem("journal_db") || "[]");
+                const dupIdx = localJournals.findIndex(j => j.id === id);
+                if (dupIdx !== -1) localJournals[dupIdx] = newIssue;
+                else localJournals.push(newIssue);
+                localStorage.setItem("journal_db", JSON.stringify(localJournals));
+
+                alert(`임시 저장 완료 (Sheets 연동 실패: ${err.message}).\n로칼에만 저장되었습니다.`);
+                closeUploadModal();
+                initPage();
+            } finally {
+                btn.innerHTML = origText;
+                btn.disabled = false;
+            }
         });
     </script>
 </body>

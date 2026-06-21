@@ -280,6 +280,38 @@ window.DB_updateForm = async function(id, updates) {
     });
 };
 
+
+// ============================================================
+// 6. 학회지 (journals)
+// ============================================================
+
+/** 전체 학회지 목록 조회 (최신호 우선 정렬) */
+window.DB_getJournals = async function() {
+    const rows = await _dbGet("journals");
+    return rows.map(j => {
+        if (typeof j.articles === 'string' && j.articles) {
+            try { j.articles = JSON.parse(j.articles); } catch(e) { j.articles = []; }
+        }
+        if (!Array.isArray(j.articles)) j.articles = [];
+        return j;
+    }).sort((a, b) => parseInt(b.tonggwon || 0) - parseInt(a.tonggwon || 0));
+};
+
+/** 학회지 추가 */
+window.DB_addJournal = async function(issueData) {
+    return await _dbPost({ action: "add", sheet: "journals", data: issueData });
+};
+
+/** 학회지 수정 */
+window.DB_updateJournal = async function(id, updates) {
+    return await _dbPost({ action: "update", sheet: "journals", key: "id", value: id, data: updates });
+};
+
+/** 학회지 삭제 */
+window.DB_deleteJournal = async function(id) {
+    return await _dbPost({ action: "delete", sheet: "journals", key: "id", value: id });
+};
+
 console.log("[db.js] 데이터베이스 클라이언트 로드 완료 →", DB_URL.substring(0, 60) + "...");
 
 
