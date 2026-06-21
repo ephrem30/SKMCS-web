@@ -91,8 +91,12 @@
             color: var(--text-muted);
             border-bottom: 1px solid var(--border-color);
             line-height: 1.9;
+            word-break: keep-all;
+            overflow-wrap: break-word;
         }
 
+        .profile-meta > div { display: flex; align-items: flex-start; gap: 5px; }
+        .profile-meta .meta-icon { flex-shrink: 0; margin-top: 1px; }
         .profile-meta span { color: var(--text-dark); font-weight: 600; }
 
         /* ── Side nav tabs ── */
@@ -729,7 +733,7 @@
                                 </div>
                                 <div class="profile-meta">
                                     <div>📧 <span id="pc-email">-</span></div>
-                                    <div>🏛 <span id="pc-affiliation">-</span></div>
+                                    <div><span class="meta-icon">🏛</span><span id="pc-affiliation">-</span></div>
                                     <div>📱 <span id="pc-phone">-</span></div>
                                 </div>
                                 <ul class="mypage-sidenav">
