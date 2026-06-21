@@ -502,6 +502,13 @@
             'special': '특별회원'
         };
 
+        // 소속기관 포맷터: '무형문화재 제 N호' 뒤 자동 줄바꿈
+        function formatAffiliation(raw) {
+            if (!raw) return '-';
+            // 패턴: 무형문화재 제 N호  또는  무형문화재 N호  → 뒤에 <br> 삽입
+            return String(raw).replace(/(무형문화재\s*(?:제\s*)?\d+호)/g, '$1<br>');
+        }
+
         // 전화번호 포맷터: Google Sheets에서 0이 삭제된 경우도 복원
         function formatPhone(raw) {
             if (!raw) return "-";
@@ -587,7 +594,7 @@
                     <td style="text-align: center; font-weight: 500; color: #666;">${idx + 1}</td>
                     <td style="font-weight: 700; color: var(--text-dark); text-align: center;">${user.name || "-"}</td>
                     <td style="font-family: 'Poppins', sans-serif;">${user.email || "-"}</td>
-                    <td style="font-weight: 500; word-break: keep-all; overflow-wrap: break-word; line-height: 1.45;">${user.affiliation || "-"}</td>
+                    <td style="font-weight: 500; word-break: keep-all; overflow-wrap: break-word; line-height: 1.5;">${formatAffiliation(user.affiliation)}</td>
                     <td style="text-align: center; font-family: 'Poppins', sans-serif;">${formatPhone(user.phone)}</td>
                     <td style="text-align: center;">
                         <span class="badge-role" style="${badgeStyle}">${roleText}</span>
