@@ -155,9 +155,17 @@ function handleWrite(body) {
       const rowIdx = colValues.findIndex(r => String(r[0]).toLowerCase() === String(value).toLowerCase());
       if (rowIdx === -1) return makeResponse({ ok: false, error: "해당 레코드를 찾을 수 없습니다." });
       const actualRow = rowIdx + 2;
+      const PHONE_FIELDS_UPDATE = ["phone", "home_phone", "work_phone"];
       Object.keys(data).forEach(field => {
         const colIdx = headers.indexOf(field) + 1;
-        if (colIdx > 0) sheet.getRange(actualRow, colIdx).setValue(Array.isArray(data[field]) ? JSON.stringify(data[field]) : data[field]);
+        if (colIdx > 0) {
+          let val = Array.isArray(data[field]) ? JSON.stringify(data[field]) : data[field];
+          // 전화번호 필드는 앞자리 0 보존을 위해 텍스트 prefix 처리
+          if (PHONE_FIELDS_UPDATE.includes(field) && val !== "" && val !== null && val !== undefined) {
+            val = "'" + String(val).replace(/^'+/, "");
+          }
+          sheet.getRange(actualRow, colIdx).setValue(val);
+        }
       });
       return makeResponse({ ok: true, message: "수정 완료" });
     }

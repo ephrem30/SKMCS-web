@@ -1201,10 +1201,23 @@
             // 자택/직장 주소는 DOMContentLoaded 핸들러에서 분리 처리
         }
 
-        function formatPhone(p) {
-            if (!p) return '-';
-            const s = String(p).replace(/^'+/, '').trim();
-            return s || '-';
+        function formatPhone(raw) {
+            if (!raw) return '-';
+            const cleaned = String(raw).replace(/^'+/, '').trim(); // apostrophe prefix 제거
+            const s = cleaned.replace(/\D/g, '');                  // 숫자만 추출
+            if (!s) return cleaned || '-';
+            const digits = s.startsWith('0') ? s : '0' + s;       // 앞자리 0 복원
+            if (digits.length === 11) {
+                return digits.slice(0,3) + '-' + digits.slice(3,7) + '-' + digits.slice(7);
+            } else if (digits.length === 10) {
+                if (digits.startsWith('02')) {
+                    return digits.slice(0,2) + '-' + digits.slice(2,6) + '-' + digits.slice(6);
+                }
+                return digits.slice(0,3) + '-' + digits.slice(3,6) + '-' + digits.slice(6);
+            } else if (digits.length === 9 && digits.startsWith('02')) {
+                return digits.slice(0,2) + '-' + digits.slice(2,5) + '-' + digits.slice(5);
+            }
+            return cleaned || String(raw);
         }
 
         /* ── Tab switching ── */

@@ -498,6 +498,26 @@
             'special': '특별회원'
         };
 
+        // 전화번호 포맷터: Google Sheets에서 0이 삭제된 경우도 복원
+        function formatPhone(raw) {
+            if (!raw) return "-";
+            const cleaned = String(raw).replace(/^'+/, '').trim(); // apostrophe prefix 제거
+            const s = cleaned.replace(/\D/g, '');                  // 숫자만 추출
+            if (!s) return cleaned || '-';
+            const digits = s.startsWith('0') ? s : '0' + s;       // 앞자리 0 복원
+            if (digits.length === 11) {
+                return digits.slice(0,3) + '-' + digits.slice(3,7) + '-' + digits.slice(7);
+            } else if (digits.length === 10) {
+                if (digits.startsWith('02')) {
+                    return digits.slice(0,2) + '-' + digits.slice(2,6) + '-' + digits.slice(6);
+                }
+                return digits.slice(0,3) + '-' + digits.slice(3,6) + '-' + digits.slice(6);
+            } else if (digits.length === 9 && digits.startsWith('02')) {
+                return digits.slice(0,2) + '-' + digits.slice(2,5) + '-' + digits.slice(5);
+            }
+            return cleaned || raw; // 변환 불가 시 원본 반환
+        }
+
         // Curated Obangsaek and professional badge colors
         const roleColors = {
             'admin': '#CB3C31',     // Traditional Vermilion Red
@@ -561,7 +581,7 @@
                     <td style="font-weight: 700; color: var(--text-dark); text-align: center;">${user.name || "-"}</td>
                     <td style="font-family: 'Poppins', sans-serif;">${user.email || "-"}</td>
                     <td style="font-weight: 500;">${user.affiliation || "-"}</td>
-                    <td style="text-align: center; font-family: 'Poppins', sans-serif;">${user.phone || "-"}</td>
+                    <td style="text-align: center; font-family: 'Poppins', sans-serif;">${formatPhone(user.phone)}</td>
                     <td style="text-align: center;">
                         <span class="badge-role" style="${badgeStyle}">${roleText}</span>
                     </td>
@@ -600,7 +620,7 @@
                     `"${(user.name || "").replace(/"/g, '""')}"`,
                     `"${(user.email || "").replace(/"/g, '""')}"`,
                     `"${(user.affiliation || "").replace(/"/g, '""')}"`,
-                    `"${(user.phone || "").replace(/"/g, '""')}"`,
+                    `"${formatPhone(user.phone).replace(/"/g, '""')}"`,
                     `"${roleText}"`,
                     `"${(user.birth || "").replace(/"/g, '""')}"`
                 ];
