@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="styles_v2.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Daum Postcode API -->
+    <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 
     <style>
         /* ── Mypage Layout ── */
@@ -445,6 +447,99 @@
             .mp-form-2col { grid-template-columns: 1fr; }
             .panel-body { padding: 20px; }
         }
+
+        /* ── Address search inline row ── */
+        .addr-input-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+            align-items: center;
+        }
+        .addr-zip {
+            width: 100px;
+            flex-shrink: 0;
+            background: #f4f3ed !important;
+            cursor: not-allowed;
+            text-align: center;
+        }
+        .addr-road { flex: 1; }
+        .btn-addr-search {
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 11px 16px;
+            background: var(--color-red);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            white-space: nowrap;
+            transition: background 0.2s;
+        }
+        .btn-addr-search:hover { background: #a8271e; }
+
+        /* ── Address Modal ── */
+        .mp-addr-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 15px;
+        }
+        .mp-addr-modal-overlay.active { display: flex; }
+        .mp-addr-modal-card {
+            width: 100%;
+            max-width: 500px;
+            background: #fff;
+            border-radius: 10px;
+            border: 2px solid var(--text-dark);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            animation: mpAddrIn 0.25s ease;
+        }
+        @keyframes mpAddrIn {
+            from { opacity:0; transform: translateY(-16px); }
+            to   { opacity:1; transform: translateY(0); }
+        }
+        .mp-addr-modal-header {
+            background: var(--color-red);
+            color: #fff;
+            padding: 14px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .mp-addr-modal-header h3 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .mp-addr-close {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .mp-addr-close:hover { transform: scale(1.15); }
+        .mp-addr-modal-body {
+            height: 480px;
+            position: relative;
+            background: #fcfcfc;
+        }
     </style>
 </head>
 
@@ -789,19 +884,44 @@
                                     </div>
 
                                     <div class="mp-section-title"><i class="fa-solid fa-location-dot"></i> 연락처 정보</div>
+
+                                    <!-- 자택 정보 -->
                                     <div class="mp-form-2col">
                                         <div class="mp-form-group">
                                             <label class="mp-form-label">자택 전화번호</label>
                                             <input type="tel" class="mp-input" id="edit-home-phone" placeholder="예: 02-3218-4866">
                                         </div>
                                         <div class="mp-form-group">
-                                            <label class="mp-form-label">자택 주소</label>
-                                            <input type="text" class="mp-input" id="edit-home-address" placeholder="자택 주소">
+                                            <label class="mp-form-label">직장 전화번호</label>
+                                            <input type="tel" class="mp-input" id="edit-work-phone-2" placeholder="예: 02-2260-0000">
+                                            <div class="mp-input-note">위 직장 전화와 동일 필드입니다.</div>
                                         </div>
-                                        <div class="mp-form-group">
-                                            <label class="mp-form-label">직장 주소</label>
-                                            <input type="text" class="mp-input" id="edit-work-address" placeholder="직장 주소">
+                                    </div>
+
+                                    <!-- 자택 주소 -->
+                                    <div class="mp-form-group">
+                                        <label class="mp-form-label">자택 주소</label>
+                                        <div class="addr-input-row">
+                                            <input type="text" class="mp-input addr-zip" id="edit-home-zip" placeholder="우편번호" readonly>
+                                            <input type="text" class="mp-input addr-road" id="edit-home-addr1" placeholder="도로명 주소 (검색 버튼을 눌러주세요)" readonly>
+                                            <button type="button" class="btn-addr-search" onclick="mpExecAddrSearch('home')">
+                                                <i class="fa-solid fa-magnifying-glass"></i> 주소 검색
+                                            </button>
                                         </div>
+                                        <input type="text" class="mp-input" id="edit-home-addr2" placeholder="상세주소 입력 (예: 101동 202호)">
+                                    </div>
+
+                                    <!-- 직장 주소 -->
+                                    <div class="mp-form-group">
+                                        <label class="mp-form-label">직장(소속기관) 주소</label>
+                                        <div class="addr-input-row">
+                                            <input type="text" class="mp-input addr-zip" id="edit-work-zip" placeholder="우편번호" readonly>
+                                            <input type="text" class="mp-input addr-road" id="edit-work-addr1" placeholder="도로명 주소 (검색 버튼을 눌러주세요)" readonly>
+                                            <button type="button" class="btn-addr-search" onclick="mpExecAddrSearch('work')">
+                                                <i class="fa-solid fa-magnifying-glass"></i> 주소 검색
+                                            </button>
+                                        </div>
+                                        <input type="text" class="mp-input" id="edit-work-addr2" placeholder="상세주소 입력 (예: 문화관 2층 학회사무국)">
                                     </div>
 
                                     <div class="btn-row">
@@ -1076,9 +1196,8 @@
             setVal('edit-edu-grad-major', u.edu_grad_major);
             setVal('edit-edu-grad-course', u.edu_grad_course);
             setVal('edit-home-phone',     u.home_phone);
-            setVal('edit-home-address',   u.home_address);
-            setVal('edit-work-phone',     u.work_phone);
-            setVal('edit-work-address',   u.work_address);
+            setVal('edit-work-phone-2',   u.work_phone);
+            // 자택/직장 주소는 DOMContentLoaded 핸들러에서 분리 처리
         }
 
         function formatPhone(p) {
@@ -1151,9 +1270,22 @@
                 edu_grad_major: document.getElementById('edit-edu-grad-major').value.trim(),
                 edu_grad_course:document.getElementById('edit-edu-grad-course').value,
                 home_phone:     document.getElementById('edit-home-phone').value.trim(),
-                home_address:   document.getElementById('edit-home-address').value.trim(),
-                work_phone:     document.getElementById('edit-work-phone').value.trim(),
-                work_address:   document.getElementById('edit-work-address').value.trim()
+                work_phone:     document.getElementById('edit-work-phone-2').value.trim(),
+                // 주소: 우편번호 + 도로명 + 상세주소를 합쳐서 저장
+                home_address: (function() {
+                    const zip  = (document.getElementById('edit-home-zip')   || {}).value || '';
+                    const rd   = (document.getElementById('edit-home-addr1') || {}).value || '';
+                    const dt   = (document.getElementById('edit-home-addr2') || {}).value || '';
+                    const full = [zip, rd, dt].filter(Boolean).join(' ');
+                    return full.trim();
+                })(),
+                work_address: (function() {
+                    const zip  = (document.getElementById('edit-work-zip')   || {}).value || '';
+                    const rd   = (document.getElementById('edit-work-addr1') || {}).value || '';
+                    const dt   = (document.getElementById('edit-work-addr2') || {}).value || '';
+                    const full = [zip, rd, dt].filter(Boolean).join(' ');
+                    return full.trim();
+                })()
             };
 
             try {
@@ -1335,6 +1467,188 @@
         };
 
     })();
+    </script>
+
+    <!-- ── 주소 검색 모달 ── -->
+    <div id="mp-addr-modal" class="mp-addr-modal-overlay">
+        <div class="mp-addr-modal-card">
+            <div class="mp-addr-modal-header">
+                <h3><i class="fa-solid fa-map-location-dot"></i> 주소 검색</h3>
+                <button type="button" class="mp-addr-close" onclick="mpCloseAddrModal()">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div id="mp-addr-iframe-wrap" class="mp-addr-modal-body">
+                <!-- Daum Postcode embeds here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+    /* ════════════════════════════════════════
+       마이페이지 주소 검색 (Daum Postcode)
+    ════════════════════════════════════════ */
+    let _mpAddrType = null; // 'home' | 'work'
+
+    window.mpExecAddrSearch = function(type) {
+        _mpAddrType = type;
+        const modal = document.getElementById('mp-addr-modal');
+        const wrap  = document.getElementById('mp-addr-iframe-wrap');
+        if (!modal || !wrap) return;
+
+        wrap.innerHTML = '';
+        wrap.style.padding = '0';
+        modal.classList.add('active');
+
+        if (typeof daum !== 'undefined') {
+            /* ── 온라인: Daum 우편번호 API ── */
+            const theme = {
+                bgColor: '#FFFFFF',
+                searchBgColor: '#cb3c31',
+                contentBgColor: '#FFFFFF',
+                pageBgColor: '#FFFFFF',
+                textColor: '#1a1a1a',
+                queryTextColor: '#FFFFFF',
+                postcodeTextColor: '#cb3c31',
+                emphTextColor: '#cb3c31',
+                outlineColor: '#e2e2e2'
+            };
+            new daum.Postcode({
+                oncomplete: function(data) {
+                    let addr = data.userSelectedType === 'R' ? data.roadAddress : data.jibunAddress;
+                    if (data.userSelectedType === 'R') {
+                        let extra = '';
+                        if (data.bname && /[동|로|가]$/.test(data.bname)) extra += data.bname;
+                        if (data.buildingName && data.apartment === 'Y') extra += (extra ? ', ' : '') + data.buildingName;
+                        if (extra) addr += ' (' + extra + ')';
+                    }
+                    mpFillAddress(data.zonecode, addr);
+                    mpCloseAddrModal();
+                },
+                width: '100%',
+                height: '100%',
+                theme: theme
+            }).embed(wrap);
+        } else {
+            /* ── 오프라인 폴백: 임시 주소 검색기 ── */
+            wrap.style.padding = '20px';
+            wrap.innerHTML = `
+                <div style="margin-bottom:12px;font-size:0.82rem;color:#cb3c31;font-weight:600;">
+                    <i class="fa-solid fa-circle-info"></i> 외부망 미연결 — 학회 임시 주소 검색기
+                </div>
+                <div style="display:flex;gap:8px;margin-bottom:12px;">
+                    <input type="text" id="mp-mock-input" placeholder="예: 동국대, 서울시청, 국립국악원"
+                           style="flex:1;padding:10px 12px;border:1.5px solid #ccc;border-radius:8px;font-size:0.88rem;font-family:inherit;">
+                    <button type="button" onclick="mpSearchMock()"
+                            style="background:#cb3c31;color:#fff;border:none;border-radius:8px;padding:0 16px;font-weight:700;cursor:pointer;font-family:inherit;">검색</button>
+                </div>
+                <div id="mp-mock-results" style="border:1px solid #e0e0e0;border-radius:8px;height:340px;overflow-y:auto;background:#fff;padding:4px;"></div>
+            `;
+            document.getElementById('mp-mock-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') mpSearchMock();
+            });
+        }
+    };
+
+    window.mpCloseAddrModal = function() {
+        const modal = document.getElementById('mp-addr-modal');
+        if (modal) modal.classList.remove('active');
+    };
+
+    // ESC 키로 닫기
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') mpCloseAddrModal();
+    });
+    // 오버레이 바깥 클릭으로 닫기
+    document.getElementById('mp-addr-modal').addEventListener('click', function(e) {
+        if (e.target === this) mpCloseAddrModal();
+    });
+
+    function mpFillAddress(zip, road) {
+        if (_mpAddrType === 'home') {
+            document.getElementById('edit-home-zip').value   = zip;
+            document.getElementById('edit-home-addr1').value = road;
+            const detail = document.getElementById('edit-home-addr2');
+            if (detail) { detail.value = ''; detail.focus(); }
+        } else if (_mpAddrType === 'work') {
+            document.getElementById('edit-work-zip').value   = zip;
+            document.getElementById('edit-work-addr1').value = road;
+            const detail = document.getElementById('edit-work-addr2');
+            if (detail) { detail.value = ''; detail.focus(); }
+        }
+    }
+
+    /* ── 오프라인 폴백 검색 데이터 ── */
+    const MP_MOCK_DB = [
+        { zip: '04620', road: '서울특별시 중구 필동로 1길 30', detail: '동국대학교 문화관' },
+        { zip: '04551', road: '서울특별시 중구 세종대로 110',  detail: '서울시청' },
+        { zip: '06642', road: '서울특별시 서초구 남부순환로 2364', detail: '국립국악원' },
+        { zip: '06757', road: '서울특별시 서초구 남부순환로 2406', detail: '예술의전당' },
+        { zip: '03045', road: '서울특별시 종로구 세종대로 175', detail: '세종문화회관' },
+        { zip: '48060', road: '부산광역시 해운대구 수영강변대로 120', detail: '영화의전당' }
+    ];
+
+    window.mpSearchMock = function() {
+        const q = (document.getElementById('mp-mock-input').value || '').trim().toLowerCase();
+        const results = document.getElementById('mp-mock-results');
+        if (!q) { alert('검색어를 입력해 주세요.'); return; }
+        const matched = MP_MOCK_DB.filter(item =>
+            item.road.toLowerCase().includes(q) || item.detail.toLowerCase().includes(q)
+        );
+        if (matched.length === 0) {
+            results.innerHTML = `<div style="text-align:center;padding:60px 0;color:#888;font-size:0.85rem;">검색 결과 없음</div>`;
+            return;
+        }
+        results.innerHTML = matched.map(item => `
+            <div onclick="mpSelectMock('${item.zip}','${item.road} ${item.detail}')"
+                 style="padding:10px 12px;border-bottom:1px solid #f0f0f0;cursor:pointer;transition:background 0.15s;"
+                 onmouseover="this.style.background='#fafafa'" onmouseout="this.style.background='none'">
+                <span style="display:inline-block;font-weight:700;color:#cb3c31;font-size:0.75rem;border:1px solid #cb3c31;border-radius:3px;padding:1px 5px;margin-right:6px;">${item.zip}</span>
+                <strong style="font-size:0.85rem;">${item.road}</strong>
+                <div style="font-size:0.8rem;color:#888;margin-top:2px;">${item.detail}</div>
+            </div>
+        `).join('');
+    };
+
+    window.mpSelectMock = function(zip, addr) {
+        mpFillAddress(zip, addr);
+        mpCloseAddrModal();
+    };
+
+    /* ── 페이지 로드 시: 기존 주소 데이터를 새 필드로 분배 ── */
+    document.addEventListener('DOMContentLoaded', function() {
+        // 세션에서 home_address / work_address 값을 zip+road+detail로 분리해 채워주기
+        // 기존 데이터는 "우편번호 도로명주소 상세주소" 형식이 아닐 수 있으므로
+        // addr1(전체 주소)에 그대로 넣고 zip은 빈 칸으로 둠
+        try {
+            const u = window.SESSION_get ? window.SESSION_get() : null;
+            if (!u) return;
+
+            // 자택: home_address 필드가 있으면 addr1에
+            if (u.home_address && document.getElementById('edit-home-addr1')) {
+                const ha = String(u.home_address);
+                // 맨 앞 숫자(우편번호)를 분리 시도
+                const zipMatch = ha.match(/^(\d{5})\s+/);
+                if (zipMatch) {
+                    document.getElementById('edit-home-zip').value   = zipMatch[1];
+                    document.getElementById('edit-home-addr1').value = ha.slice(zipMatch[0].length);
+                } else {
+                    document.getElementById('edit-home-addr1').value = ha;
+                }
+            }
+            // 직장: work_address
+            if (u.work_address && document.getElementById('edit-work-addr1')) {
+                const wa = String(u.work_address);
+                const zipMatch = wa.match(/^(\d{5})\s+/);
+                if (zipMatch) {
+                    document.getElementById('edit-work-zip').value   = zipMatch[1];
+                    document.getElementById('edit-work-addr1').value = wa.slice(zipMatch[0].length);
+                } else {
+                    document.getElementById('edit-work-addr1').value = wa;
+                }
+            }
+        } catch(e) { /* silent */ }
+    });
     </script>
 </body>
 </html>
