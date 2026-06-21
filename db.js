@@ -81,6 +81,28 @@ window.DB_deleteUser = async function(email) {
     });
 };
 
+/** 회원 프로필 수정 (이름·연락처·소속 등) */
+window.DB_updateUserProfile = async function(email, updates) {
+    return await _dbPost({
+        action: "update", sheet: "users",
+        key: "email", value: email,
+        data: updates
+    });
+};
+
+/** 비밀번호 변경 — 현재 비밀번호 검증 후 새 비밀번호로 교체 */
+window.DB_changePassword = async function(email, currentPw, newPw) {
+    // 1단계: 현재 비번 검증
+    const loginRes = await _dbPost({ action: "login", sheet: "users", data: { email, password: currentPw } });
+    if (!loginRes.ok) return { ok: false, error: "현재 비밀번호가 일치하지 않습니다." };
+    // 2단계: 새 비번으로 업데이트
+    return await _dbPost({
+        action: "update", sheet: "users",
+        key: "email", value: email,
+        data: { password: newPw }
+    });
+};
+
 // ============================================================
 // 2. 공지사항 (notices)
 // ============================================================

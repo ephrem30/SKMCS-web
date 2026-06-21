@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>마이페이지 · 한국음악학회</title>
+    <meta name="description" content="한국음악학회 마이페이지 — 개인정보 수정, 비밀번호 변경, 투고내역 확인">
+    <link rel="stylesheet" href="styles_v2.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* ── Mypage Layout ── */
+        .mypage-wrapper {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 28px;
+            align-items: start;
+        }
+
+        /* ── Profile Card (left) ── */
+        .profile-card {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 24px;
+        }
+
+        .profile-card-header {
+            background: linear-gradient(135deg, var(--bg-charcoal) 0%, #1A1A1A 100%);
+            padding: 32px 24px 24px;
+            text-align: center;
+            position: relative;
+        }
+
+        .profile-card-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #CB3C31 0%, #CB3C31 25%, #F0B136 25%, #F0B136 50%, #2B8A7E 50%, #2B8A7E 75%, #2A5FA5 75%);
+        }
+
+        .avatar-circle {
+            width: 82px;
+            height: 82px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--color-green) 0%, #1f675e 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Poppins', sans-serif;
+            font-size: 2rem;
+            font-weight: 800;
+            color: #fff;
+            margin: 0 auto 14px;
+            box-shadow: 0 4px 18px rgba(43,138,126,0.35);
+            letter-spacing: -1px;
+        }
+
+        .profile-name {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .profile-role-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .role-admin    { background: rgba(203,60,49,0.25); color: #ff9a9a; border: 1px solid rgba(203,60,49,0.4); }
+        .role-member   { background: rgba(43,138,126,0.25); color: #7eefdf; border: 1px solid rgba(43,138,126,0.4); }
+        .role-reviewer { background: rgba(240,177,54,0.25); color: #ffe08a; border: 1px solid rgba(240,177,54,0.4); }
+        .role-editor   { background: rgba(42,95,165,0.3); color: #a0beff; border: 1px solid rgba(42,95,165,0.5); }
+
+        .profile-meta {
+            padding: 18px 20px;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-color);
+            line-height: 1.9;
+        }
+
+        .profile-meta span { color: var(--text-dark); font-weight: 600; }
+
+        /* ── Side nav tabs ── */
+        .mypage-sidenav {
+            list-style: none;
+            padding: 10px 0;
+        }
+
+        .mypage-sidenav li a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 22px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-left: 3px solid transparent;
+            transition: all 0.18s;
+        }
+
+        .mypage-sidenav li a:hover {
+            background: rgba(43,138,126,0.05);
+            color: var(--color-green);
+        }
+
+        .mypage-sidenav li a.active {
+            color: var(--color-green);
+            border-left-color: var(--color-green);
+            background: rgba(43,138,126,0.06);
+        }
+
+        .mypage-sidenav li a.danger {
+            color: #cb3c31;
+        }
+
+        .mypage-sidenav li a.danger:hover {
+            background: rgba(203,60,49,0.05);
+            border-left-color: #cb3c31;
+        }
+
+        .mypage-sidenav .nav-icon {
+            width: 22px;
+            text-align: center;
+            font-size: 0.95rem;
+        }
+
+        /* ── Content panels (right) ── */
+        .mypage-content {
+            min-height: 600px;
+        }
+
+        .mypage-panel {
+            display: none;
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.04);
+        }
+
+        .mypage-panel.active { display: block; }
+
+        .panel-header {
+            padding: 24px 32px 20px;
+            border-bottom: 2px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .panel-header h2 {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin: 0;
+        }
+
+        .panel-header .panel-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: rgba(43,138,126,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-green);
+            font-size: 1rem;
+        }
+
+        .panel-body { padding: 28px 32px; }
+
+        /* ── Form fields ── */
+        .mp-form-group { margin-bottom: 22px; }
+
+        .mp-form-label {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #555;
+            margin-bottom: 7px;
+        }
+
+        .mp-form-label .req { color: var(--color-red); }
+
+        .mp-input {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            background: #fff;
+            color: var(--text-dark);
+            transition: border-color 0.2s, box-shadow 0.2s;
+            box-sizing: border-box;
+        }
+
+        .mp-input:focus {
+            outline: none;
+            border-color: var(--color-green);
+            box-shadow: 0 0 0 3px rgba(43,138,126,0.1);
+        }
+
+        .mp-input:read-only {
+            background: #f4f3ed;
+            color: var(--text-muted);
+            cursor: not-allowed;
+        }
+
+        .mp-input-note {
+            font-size: 0.76rem;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        .mp-form-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+
+        .mp-section-title {
+            font-size: 0.88rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            border-bottom: 1.5px solid var(--border-color);
+            padding-bottom: 8px;
+            margin: 28px 0 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mp-section-title i { color: var(--color-green); }
+
+        /* ── Buttons ── */
+        .btn-mp-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 28px;
+            background: var(--color-green);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.15s;
+            font-family: inherit;
+        }
+
+        .btn-mp-primary:hover { background: #1a5c52; transform: translateY(-1px); }
+        .btn-mp-primary:disabled { background: #aaa; cursor: not-allowed; transform: none; }
+
+        .btn-mp-danger {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 28px;
+            background: #fff;
+            color: var(--color-red);
+            border: 2px solid var(--color-red);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .btn-mp-danger:hover { background: var(--color-red); color: #fff; }
+
+        .btn-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 28px;
+            justify-content: flex-end;
+        }
+
+        /* ── Alert / Toast ── */
+        .mp-alert {
+            padding: 13px 18px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .mp-alert.success { background: rgba(43,138,126,0.1); border: 1px solid rgba(43,138,126,0.3); color: #1a5c52; }
+        .mp-alert.error   { background: rgba(203,60,49,0.08); border: 1px solid rgba(203,60,49,0.3); color: #a8271e; }
+        .mp-alert.show    { display: flex; }
+
+        /* ── Submission history table ── */
+        .sub-history-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .sub-history-table th {
+            background: var(--bg-charcoal);
+            color: #fff;
+            font-weight: 700;
+            padding: 11px 14px;
+            text-align: left;
+        }
+
+        .sub-history-table td {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-dark);
+            vertical-align: middle;
+        }
+
+        .sub-history-table tr:hover td { background: rgba(43,138,126,0.04); }
+
+        .status-chip {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .chip-submitted { background: rgba(42,95,165,0.12); color: #2A5FA5; }
+        .chip-reviewing { background: rgba(240,177,54,0.15); color: #b88200; }
+        .chip-accepted  { background: rgba(43,138,126,0.15); color: #1a5c52; }
+        .chip-rejected  { background: rgba(203,60,49,0.12); color: #a8271e; }
+
+        /* ── PW strength meter ── */
+        .pw-strength-bar {
+            height: 4px;
+            border-radius: 4px;
+            background: #e0e0e0;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .pw-strength-fill {
+            height: 100%;
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.3s, background 0.3s;
+        }
+
+        .pw-strength-text {
+            font-size: 0.75rem;
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
+        /* ── Info row (view mode) ── */
+        .info-row {
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            gap: 0;
+            border-bottom: 1px solid var(--border-color);
+            padding: 13px 0;
+            align-items: start;
+        }
+
+        .info-row:last-child { border-bottom: none; }
+
+        .info-label {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            padding-right: 12px;
+        }
+
+        .info-value {
+            font-size: 0.88rem;
+            color: var(--text-dark);
+            font-weight: 500;
+            word-break: break-all;
+        }
+
+        /* ── Danger zone ── */
+        .danger-zone {
+            background: #fff8f8;
+            border: 1.5px solid #ffc0bb;
+            border-radius: 10px;
+            padding: 24px;
+            margin-top: 20px;
+        }
+
+        .danger-zone h3 {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: var(--color-red);
+            margin-bottom: 8px;
+        }
+
+        .danger-zone p {
+            font-size: 0.83rem;
+            color: #8b4040;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        /* ── Not logged in state ── */
+        .mypage-locked {
+            text-align: center;
+            padding: 80px 40px;
+        }
+
+        .mypage-locked .lock-icon {
+            font-size: 3.5rem;
+            color: var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        .mypage-locked h2 {
+            font-size: 1.2rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .mypage-locked p { color: var(--text-muted); margin-bottom: 24px; }
+
+        /* ── Responsive ── */
+        @media (max-width: 900px) {
+            .mypage-wrapper {
+                grid-template-columns: 1fr;
+            }
+            .profile-card { position: static; }
+            .mp-form-2col { grid-template-columns: 1fr; }
+            .panel-body { padding: 20px; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="layout-wrapper">
+
+        <!-- Left Quick Menu -->
+        <aside class="quick-sidebar">
+            <div class="sidebar-toggle">
+                <i class="fa-solid fa-bars"></i>
+                <span>Quick Menu</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="news.html" class="side-link">
+                    <i class="fa-solid fa-bullhorn"></i>
+                    <span class="side-text">공지사항</span>
+                </a>
+                <a href="admission.html" class="side-link">
+                    <i class="fa-solid fa-user-plus"></i>
+                    <span class="side-text">입회안내</span>
+                </a>
+                <a href="submission.html" class="side-link">
+                    <i class="fa-solid fa-file-arrow-up"></i>
+                    <span class="side-text">논문 온라인투고</span>
+                </a>
+                <a href="activities.html" class="side-link">
+                    <i class="fa-solid fa-calendar-days"></i>
+                    <span class="side-text">학술대회 세미나</span>
+                </a>
+                <a href="forms.html" class="side-link">
+                    <i class="fa-solid fa-folder-open"></i>
+                    <span class="side-text">자료실</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Top Utility Bar -->
+        <div class="top-util-bar">
+            <div class="container">
+                <div class="util-right">
+                    <div class="util-links">
+                        <a href="login.html" class="util-link"><i class="fa-solid fa-right-to-bracket"></i> 로그인</a>
+                        <a href="register.html" class="util-link"><i class="fa-solid fa-user-plus"></i> 회원가입</a>
+                        <a href="sitemap.html" class="util-link"><i class="fa-solid fa-sitemap"></i> 사이트맵</a>
+                    </div>
+                    <form action="search.html" method="GET" class="top-search">
+                        <input type="text" name="query" placeholder="검색..." required>
+                        <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Header Navigation -->
+        <header class="main-header">
+            <div class="container header-container">
+                <a href="index.html" class="logo">
+                    <img src="main_logo.png" alt="한국음악학회 로고 마크" class="logo-icon-img">
+                    <div class="logo-text">
+                        <h1>한국음악학회</h1>
+                        <div class="logo-divider"></div>
+                        <span class="logo-en">the society for korean music &amp; culture studies</span>
+                    </div>
+                </a>
+                <nav class="main-nav">
+                    <ul>
+                        <li class="nav-item"><a href="index.html">Home</a><div class="hover-bar white"></div></li>
+                        <li class="nav-item">
+                            <a href="about.html">학회소개</a>
+                            <div class="hover-bar red"></div><span class="sub-text">about us</span>
+                            <ul class="dropdown-menu">
+                                <li><a href="about.html">인사말</a></li>
+                                <li><a href="organization.html">조직도/임원진</a></li>
+                                <li><a href="history.html">학회 연혁</a></li>
+                                <li><a href="rules.html">학회 정관</a></li>
+                                <li><a href="directions.html">오시는 길</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a href="news.html">학회소식</a>
+                            <div class="hover-bar black"></div><span class="sub-text">news</span>
+                            <ul class="dropdown-menu">
+                                <li><a href="news.html?tab=notice">공지사항</a></li>
+                                <li><a href="news.html?tab=freeboard">자유게시판</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a href="issue.html">학회지</a>
+                            <div class="hover-bar green"></div><span class="sub-text">journal</span>
+                            <ul class="dropdown-menu">
+                                <li><a href="issue.html">최신호</a></li>
+                                <li><a href="archive.html">지난호 (아카이브)</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a href="submission.html">논문투고</a>
+                            <div class="hover-bar yellow"></div><span class="sub-text">submission</span>
+                            <ul class="dropdown-menu">
+                                <li><a href="submission.html">논문투고안내</a></li>
+                                <li><a href="submission_rules.html">논문투고규정</a></li>
+                                <li><a href="submission_review.html">심사규정</a></li>
+                                <li><a href="submission.html?tab=online">온라인 투고시스템</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a href="activities.html">학술활동</a>
+                            <div class="hover-bar grey"></div><span class="sub-text">activities</span>
+                            <ul class="dropdown-menu">
+                                <li><a href="activities.html?tab=conference">학술대회 일정</a></li>
+                                <li><a href="activities.html?tab=seminar">연구모임/세미나</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a href="admission.html">회원서비스</a>
+                            <div class="hover-bar blue"></div><span class="sub-text">member service</span>
+                            <ul class="dropdown-menu">
+                                <li><a href="admission.html">입회안내</a></li>
+                                <li><a href="mypage.html">마이페이지</a></li>
+                                <li><a href="#">추천사이트</a></li>
+                                <li><a href="forms.html">양식모음</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Sub Visual -->
+        <div class="sub-visual" style="background-image: linear-gradient(rgba(0,0,0,0.62), rgba(0,0,0,0.62)), url('bg_about.png');">
+            <div class="visual-text">
+                <h2>마이페이지</h2>
+            </div>
+        </div>
+
+        <main class="content-area">
+            <div class="container subpage-area">
+                <!-- Breadcrumb -->
+                <div class="sub-util-row">
+                    <div class="breadcrumb">
+                        <i class="fa-solid fa-house"></i>
+                        <span class="depth">회원서비스</span>
+                        <i class="fa-solid fa-angle-right divider"></i>
+                        <span class="depth current">마이페이지</span>
+                    </div>
+                    <div class="page-utils">
+                        <a href="#" title="공유" onclick="openShareModal();return false;"><i class="fa-solid fa-share-nodes"></i></a>
+                    </div>
+                </div>
+
+                <!-- Sub tabs -->
+                <div class="sub-tabs">
+                    <a href="admission.html" class="tab-item">입회안내</a>
+                    <a href="mypage.html" class="tab-item active">마이페이지</a>
+                    <a href="#" class="tab-item">추천사이트</a>
+                    <a href="forms.html" class="tab-item">양식모음</a>
+                </div>
+
+                <!-- ═══════════════════════════════════════
+                     NOT LOGGED IN — locked view
+                ═══════════════════════════════════════ -->
+                <div id="mypage-locked" class="mypage-locked" style="display:none;background:#fff;border:1px solid var(--border-color);border-radius:14px;">
+                    <div class="lock-icon"><i class="fa-solid fa-lock"></i></div>
+                    <h2>로그인이 필요합니다</h2>
+                    <p>마이페이지는 로그인한 회원만 이용할 수 있습니다.</p>
+                    <a href="login.html?redirect=mypage.html" class="btn-mp-primary" style="text-decoration:none;margin:0 auto;">
+                        <i class="fa-solid fa-right-to-bracket"></i> 로그인하기
+                    </a>
+                </div>
+
+                <!-- ═══════════════════════════════════════
+                     LOGGED IN — mypage content
+                ═══════════════════════════════════════ -->
+                <div id="mypage-main" style="display:none;">
+                    <div class="mypage-wrapper">
+
+                        <!-- ─── LEFT: Profile Card ─── -->
+                        <aside>
+                            <div class="profile-card">
+                                <div class="profile-card-header">
+                                    <div class="avatar-circle" id="avatar-initials">?</div>
+                                    <div class="profile-name" id="pc-name">-</div>
+                                    <div style="margin-top:6px;">
+                                        <span class="profile-role-badge" id="pc-role-badge">-</span>
+                                    </div>
+                                </div>
+                                <div class="profile-meta">
+                                    <div>📧 <span id="pc-email">-</span></div>
+                                    <div>🏛 <span id="pc-affiliation">-</span></div>
+                                    <div>📱 <span id="pc-phone">-</span></div>
+                                </div>
+                                <ul class="mypage-sidenav">
+                                    <li>
+                                        <a href="#" class="active" data-panel="panel-info" id="nav-info">
+                                            <i class="fa-solid fa-id-card nav-icon"></i> 내 정보 확인
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#" data-panel="panel-edit" id="nav-edit">
+                                            <i class="fa-solid fa-pen-to-square nav-icon"></i> 개인정보 수정
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#" data-panel="panel-pw" id="nav-pw">
+                                            <i class="fa-solid fa-key nav-icon"></i> 비밀번호 변경
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#" data-panel="panel-history" id="nav-history">
+                                            <i class="fa-solid fa-file-invoice nav-icon"></i> 내 투고내역
+                                        </a>
+                                    </li>
+                                    <li style="border-top:1px solid var(--border-color);margin-top:6px;padding-top:4px;">
+                                        <a href="#" data-panel="panel-withdraw" id="nav-withdraw" class="danger">
+                                            <i class="fa-solid fa-user-xmark nav-icon"></i> 회원 탈퇴
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </aside>
+
+                        <!-- ─── RIGHT: Panels ─── -->
+                        <div class="mypage-content">
+
+                            <!-- Panel 1: 내 정보 확인 -->
+                            <div class="mypage-panel active" id="panel-info">
+                                <div class="panel-header">
+                                    <div class="panel-icon"><i class="fa-solid fa-id-card"></i></div>
+                                    <h2>내 정보 확인</h2>
+                                </div>
+                                <div class="panel-body">
+                                    <div class="mp-section-title"><i class="fa-solid fa-circle-user"></i> 기본 정보</div>
+                                    <div class="info-row"><span class="info-label">이름</span><span class="info-value" id="info-name">-</span></div>
+                                    <div class="info-row"><span class="info-label">이메일</span><span class="info-value" id="info-email">-</span></div>
+                                    <div class="info-row"><span class="info-label">생년월일</span><span class="info-value" id="info-birth">-</span></div>
+                                    <div class="info-row"><span class="info-label">휴대전화</span><span class="info-value" id="info-phone">-</span></div>
+                                    <div class="info-row"><span class="info-label">소속기관</span><span class="info-value" id="info-affiliation">-</span></div>
+                                    <div class="info-row"><span class="info-label">직위</span><span class="info-value" id="info-position">-</span></div>
+                                    <div class="info-row"><span class="info-label">주요 경력</span><span class="info-value" id="info-career">-</span></div>
+
+                                    <div class="mp-section-title"><i class="fa-solid fa-graduation-cap"></i> 학력</div>
+                                    <div class="info-row"><span class="info-label">학부 대학교</span><span class="info-value" id="info-edu-univ">-</span></div>
+                                    <div class="info-row"><span class="info-label">학부 전공</span><span class="info-value" id="info-edu-univ-major">-</span></div>
+                                    <div class="info-row"><span class="info-label">대학원</span><span class="info-value" id="info-edu-grad">-</span></div>
+                                    <div class="info-row"><span class="info-label">대학원 전공</span><span class="info-value" id="info-edu-grad-major">-</span></div>
+                                    <div class="info-row"><span class="info-label">학위과정</span><span class="info-value" id="info-edu-grad-course">-</span></div>
+
+                                    <div class="mp-section-title"><i class="fa-solid fa-location-dot"></i> 연락처 정보</div>
+                                    <div class="info-row"><span class="info-label">자택 전화</span><span class="info-value" id="info-home-phone">-</span></div>
+                                    <div class="info-row"><span class="info-label">자택 주소</span><span class="info-value" id="info-home-address">-</span></div>
+                                    <div class="info-row"><span class="info-label">직장 전화</span><span class="info-value" id="info-work-phone">-</span></div>
+                                    <div class="info-row"><span class="info-label">직장 주소</span><span class="info-value" id="info-work-address">-</span></div>
+
+                                    <div class="btn-row" style="justify-content:flex-start;">
+                                        <button class="btn-mp-primary" onclick="switchPanel('panel-edit')">
+                                            <i class="fa-solid fa-pen"></i> 정보 수정하기
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Panel 2: 개인정보 수정 -->
+                            <div class="mypage-panel" id="panel-edit">
+                                <div class="panel-header">
+                                    <div class="panel-icon" style="background:rgba(240,177,54,0.1);color:var(--color-yellow);">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </div>
+                                    <h2>개인정보 수정</h2>
+                                </div>
+                                <div class="panel-body">
+                                    <div class="mp-alert" id="edit-alert"></div>
+
+                                    <div class="mp-section-title"><i class="fa-solid fa-circle-user"></i> 기본 정보</div>
+                                    <div class="mp-form-2col">
+                                        <div class="mp-form-group">
+                                            <label class="mp-form-label">이름 <span class="req">*</span></label>
+                                            <input type="text" class="mp-input" id="edit-name" placeholder="홍길동">
+                                        </div>
+                                        <div class="mp-form-group">
+                                            <label class="mp-form-label">이메일</label>
+                                            <input type="email" class="mp-input" id="edit-email" readonly>
+                                            <div class="mp-input-note">이메일은 변경할 수 없습니다.</div>
+                                        </div>
+                                        <div class="mp-form-group">
+                                            <label class="mp-form-label">생년월일</label>
+                                            <input type="text" class="mp-input" id="edit-birth" placeholder="YYYY-MM-DD">
+                                        </div>
+                                        <div class="mp-form-group">
+                                            <label class="mp-form-label">휴대전화 <span class="req">*</span></label>
+                                            <input type="tel" class="mp-input" id="edit-phone" placeholder="010-1234-5678">
+                                        </div>
+                                    </div>
+
+                                    <div class="mp-form-group">
+                                        <label class="mp-form-label">소속기관 <span class="req">*</span></label>
+                                        <input type="text" class="mp-input" id="edit-affiliation" placeholder="예: 동국대학교 한국음악과">
+                                    </div>
+                                    <div class="mp-form-2col">
+                                        <div class="mp-form-group">
+                                            <label class="mp-form-label">직위 (직책)</label>
+                                            <input type="text" class="mp-input" id="edit-position" placeholder="예: 교수, 시간강사, 대학원생">
+                                        </div>
+                                        <div class="mp-form-group">
+                                            <label class="mp-form-label">직장 전화번호</label>
+                                            <input type="tel" class="mp-input" id="edit-work-phone" placeholder="예: 02-2260-0000">
+                                        </div>
+                                    </div>
+                                    <div class="mp-form-group">
+                                        <label class="mp-form-label">주요 경력 및 이수 분야</label>
+                                        <input type="text" class="mp-input" id="edit-career" placeholder="예: 국가무형문화유산 이수, 연구성과 등">
+                                    </div>
+
+                                    <div class="mp-section-title"><i class="fa-solid fa-graduation-cap"></i> 학력</div>
+                                    <div class="mp-form-2col">
+                                        <div class="mp-form-group">
+                                            <label class="mp-form-label">학부 대학교</label>
+                                            <input type="text" class="mp-input" id="edit-edu-univ" placeholder="예: 동국대학교">
+                                        </div>
+                                        <div class="mp-form-group">
+                                            <label class="mp-form-label">학부 전공</label>
+                                            <input type="text" class="mp-input" id="edit-edu-univ-major" placeholder="예: 국악관현악과">
+                                        </div>
+                                        <div class="mp-form-group">
+                                            <label class="mp-form-label">대학원</label>
+                                            <input type="text" class="mp-input" id="edit-edu-grad" placeholder="예: 동국대학교 대학원">
+                                        </div>
+                                        <div class="mp-form-group">
+                                            <label class="mp-form-label">대학원 전공</label>
+                                            <input type="text" class="mp-input" id="edit-edu-grad-major" placeholder="예: 한국음악학과">
+                                        </div>
+                                    </div>
+                                    <div class="mp-form-group">
+                                        <label class="mp-form-label">학위과정</label>
+                                        <select class="mp-input" id="edit-edu-grad-course" style="background:#fff;">
+                                            <option value="">선택 안 함</option>
+                                            <option value="석사과정">석사과정 (재학)</option>
+                                            <option value="석사수료">석사수료</option>
+                                            <option value="석사졸업">석사졸업</option>
+                                            <option value="박사과정">박사과정 (재학)</option>
+                                            <option value="박사수료">박사수료</option>
+                                            <option value="박사졸업">박사졸업 (박사학위 취득)</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="mp-section-title"><i class="fa-solid fa-location-dot"></i> 연락처 정보</div>
+                                    <div class="mp-form-2col">
+                                        <div class="mp-form-group">
+                                            <label class="mp-form-label">자택 전화번호</label>
+                                            <input type="tel" class="mp-input" id="edit-home-phone" placeholder="예: 02-3218-4866">
+                                        </div>
+                                        <div class="mp-form-group">
+                                            <label class="mp-form-label">자택 주소</label>
+                                            <input type="text" class="mp-input" id="edit-home-address" placeholder="자택 주소">
+                                        </div>
+                                        <div class="mp-form-group">
+                                            <label class="mp-form-label">직장 주소</label>
+                                            <input type="text" class="mp-input" id="edit-work-address" placeholder="직장 주소">
+                                        </div>
+                                    </div>
+
+                                    <div class="btn-row">
+                                        <button class="btn-mp-primary" id="btn-save-profile" onclick="saveProfile()">
+                                            <i class="fa-solid fa-floppy-disk"></i> 변경사항 저장
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Panel 3: 비밀번호 변경 -->
+                            <div class="mypage-panel" id="panel-pw">
+                                <div class="panel-header">
+                                    <div class="panel-icon" style="background:rgba(42,95,165,0.1);color:var(--color-blue);">
+                                        <i class="fa-solid fa-key"></i>
+                                    </div>
+                                    <h2>비밀번호 변경</h2>
+                                </div>
+                                <div class="panel-body" style="max-width:480px;">
+                                    <div class="mp-alert" id="pw-alert"></div>
+
+                                    <div class="mp-form-group">
+                                        <label class="mp-form-label">현재 비밀번호 <span class="req">*</span></label>
+                                        <div style="position:relative;">
+                                            <input type="password" class="mp-input" id="pw-current" placeholder="현재 비밀번호 입력" style="padding-right:44px;">
+                                            <button type="button" onclick="togglePw('pw-current',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:#aaa;cursor:pointer;font-size:0.95rem;">
+                                                <i class="fa-solid fa-eye"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="mp-form-group">
+                                        <label class="mp-form-label">새 비밀번호 <span class="req">*</span></label>
+                                        <div style="position:relative;">
+                                            <input type="password" class="mp-input" id="pw-new" placeholder="새 비밀번호 (8자 이상)" style="padding-right:44px;" oninput="checkPwStrength(this.value)">
+                                            <button type="button" onclick="togglePw('pw-new',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:#aaa;cursor:pointer;font-size:0.95rem;">
+                                                <i class="fa-solid fa-eye"></i>
+                                            </button>
+                                        </div>
+                                        <div class="pw-strength-bar"><div class="pw-strength-fill" id="pw-strength-fill"></div></div>
+                                        <div class="pw-strength-text" id="pw-strength-text" style="color:#aaa;"></div>
+                                    </div>
+
+                                    <div class="mp-form-group">
+                                        <label class="mp-form-label">새 비밀번호 확인 <span class="req">*</span></label>
+                                        <div style="position:relative;">
+                                            <input type="password" class="mp-input" id="pw-confirm" placeholder="새 비밀번호 재입력" style="padding-right:44px;">
+                                            <button type="button" onclick="togglePw('pw-confirm',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:#aaa;cursor:pointer;font-size:0.95rem;">
+                                                <i class="fa-solid fa-eye"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="btn-row" style="justify-content:flex-start;">
+                                        <button class="btn-mp-primary" id="btn-change-pw" onclick="changePassword()">
+                                            <i class="fa-solid fa-shield-halved"></i> 비밀번호 변경
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Panel 4: 내 투고내역 -->
+                            <div class="mypage-panel" id="panel-history">
+                                <div class="panel-header">
+                                    <div class="panel-icon" style="background:rgba(240,177,54,0.1);color:var(--color-yellow);">
+                                        <i class="fa-solid fa-file-invoice"></i>
+                                    </div>
+                                    <h2>내 투고내역</h2>
+                                </div>
+                                <div class="panel-body">
+                                    <div id="history-loading" style="text-align:center;padding:40px;color:var(--text-muted);">
+                                        <i class="fa-solid fa-spinner fa-spin" style="font-size:1.5rem;margin-bottom:10px;display:block;"></i>
+                                        투고내역을 불러오는 중...
+                                    </div>
+                                    <div id="history-content" style="display:none;">
+                                        <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:14px;">
+                                            총 <strong id="history-count" style="color:var(--text-dark);">0</strong>건의 투고내역이 있습니다.
+                                        </div>
+                                        <div class="table-responsive">
+                                            <table class="sub-history-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th style="width:60px;">번호</th>
+                                                        <th style="width:120px;">구분/저널</th>
+                                                        <th>논문 제목</th>
+                                                        <th style="width:130px;text-align:center;">접수일시</th>
+                                                        <th style="width:100px;text-align:center;">상태</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="history-tbody"></tbody>
+                                            </table>
+                                        </div>
+                                        <div id="history-empty" style="display:none;text-align:center;padding:40px;color:var(--text-muted);">
+                                            <i class="fa-solid fa-inbox" style="font-size:2rem;margin-bottom:10px;display:block;opacity:0.4;"></i>
+                                            투고내역이 없습니다.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Panel 5: 회원 탈퇴 -->
+                            <div class="mypage-panel" id="panel-withdraw">
+                                <div class="panel-header">
+                                    <div class="panel-icon" style="background:rgba(203,60,49,0.1);color:var(--color-red);">
+                                        <i class="fa-solid fa-user-xmark"></i>
+                                    </div>
+                                    <h2>회원 탈퇴</h2>
+                                </div>
+                                <div class="panel-body">
+                                    <div class="mp-alert" id="withdraw-alert"></div>
+                                    <p style="font-size:0.9rem;color:var(--text-muted);line-height:1.8;margin-bottom:20px;">
+                                        탈퇴 전 아래 안내사항을 반드시 확인해 주세요.
+                                    </p>
+                                    <ul style="font-size:0.85rem;color:#555;line-height:2;margin-bottom:0;padding-left:20px;">
+                                        <li>회원 탈퇴 시 모든 개인정보가 삭제되며, <strong>복구가 불가능</strong>합니다.</li>
+                                        <li>기존에 제출한 논문 투고 내역은 학회 관리 시스템에 유지될 수 있습니다.</li>
+                                        <li>탈퇴 후 동일 이메일로 재가입이 가능합니다.</li>
+                                    </ul>
+
+                                    <div class="danger-zone">
+                                        <h3><i class="fa-solid fa-triangle-exclamation"></i> 탈퇴 확인</h3>
+                                        <p>비밀번호를 입력하면 탈퇴가 진행됩니다. 이 작업은 되돌릴 수 없습니다.</p>
+                                        <div class="mp-form-group" style="margin-bottom:14px;">
+                                            <label class="mp-form-label">비밀번호 확인 <span class="req">*</span></label>
+                                            <input type="password" class="mp-input" id="withdraw-pw" placeholder="현재 비밀번호 입력" style="max-width:320px;">
+                                        </div>
+                                        <div class="mp-form-group" style="margin-bottom:0;">
+                                            <label style="font-size:0.82rem;font-weight:700;color:#8b4040;display:flex;align-items:center;gap:8px;cursor:pointer;">
+                                                <input type="checkbox" id="withdraw-confirm-check" style="width:16px;height:16px;"> 위 안내사항을 모두 확인하였으며, 탈퇴에 동의합니다.
+                                            </label>
+                                        </div>
+                                        <div class="btn-row" style="justify-content:flex-start;margin-top:18px;">
+                                            <button class="btn-mp-danger" id="btn-withdraw" onclick="doWithdraw()">
+                                                <i class="fa-solid fa-user-xmark"></i> 회원 탈퇴 진행
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div><!-- /mypage-content -->
+                    </div><!-- /mypage-wrapper -->
+                </div><!-- /mypage-main -->
+
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="main-footer">
+            <div class="container footer-container">
+                <div class="footer-left">
+                    <div class="footer-main-row" style="display:flex;align-items:center;gap:30px;margin-bottom:12px;">
+                        <a href="index.html" class="footer-logo-block" style="display:flex;align-items:flex-end;gap:0;text-decoration:none;color:inherit;flex-shrink:0;">
+                            <img src="main_logo_white.png" alt="한국음악학회 로고" style="height:65px;width:auto;object-fit:contain;">
+                            <div class="logo-text-footer" style="text-align:left;padding-bottom:2px;">
+                                <h4 style="font-size:1.15rem;font-weight:800;letter-spacing:0.05em;margin:0;color:white;font-family:'Pretendard',sans-serif;line-height:1.1;">한국음악학회</h4>
+                                <div class="logo-divider" style="margin:2px 0;"></div>
+                                <span class="logo-en" style="font-size:0.55rem;font-weight:500;text-transform:uppercase;color:rgba(255,255,255,0.6);display:block;font-family:'Poppins',sans-serif;letter-spacing:0.03em;margin-top:1px;line-height:1.1;">the society for korean music &amp; culture studies</span>
+                            </div>
+                        </a>
+                        <div style="width:1px;height:35px;background:rgba(255,255,255,0.15);flex-shrink:0;"></div>
+                        <div style="text-align:left;font-size:0.82rem;line-height:1.6;color:#bbb;">
+                            <p style="margin:0;">주소: (04620) 서울특별시 중구 필동로 1길 30 동국대학교 문화관 &nbsp;&nbsp;|&nbsp;&nbsp; E-mail: skmcs@dgu.ac.kr</p>
+                            <p style="margin:2px 0 0;color:#777;">Copyright &copy; 2026 The Society for Korean Music &amp; Culture Studies. All Rights Reserved.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer-right">
+                    <div class="designed-by">
+                        <span>Designed by</span>
+                        <span class="designer-logo"><i class="fa-solid fa-fire" style="color:#e65100"></i> Woochang Choi</span>
+                    </div>
+                </div>
+            </div>
+            <a href="#" class="btn-top"><i class="fa-solid fa-chevron-up"></i></a>
+        </footer>
+    </div>
+
+    <script src="share.js"></script>
+    <script src="db.js"></script>
+    <script>
+    (function() {
+        'use strict';
+
+        /* ── 날짜+시간 포매터 ── */
+        function fmtDT(d) {
+            if (!d) return '-';
+            try {
+                const dt = new Date(d);
+                if (isNaN(dt.getTime())) return String(d).slice(0,10);
+                const yyyy = dt.getFullYear();
+                const mm   = String(dt.getMonth()+1).padStart(2,'0');
+                const dd   = String(dt.getDate()).padStart(2,'0');
+                const hh   = String(dt.getHours()).padStart(2,'0');
+                const min  = String(dt.getMinutes()).padStart(2,'0');
+                if (String(d).length <= 10 || (hh==='00' && min==='00')) return `${yyyy}. ${mm}. ${dd}.`;
+                return `${yyyy}. ${mm}. ${dd}. ${hh}:${min}`;
+            } catch(e) { return String(d).slice(0,10); }
+        }
+
+        /* ── Escape ── */
+        function esc(s) { if(!s) return '-'; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+        /* ── 역할 라벨 ── */
+        const ROLE_LABELS = {
+            admin:     { label:'최고관리자', cls:'role-admin' },
+            secretary: { label:'간사',       cls:'role-admin' },
+            editor:    { label:'편집위원',   cls:'role-editor' },
+            president: { label:'학회회장',   cls:'role-editor' },
+            reviewer:  { label:'심사위원',   cls:'role-reviewer' },
+            member:    { label:'일반회원',   cls:'role-member' }
+        };
+
+        /* ── Load user ── */
+        const user = window.SESSION_get ? window.SESSION_get() : null;
+
+        if (!user) {
+            document.getElementById('mypage-locked').style.display = 'block';
+        } else {
+            document.getElementById('mypage-main').style.display = 'block';
+            populateAll(user);
+        }
+
+        /* ── Populate profile card & panels ── */
+        function populateAll(u) {
+            // Avatar initials
+            const initials = (u.name || '?').replace(/\s/g,'').slice(0,2);
+            document.getElementById('avatar-initials').textContent = initials;
+
+            // Profile card
+            document.getElementById('pc-name').textContent = u.name || '-';
+            document.getElementById('pc-email').textContent = u.email || '-';
+            document.getElementById('pc-affiliation').textContent = u.affiliation || '-';
+            document.getElementById('pc-phone').textContent = formatPhone(u.phone);
+
+            const roleInfo = ROLE_LABELS[u.role] || { label: u.role || '일반회원', cls: 'role-member' };
+            const badge = document.getElementById('pc-role-badge');
+            badge.textContent = roleInfo.label;
+            badge.className = 'profile-role-badge ' + roleInfo.cls;
+
+            // Info panel
+            const set = (id, val) => { const el=document.getElementById(id); if(el) el.textContent = val||'-'; };
+            set('info-name',         u.name);
+            set('info-email',        u.email);
+            set('info-birth',        u.birth);
+            set('info-phone',        formatPhone(u.phone));
+            set('info-affiliation',  u.affiliation);
+            set('info-position',     u.position);
+            set('info-career',       u.career);
+            set('info-edu-univ',     u.edu_university);
+            set('info-edu-univ-major', u.edu_univ_major);
+            set('info-edu-grad',     u.edu_graduate);
+            set('info-edu-grad-major', u.edu_grad_major);
+            set('info-edu-grad-course', u.edu_grad_course);
+            set('info-home-phone',   formatPhone(u.home_phone));
+            set('info-home-address', u.home_address);
+            set('info-work-phone',   formatPhone(u.work_phone));
+            set('info-work-address', u.work_address);
+
+            // Edit panel prefill
+            const setVal = (id, val) => { const el=document.getElementById(id); if(el) el.value = val||''; };
+            setVal('edit-name',           u.name);
+            setVal('edit-email',          u.email);
+            setVal('edit-birth',          u.birth);
+            setVal('edit-phone',          u.phone);
+            setVal('edit-affiliation',    u.affiliation);
+            setVal('edit-position',       u.position);
+            setVal('edit-career',         u.career);
+            setVal('edit-edu-univ',       u.edu_university);
+            setVal('edit-edu-univ-major', u.edu_univ_major);
+            setVal('edit-edu-grad',       u.edu_graduate);
+            setVal('edit-edu-grad-major', u.edu_grad_major);
+            setVal('edit-edu-grad-course', u.edu_grad_course);
+            setVal('edit-home-phone',     u.home_phone);
+            setVal('edit-home-address',   u.home_address);
+            setVal('edit-work-phone',     u.work_phone);
+            setVal('edit-work-address',   u.work_address);
+        }
+
+        function formatPhone(p) {
+            if (!p) return '-';
+            const s = String(p).replace(/^'+/, '').trim();
+            return s || '-';
+        }
+
+        /* ── Tab switching ── */
+        window.switchPanel = function(panelId) {
+            document.querySelectorAll('.mypage-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.mypage-sidenav a').forEach(a => a.classList.remove('active'));
+            const panel = document.getElementById(panelId);
+            if (panel) panel.classList.add('active');
+            const navMap = {
+                'panel-info':     'nav-info',
+                'panel-edit':     'nav-edit',
+                'panel-pw':       'nav-pw',
+                'panel-history':  'nav-history',
+                'panel-withdraw': 'nav-withdraw'
+            };
+            const navEl = document.getElementById(navMap[panelId]);
+            if (navEl) navEl.classList.add('active');
+
+            if (panelId === 'panel-history') loadHistory();
+        };
+
+        document.querySelectorAll('.mypage-sidenav a').forEach(a => {
+            a.addEventListener('click', e => {
+                e.preventDefault();
+                const target = a.getAttribute('data-panel');
+                if (target) switchPanel(target);
+            });
+        });
+
+        /* ── Alert helpers ── */
+        function showAlert(id, msg, type) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.className = 'mp-alert show ' + type;
+            el.innerHTML = `<i class="fa-solid fa-${type==='success'?'circle-check':'circle-exclamation'}"></i> ${msg}`;
+            if (type === 'success') setTimeout(() => el.classList.remove('show'), 4000);
+        }
+
+        /* ── Save profile ── */
+        window.saveProfile = async function() {
+            if (!user) return;
+            const btn = document.getElementById('btn-save-profile');
+            const name = document.getElementById('edit-name').value.trim();
+            const phone = document.getElementById('edit-phone').value.trim();
+            const affiliation = document.getElementById('edit-affiliation').value.trim();
+
+            if (!name) { showAlert('edit-alert','이름을 입력해 주세요.','error'); return; }
+            if (!phone) { showAlert('edit-alert','휴대전화 번호를 입력해 주세요.','error'); return; }
+            if (!affiliation) { showAlert('edit-alert','소속기관을 입력해 주세요.','error'); return; }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 저장 중...';
+
+            const updates = {
+                name,
+                phone,
+                affiliation,
+                birth:          document.getElementById('edit-birth').value.trim(),
+                position:       document.getElementById('edit-position').value.trim(),
+                career:         document.getElementById('edit-career').value.trim(),
+                edu_university: document.getElementById('edit-edu-univ').value.trim(),
+                edu_univ_major: document.getElementById('edit-edu-univ-major').value.trim(),
+                edu_graduate:   document.getElementById('edit-edu-grad').value.trim(),
+                edu_grad_major: document.getElementById('edit-edu-grad-major').value.trim(),
+                edu_grad_course:document.getElementById('edit-edu-grad-course').value,
+                home_phone:     document.getElementById('edit-home-phone').value.trim(),
+                home_address:   document.getElementById('edit-home-address').value.trim(),
+                work_phone:     document.getElementById('edit-work-phone').value.trim(),
+                work_address:   document.getElementById('edit-work-address').value.trim()
+            };
+
+            try {
+                const res = await window.DB_updateUserProfile(user.email, updates);
+                if (res.ok) {
+                    // 세션 업데이트
+                    const newUser = Object.assign({}, user, updates);
+                    window.SESSION_set(newUser);
+                    // 화면 갱신
+                    populateAll(newUser);
+                    showAlert('edit-alert','개인정보가 성공적으로 수정되었습니다.','success');
+                } else {
+                    showAlert('edit-alert', res.error || '저장 중 오류가 발생했습니다.', 'error');
+                }
+            } catch(e) {
+                showAlert('edit-alert','네트워크 오류: ' + e.message,'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> 변경사항 저장';
+            }
+        };
+
+        /* ── Password toggle ── */
+        window.togglePw = function(inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            const isHidden = input.type === 'password';
+            input.type = isHidden ? 'text' : 'password';
+            btn.innerHTML = isHidden ? '<i class="fa-solid fa-eye-slash"></i>' : '<i class="fa-solid fa-eye"></i>';
+        };
+
+        /* ── PW strength ── */
+        window.checkPwStrength = function(pw) {
+            const fill = document.getElementById('pw-strength-fill');
+            const text = document.getElementById('pw-strength-text');
+            if (!fill || !text) return;
+            let score = 0;
+            if (pw.length >= 8)  score++;
+            if (/[A-Z]/.test(pw)) score++;
+            if (/[0-9]/.test(pw)) score++;
+            if (/[^A-Za-z0-9]/.test(pw)) score++;
+            const configs = [
+                { w:'0%',   c:'#ccc',   t:'' },
+                { w:'25%',  c:'#e63946',t:'약함' },
+                { w:'50%',  c:'#f0b136',t:'보통' },
+                { w:'75%',  c:'#2b8a7e',t:'강함' },
+                { w:'100%', c:'#2A5FA5',t:'매우 강함' },
+            ];
+            const cfg = configs[score];
+            fill.style.width = cfg.w;
+            fill.style.background = cfg.c;
+            text.style.color = cfg.c;
+            text.textContent = cfg.t;
+        };
+
+        /* ── Change password ── */
+        window.changePassword = async function() {
+            if (!user) return;
+            const cur  = document.getElementById('pw-current').value;
+            const nw   = document.getElementById('pw-new').value;
+            const conf = document.getElementById('pw-confirm').value;
+            const btn  = document.getElementById('btn-change-pw');
+
+            if (!cur)  { showAlert('pw-alert','현재 비밀번호를 입력해 주세요.','error'); return; }
+            if (nw.length < 8) { showAlert('pw-alert','새 비밀번호는 8자 이상이어야 합니다.','error'); return; }
+            if (nw !== conf)   { showAlert('pw-alert','새 비밀번호가 일치하지 않습니다.','error'); return; }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 변경 중...';
+
+            try {
+                const res = await window.DB_changePassword(user.email, cur, nw);
+                if (res.ok) {
+                    showAlert('pw-alert','비밀번호가 변경되었습니다. 다음 로그인부터 적용됩니다.','success');
+                    document.getElementById('pw-current').value = '';
+                    document.getElementById('pw-new').value = '';
+                    document.getElementById('pw-confirm').value = '';
+                    checkPwStrength('');
+                } else {
+                    showAlert('pw-alert', res.error || '비밀번호 변경 실패','error');
+                }
+            } catch(e) {
+                showAlert('pw-alert','네트워크 오류: ' + e.message,'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-shield-halved"></i> 비밀번호 변경';
+            }
+        };
+
+        /* ── Load submission history ── */
+        async function loadHistory() {
+            const loading = document.getElementById('history-loading');
+            const content = document.getElementById('history-content');
+            const tbody   = document.getElementById('history-tbody');
+            const empty   = document.getElementById('history-empty');
+            const count   = document.getElementById('history-count');
+
+            loading.style.display = 'block';
+            content.style.display = 'none';
+
+            try {
+                const all = await window.DB_getSubmissions();
+                const mine = all.filter(s => s.author_email && s.author_email.toLowerCase() === user.email.toLowerCase());
+
+                loading.style.display = 'none';
+                content.style.display = 'block';
+                count.textContent = mine.length;
+
+                if (mine.length === 0) {
+                    tbody.innerHTML = '';
+                    empty.style.display = 'block';
+                    return;
+                }
+
+                empty.style.display = 'none';
+                // Sort newest first
+                mine.sort((a,b) => String(b.date||'').localeCompare(String(a.date||'')));
+
+                const chipMap = {
+                    '접수완료': 'chip-submitted',
+                    '심사중':   'chip-reviewing',
+                    '게재확정': 'chip-accepted',
+                    '반려':     'chip-rejected'
+                };
+
+                tbody.innerHTML = mine.map((s, i) => {
+                    const chip = chipMap[s.status] || 'chip-submitted';
+                    return `<tr>
+                        <td style="font-family:'Poppins',sans-serif;font-weight:600;color:var(--text-muted);">${mine.length - i}</td>
+                        <td>${esc(s.journal)} (${esc(s.category)})</td>
+                        <td style="font-weight:600;">${esc(s.title_ko)}</td>
+                        <td style="text-align:center;font-family:'Poppins',sans-serif;font-size:0.8rem;color:var(--text-muted);">${fmtDT(s.date)}</td>
+                        <td style="text-align:center;"><span class="status-chip ${chip}">${esc(s.status)}</span></td>
+                    </tr>`;
+                }).join('');
+            } catch(e) {
+                loading.innerHTML = `<i class="fa-solid fa-circle-exclamation" style="color:#e63946;"></i> 불러오기 실패: ${e.message}`;
+            }
+        }
+
+        /* ── Withdraw ── */
+        window.doWithdraw = async function() {
+            if (!user) return;
+            const pw      = document.getElementById('withdraw-pw').value;
+            const checked = document.getElementById('withdraw-confirm-check').checked;
+            const btn     = document.getElementById('btn-withdraw');
+
+            if (!pw)      { showAlert('withdraw-alert','비밀번호를 입력해 주세요.','error'); return; }
+            if (!checked) { showAlert('withdraw-alert','탈퇴 동의 체크박스를 확인해 주세요.','error'); return; }
+
+            // verify password
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 처리 중...';
+
+            try {
+                const loginRes = await window.DB_login(user.email, pw);
+                if (!loginRes.ok) {
+                    showAlert('withdraw-alert','비밀번호가 일치하지 않습니다.','error');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-user-xmark"></i> 회원 탈퇴 진행';
+                    return;
+                }
+
+                const res = await window.DB_deleteUser(user.email);
+                if (res.ok) {
+                    window.SESSION_clear();
+                    alert('회원 탈퇴가 완료되었습니다. 그동안 한국음악학회를 이용해 주셔서 감사합니다.');
+                    window.location.href = 'index.html';
+                } else {
+                    showAlert('withdraw-alert', res.error || '탈퇴 처리 중 오류가 발생했습니다.','error');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-user-xmark"></i> 회원 탈퇴 진행';
+                }
+            } catch(e) {
+                showAlert('withdraw-alert','네트워크 오류: ' + e.message,'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-user-xmark"></i> 회원 탈퇴 진행';
+            }
+        };
+
+    })();
+    </script>
+</body>
+</html>

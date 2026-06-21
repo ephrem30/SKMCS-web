@@ -163,6 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <span class="util-user" style="color: var(--text-muted); margin-right: 15px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 5px;">
                         <i class="fa-regular fa-user"></i> <strong>${user.name}</strong> (${displayRole})님
                     </span>
+                    <a href="mypage.html" class="util-link"><i class="fa-solid fa-id-card"></i> 마이페이지</a>
                     <a href="#" id="btn-logout" class="util-link"><i class="fa-solid fa-right-from-bracket"></i> 로그아웃</a>
                     <a href="sitemap.html" class="util-link"><i class="fa-solid fa-sitemap"></i> 사이트맵</a>
                 `;
