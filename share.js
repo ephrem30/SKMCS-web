@@ -543,19 +543,22 @@ function closeShareModal() {
     window.addEventListener("load", removeEditorialRules);
 })();
 
-// 글로벌 정회원 권한 확인 함수 (정회원 이상: member, research, lifetime, group, special 및 모든 관리임원)
+// 글로벌 정회원 권한 확인 함수
+// - 임원급(admin/secretary/reviewer/editor/president)은 항상 접근 가능
+// - 일반회원(member/research/lifetime/group/special)은 관리자가 is_regular='true' 설정 시 접근 가능
 window.isRegularMemberOrAbove = function() {
     const loggedInUserStr = localStorage.getItem("logged_in_user");
     if (!loggedInUserStr) return false;
     try {
         const user = JSON.parse(loggedInUserStr);
-        const APPROVED_ROLES = [
-            'admin', 'secretary', 'reviewer', 'editor', 'president',
-            'member', 'research', 'lifetime', 'group', 'special'
-        ];
-        return APPROVED_ROLES.includes(user.role);
+        // 임원급은 항상 접근
+        const OFFICER_ROLES = ['admin', 'secretary', 'reviewer', 'editor', 'president'];
+        if (OFFICER_ROLES.includes(user.role)) return true;
+        // 일반회원은 is_regular 플래그 확인
+        const MEMBER_ROLES = ['member', 'research', 'lifetime', 'group', 'special'];
+        if (MEMBER_ROLES.includes(user.role) && String(user.is_regular) === 'true') return true;
+        return false;
     } catch (e) {
         return false;
     }
 };
-

@@ -90,6 +90,15 @@ window.DB_updateUserProfile = async function(email, updates) {
     });
 };
 
+/** 단일 필드 업데이트 (is_regular 토글 등) */
+window.DB_updateUserField = async function(email, field, value) {
+    return await _dbPost({
+        action: "update", sheet: "users",
+        key: "email", value: email,
+        data: { [field]: String(value) }
+    });
+};
+
 /** 비밀번호 변경 — 현재 비밀번호 검증 후 새 비밀번호로 교체 */
 window.DB_changePassword = async function(email, currentPw, newPw) {
     // 1단계: 현재 비번 검증
