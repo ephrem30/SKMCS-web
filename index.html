@@ -159,8 +159,8 @@
                     <div class="banner-content">
                         <!-- Left text box -->
                         <div class="banner-text-box input-bg">
-                            <span class="vol-issue" id="banner-vol-issue">Vol. 5 No. 1 · 통권제7호</span>
-                            <h2 id="banner-vol-title">한국음악학회지 『한국음악문화』<br>제5권 1호 (통권 제7호) 발간</h2>
+                            <span class="vol-issue" id="banner-vol-issue">제7호</span>
+                            <h2 id="banner-vol-title">한국음악학회지 『한국음악문화』<br>제7호 발간</h2>
                             <p class="banner-desc" id="banner-vol-desc">새로운 시대의 한국 음악 연구,<br>전통과 현대를 아우르는 다양한 학술적 논의를 담았습니다.</p>                            <!-- Action Buttons -->
                             <div class="banner-actions">
                                 <a href="issue.html" class="btn-primary"><span>최신호 목차보기</span> <i
@@ -176,7 +176,7 @@
                                 </div>
                                 <div class="banner-info">
                                     <strong>최신호</strong>
-                                    <span class="date" id="banner-info-date">제5권 1호 · 통권 제7호 (2025. 12.)</span>
+                                    <span class="date" id="banner-info-date">제7호 (2025. 12.)</span>
                                 </div>
                                 <div class="banner-actions">
                                     <a href="issue.html" class="btn-solid">목차보기</a>
@@ -258,7 +258,7 @@
                     <div class="banner-cover-side">
                         <a href="issue.html" style="display: block; text-decoration: none; color: inherit;">
                             <div class="cover-wrapper">
-                                <img src="cover.png" alt="제5권 1호 표지" id="bottom-cover-img">
+                                <img src="cover.png" alt="제7호 표지" id="bottom-cover-img">
                                 <div class="cover-meta">
                                     <strong>최신호</strong>
                                     <span id="bottom-cover-date">2025. 12. 31. 발행</span>
@@ -309,7 +309,7 @@
         const latestIssue = journalData[0];
         
         // Update top-left banner text
-        document.getElementById('banner-vol-issue').textContent = `Vol. ${latestIssue.volume} No. ${latestIssue.number} · 통권제${latestIssue.tonggwon}호`;
+        document.getElementById('banner-vol-issue').textContent = latestIssue.title;
         document.getElementById('banner-vol-title').innerHTML = `한국음악학회지 『한국음악문화』<br>${latestIssue.title} 발간`;
         document.getElementById('banner-vol-desc').textContent = latestIssue.desc;
 

@@ -645,9 +645,9 @@
             const cover = formData.get('cover') || 'cover.png';
             
             const id = `v${vol}n${num}`;
-            const title = `제${vol}권 ${num}호 (통권 제${tong}호)`;
-            const fullTitle = `한국음악문화 제${vol}권 ${num}호 (통권 제${tong}호)`;
-            const label = `Volume ${vol}, Issue ${num} · 통권 제${tong}호`;
+            const title = `제${tong}호`;
+            const fullTitle = `한국음악문화 제${tong}호`;
+            const label = `제${tong}호`;
             
             // Robustly extract year and month (e.g. "2026. 06. 30" -> "2026. 06.")
             let bannerDate = date;
@@ -655,7 +655,7 @@
             if (dateParts.length >= 2) {
                 bannerDate = `${dateParts[0]}. ${dateParts[1]}.`;
             }
-            const bannerInfo = `제${vol}권 ${num}호 · 통권 제${tong}호 (${bannerDate})`;
+            const bannerInfo = `제${tong}호 (${bannerDate})`;
 
             // Extract articles from cards
             const articles = [];
