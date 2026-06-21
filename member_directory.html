@@ -412,13 +412,14 @@
                         <table class="board-table" style="min-width: 850px; width: 100%;">
                             <thead>
                                 <tr>
-                                    <th style="width: 6%; text-align: center;">순번</th>
-                                    <th style="width: 12%; text-align: center;">성명</th>
-                                    <th style="width: 24%;">이메일 (ID)</th>
-                                    <th style="width: 25%;">소속기관 및 직책</th>
-                                    <th style="width: 15%; text-align: center;">연락처</th>
-                                    <th style="width: 10%; text-align: center;">권한등급</th>
-                                    <th style="width: 8%; text-align: center;">생년월일</th>
+                                    <th style="width: 5%; text-align: center;">순번</th>
+                                    <th style="width: 10%; text-align: center;">성명</th>
+                                    <th style="width: 20%;">이메일 (ID)</th>
+                                    <th style="width: 22%;">소속기관 및 직책</th>
+                                    <th style="width: 13%; text-align: center;">연락처</th>
+                                    <th style="width: 9%; text-align: center;">권한등급</th>
+                                    <th style="width: 10%; text-align: center;">생년월일</th>
+                                    <th style="width: 11%; text-align: center;">가입일</th>
                                 </tr>
                             </thead>
                             <tbody id="directory-list-tbody">
@@ -467,6 +468,8 @@
     </div>
 
     <!-- Scripts -->
+    <!-- SheetJS: 실제 xlsx(엑셀) 파일 생성 -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
     <script src="db.js"></script>
     <script src="share.js"></script>
     <script>
@@ -475,13 +478,13 @@
 
         async function loadAndRender() {
             const tbody = document.getElementById("directory-list-tbody");
-            if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> 회원 목록을 불러오는 중...</td></tr>`;
+            if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> 회원 목록을 불러오는 중...</td></tr>`;
             try {
                 registeredUsers = await window.DB_getUsers();
                 renderDirectoryList();
             } catch(e) {
                 console.error("회원 목록 로드 실패:", e);
-                if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;color:red;">회원 목록 로드 실패: ${e.message}</td></tr>`;
+                if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:30px;color:red;">회원 목록 로드 실패: ${e.message}</td></tr>`;
             }
         }
 
@@ -565,7 +568,7 @@
 
             if (filteredUsers.length === 0) {
                 const tr = document.createElement("tr");
-                tr.innerHTML = `<td colspan="7" style="text-align: center; color: var(--text-muted); padding: 40px 0;">조건에 맞는 회원이 없습니다.</td>`;
+                tr.innerHTML = `<td colspan="8" style="text-align: center; color: var(--text-muted); padding: 40px 0;">조건에 맞는 회원이 없습니다.</td>`;
                 tbody.appendChild(tr);
                 return;
             }
@@ -585,14 +588,46 @@
                     <td style="text-align: center;">
                         <span class="badge-role" style="${badgeStyle}">${roleText}</span>
                     </td>
-                    <td style="text-align: center; font-family: 'Poppins', sans-serif; color: #555;">${user.birth || "-"}</td>
+                    <td style="text-align: center; font-family: 'Poppins', sans-serif; color: #555;">${formatDate(user.birth)}</td>
+                    <td style="text-align: center; font-family: 'Poppins', sans-serif; color: #555;">${formatDate(user.registered_at)}</td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        // CSV Export Functionality with Excel UTF-8 BOM encoding fail-safe
+        /* ── 날짜 포맷터: ISO/숫자 등 다양한 형식 → YYYY. MM. DD. ── */
+        function formatDate(raw) {
+            if (!raw) return "-";
+            const s = String(raw).trim();
+            if (!s || s === '-') return "-";
+
+            // ISO 8601: 2025-12-31T... 또는 2025-12-31
+            const isoMatch = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+            if (isoMatch) return `${isoMatch[1]}. ${isoMatch[2]}. ${isoMatch[3]}.`;
+
+            // 이미 YYYY. MM. DD 형식
+            const koMatch = s.match(/^(\d{4})[.\-/](\s*\d{1,2})[.\-/](\s*\d{1,2})/);
+            if (koMatch) {
+                const y = koMatch[1];
+                const m = String(koMatch[2].trim()).padStart(2,'0');
+                const d = String(koMatch[3].trim()).padStart(2,'0');
+                return `${y}. ${m}. ${d}.`;
+            }
+
+            // 숫자 8자리: 19900101
+            const num8 = s.replace(/\D/g,'');
+            if (num8.length === 8) return `${num8.slice(0,4)}. ${num8.slice(4,6)}. ${num8.slice(6,8)}.`;
+
+            return s; // 변환 불가 시 원본
+        }
+
+        /* ── 엑셀(xlsx) 내보내기 — SheetJS 사용 ── */
         function exportToCSV() {
+            if (typeof XLSX === 'undefined') {
+                alert('엑셀 라이브러리를 불러오는 중입니다. 잠시 후 다시 시도해 주세요.');
+                return;
+            }
+
             const filterRole = document.getElementById("directory-filter-role").value;
             const keyword = document.getElementById("directory-keyword").value.trim().toLowerCase();
 
@@ -609,39 +644,41 @@
                 return;
             }
 
-            // Headers
-            let csvContent = "순번,성명,이메일(ID),소속 및 직책,연락처,권한등급,생년월일\n";
+            // ── 데이터 배열 구성 ──
+            const header = ["순번", "성명", "이메일(ID)", "소속기관 및 직책", "연락처", "권한등급", "생년월일", "가입일"];
+            const rows = filteredUsers.map((user, idx) => [
+                idx + 1,
+                user.name || "",
+                user.email || "",
+                user.affiliation || "",
+                formatPhone(user.phone),
+                roleLabels[user.role] || user.role,
+                formatDate(user.birth),
+                formatDate(user.registered_at)
+            ]);
 
-            // Rows
-            filteredUsers.forEach((user, index) => {
-                const roleText = roleLabels[user.role] || user.role;
-                const row = [
-                    index + 1,
-                    `"${(user.name || "").replace(/"/g, '""')}"`,
-                    `"${(user.email || "").replace(/"/g, '""')}"`,
-                    `"${(user.affiliation || "").replace(/"/g, '""')}"`,
-                    `"${formatPhone(user.phone).replace(/"/g, '""')}"`,
-                    `"${roleText}"`,
-                    `"${(user.birth || "").replace(/"/g, '""')}"`
-                ];
-                csvContent += row.join(",") + "\n";
-            });
+            // ── SheetJS로 워크북 생성 ──
+            const wsData = [header, ...rows];
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
 
-            // Create download with UTF-8 BOM so Excel opens it correctly
-            const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
-            const url = URL.createObjectURL(blob);
-            
-            const link = document.createElement("a");
-            link.setAttribute("href", url);
-            
-            // Format filename with current date stamp
-            const date = new Date().toISOString().slice(0, 10);
-            link.setAttribute("download", `한국음악학회_회원명부_${date}.csv`);
-            link.style.visibility = "hidden";
-            
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            // 열 너비 자동 지정
+            ws['!cols'] = [
+                { wch: 6 },   // 순번
+                { wch: 10 },  // 성명
+                { wch: 28 },  // 이메일
+                { wch: 28 },  // 소속
+                { wch: 16 },  // 연락처
+                { wch: 12 },  // 권한
+                { wch: 14 },  // 생년월일
+                { wch: 14 },  // 가입일
+            ];
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "회원명부");
+
+            // ── 파일 다운로드 ──
+            const dateStr = new Date().toISOString().slice(0, 10);
+            XLSX.writeFile(wb, `한국음악학회_회원명부_${dateStr}.xlsx`);
         }
 
         // Set Print date dynamic text
