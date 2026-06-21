@@ -232,23 +232,7 @@
                         </div>
                     </div>
 
-                    <!-- Data Backup & Restore Panel for PC-Mobile Sync -->
-                    <div class="db-sync-panel" style="margin-bottom: 30px; background-color: var(--bg-offwhite); border: 1px solid var(--border-color); border-radius: 6px; padding: 20px;">
-                        <h4 style="margin: 0 0 10px 0; font-size: 1.1rem; font-weight: 800; color: var(--text-dark); display: flex; align-items: center; gap: 8px;">
-                            <i class="fa-solid fa-arrows-rotate" style="color: var(--color-green);"></i> 데이터 연동 (PC ↔ 모바일 기기)
-                        </h4>
-                        <p style="margin: 0 0 15px 0; font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">
-                            본 사이트는 클라이언트 브라우저 DB(LocalStorage)를 사용하여 회원을 관리합니다. <br>
-                            <strong>PC에서 등록한 회원 데이터(또는 게시글)를 모바일로 복사하려면</strong> 아래 [코드 생성 및 복사]를 눌러 대상 기기의 [코드 적용하기]에 입력하세요.
-                        </p>
-                        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                            <textarea id="sync-data-text" readonly onclick="this.select()" style="flex: 1; min-width: 250px; height: 70px; border: 1px solid var(--border-color); border-radius: 4px; padding: 10px; font-size: 0.75rem; font-family: monospace; resize: none; background-color: #f6f6f6;" placeholder="동기화용 데이터 코드가 여기에 생성됩니다."></textarea>
-                            <div style="display: flex; flex-direction: column; gap: 10px; justify-content: center;">
-                                <button type="button" class="btn-solid" onclick="exportSyncData()" style="padding: 10px 20px; font-size: 0.85rem; font-weight: 700; background-color: var(--color-green); border-color: var(--color-green); display: flex; align-items: center; gap: 6px; border-radius: 4px; color: white; cursor: pointer; border: 1px solid var(--color-green);"><i class="fa-solid fa-copy"></i> 코드 생성 및 복사</button>
-                                <button type="button" class="btn-outline" onclick="importSyncData()" style="padding: 10px 20px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px; border-radius: 4px; border: 1.5px solid var(--color-green); color: var(--color-green); background: white; cursor: pointer;"><i class="fa-solid fa-file-import"></i> 코드 적용하기</button>
-                            </div>
-                        </div>
-                    </div>
+
 
                     <!-- Special Administrator Database Reset Panel (Visible only to Special Admins) -->
                     <div id="special-admin-reset-panel" style="display: none; margin-bottom: 30px; background-color: #fff0f0; border: 1.5px solid #ffcccc; border-radius: 6px; padding: 20px;">
@@ -494,31 +478,7 @@
             }
         }
 
-        // 7. 데이터 동기화 (Export)
-        function exportSyncData() {
-            const data = {
-                registered_users: JSON.stringify(registeredUsers),
-                notice_posts: localStorage.getItem("notice_posts"),
-                freeboard_posts: localStorage.getItem("freeboard_posts")
-            };
-            const jsonStr = JSON.stringify(data);
-            const base64Str = btoa(unescape(encodeURIComponent(jsonStr)));
-            const textarea = document.getElementById("sync-data-text");
-            textarea.value = base64Str;
-            textarea.removeAttribute("readonly");
-            textarea.select();
-            navigator.clipboard.writeText(base64Str).then(() => {
-                alert("데이터 코드가 클립보드에 복사되었습니다!");
-                textarea.setAttribute("readonly", "true");
-            }).catch(() => {
-                alert("텍스트 박스의 내용을 전체 선택하여 복사해 주세요.");
-                textarea.setAttribute("readonly", "true");
-            });
-        }
 
-        function importSyncData() {
-            alert("이제 데이터는 Google Sheets에 자동 저장됩니다. 별도 가져오기가 필요하지 않습니다.");
-        }
 
         // 8. 페이지 초기화 — Sheets에서 회원 목록 로드
         async function initPage() {
