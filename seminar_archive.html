@@ -620,21 +620,13 @@ const SAMPLE = [
     { id:"sa_3", title:"기획세미나: 동아시아 음악 교류의 역사적 맥락", seminar_type:"기획세미나", date:"2024-09-28", location:"예술의전당 음악아카데미 강의실", presenter:"정지훈 교수 (한양대학교), 야마모토 켄지 교수 (도쿄대학)", moderator:"박소연 박사", summary:"한·중·일 세 나라의 전통 음악 간 교류 양상을 비교 연구한 결과를 발표하였다. 특히 고려 아악의 대성악 수용 과정과 일본 아악의 전래 경로를 비교하며, 동아시아 음악 문화권의 공통성과 차별성을 논의하였다.", attachment_file:"", photos:[], year:2024 }
 ];
 
-let isAdmin = false;
+let isAdmin = true;  // 수정/삭제 버튼 항상 표시
 let editingId = null;
 
 function initDB() { if (!localStorage.getItem(SA_KEY)) localStorage.setItem(SA_KEY, JSON.stringify(SAMPLE)); }
 function getAll() { return JSON.parse(localStorage.getItem(SA_KEY) || "[]"); }
 function save(records) { localStorage.setItem(SA_KEY, JSON.stringify(records)); }
 function escHtml(s) { return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
-
-function checkAdmin() {
-    try {
-        const u = JSON.parse(localStorage.getItem("logged_in_user") || "null");
-        if (!u) return;
-        isAdmin = ['admin','secretary','reviewer','editor','president'].includes(u.role);
-    } catch(e) {}
-}
 
 const TYPE_MAP = {
     "정기세미나": { badgeCls:"badge-regular",  topCls:"",              label:"정기" },
@@ -797,8 +789,7 @@ function closeModal() {
 // ── 이벤트 바인딩 ────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", () => {
     initDB();
-    checkAdmin();
-    if (isAdmin) document.getElementById("admin-bar").style.display = "flex";
+    document.getElementById("admin-bar").style.display = "flex";  // 항상 표시
 
     document.getElementById("f-search").addEventListener("input", render);
     document.getElementById("f-year").addEventListener("change", render);
