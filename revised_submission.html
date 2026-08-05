@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>한국음악학회 - 수정논문 제출</title>
+    <meta name="description" content="한국음악학회 수정논문 온라인 제출 시스템. 심사 결과 수정 후 게재 판정을 받은 논문의 수정본과 수정이행서를 온라인으로 제출하실 수 있습니다.">
+    <link rel="stylesheet" href="styles_v2.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .revised-hero {
+            background: linear-gradient(135deg, #1a4a3a 0%, #2b8a7e 60%, #3da898 100%);
+            padding: 54px 0 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .revised-hero::before {
+            content: '';
+            position: absolute;
+            top: -60px; right: -60px;
+            width: 260px; height: 260px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.06);
+        }
+        .revised-hero::after {
+            content: '';
+            position: absolute;
+            bottom: -80px; left: -40px;
+            width: 300px; height: 300px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.04);
+        }
+        .revised-hero .hero-icon { font-size: 2.8rem; color: rgba(255,255,255,0.85); margin-bottom: 14px; display: block; }
+        .revised-hero h2 { font-size: 2rem; font-weight: 800; color: #fff; margin: 0 0 10px; letter-spacing: -0.02em; }
+        .revised-hero p { font-size: 0.97rem; color: rgba(255,255,255,0.75); margin: 0; line-height: 1.7; }
+
+        .step-card {
+            background: #fff;
+            border: 1px solid #e2e8e6;
+            border-radius: 10px;
+            padding: 28px 30px;
+            margin-bottom: 20px;
+            transition: box-shadow 0.2s;
+        }
+        .step-card:hover { box-shadow: 0 4px 18px rgba(43,138,126,0.08); }
+        .step-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #2b8a7e;
+            color: #fff;
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-bottom: 12px;
+        }
+        .step-card h4 { font-size: 1.05rem; font-weight: 700; color: #1a2e2c; margin: 0 0 6px; }
+        .step-card p.desc { font-size: 0.85rem; color: #6b7c79; margin: 0 0 16px; line-height: 1.65; }
+
+        .upload-zone {
+            border: 2px dashed #c0d8d5;
+            border-radius: 8px;
+            padding: 28px 20px;
+            text-align: center;
+            background: #f5fafa;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            position: relative;
+        }
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: #2b8a7e;
+            background: #edf7f5;
+        }
+        .upload-zone .upload-icon { font-size: 2rem; color: #2b8a7e; margin-bottom: 8px; }
+        .upload-zone .upload-label { font-size: 0.92rem; font-weight: 600; color: #2b8a7e; display: block; margin-bottom: 4px; }
+        .upload-zone .upload-hint { font-size: 0.78rem; color: #9aafac; }
+        .upload-zone input[type="file"] {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .file-selected-info {
+            display: none;
+            margin-top: 12px;
+            padding: 10px 14px;
+            background: #e8f6f4;
+            border: 1px solid #b5ddd9;
+            border-radius: 6px;
+            font-size: 0.88rem;
+            color: #1a5a52;
+            align-items: center;
+            gap: 10px;
+        }
+        .file-selected-info.visible { display: flex; }
+        .file-selected-info .file-name { font-weight: 600; word-break: break-all; flex: 1; }
+        .file-selected-info .btn-clear-file {
+            margin-left: auto;
+            background: none;
+            border: none;
+            color: #cb3c31;
+            cursor: pointer;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .notice-banner {
+            border-left: 4px solid #2b8a7e;
+            background: #f0faf8;
+            padding: 14px 18px;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 24px;
+            font-size: 0.88rem;
+            line-height: 1.7;
+            color: #2a5752;
+        }
+        .notice-banner.warning { border-left-color: #e6a817; background: #fffbf0; color: #5c4a00; }
+
+        .paper-select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid #c5dbd8;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            color: #1a2e2c;
+            transition: border-color 0.2s;
+            appearance: none;
+            -webkit-appearance: none;
+            background: #fff;
+        }
+        .paper-select:focus { outline: none; border-color: #2b8a7e; box-shadow: 0 0 0 3px rgba(43,138,126,0.12); }
+
+        .paper-info-card {
+            display: none;
+            margin-top: 14px;
+            padding: 16px 18px;
+            background: #f0f9f7;
+            border: 1px solid #b5ddd9;
+            border-radius: 8px;
+        }
+        .paper-info-card.visible { display: block; }
+        .paper-info-card .paper-title { font-size: 0.97rem; font-weight: 700; color: #1a3e3a; margin-bottom: 8px; line-height: 1.5; }
+        .paper-info-card .paper-meta { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 0.82rem; color: #4a7a75; }
+        .paper-info-card .meta-item { display: flex; align-items: center; gap: 5px; }
+
+        .checklist { list-style: none; padding: 0; margin: 0; }
+        .checklist li {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 8px 0;
+            font-size: 0.9rem;
+            color: #3a5a57;
+            border-bottom: 1px solid #e8f2f0;
+        }
+        .checklist li:last-child { border-bottom: none; }
+        .checklist li input[type="checkbox"] { width: 17px; height: 17px; flex-shrink: 0; margin-top: 1px; accent-color: #2b8a7e; cursor: pointer; }
+        .checklist li label { cursor: pointer; line-height: 1.55; }
+
+        .memo-textarea {
+            width: 100%;
+            padding: 13px 14px;
+            border: 1.5px solid #c5dbd8;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.92rem;
+            resize: vertical;
+            line-height: 1.65;
+            color: #1a2e2c;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+            min-height: 110px;
+        }
+        .memo-textarea:focus { outline: none; border-color: #2b8a7e; box-shadow: 0 0 0 3px rgba(43,138,126,0.1); }
+
+        .btn-submit-revised {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #2b8a7e, #1a6059);
+            color: #fff;
+            font-size: 1.08rem;
+            font-weight: 800;
+            padding: 16px 52px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+            box-shadow: 0 4px 14px rgba(43,138,126,0.3);
+        }
+        .btn-submit-revised:hover:not(:disabled) {
+            background: linear-gradient(135deg, #237a6f, #155249);
+            box-shadow: 0 6px 20px rgba(43,138,126,0.4);
+            transform: translateY(-1px);
+        }
+        .btn-submit-revised:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        .login-required-box {
+            text-align: center;
+            padding: 60px 30px;
+            background: #f8fafa;
+            border: 1px dashed #c5dbd8;
+            border-radius: 10px;
+        }
+        .login-required-box .lock-icon { font-size: 3rem; color: #c0d4d0; margin-bottom: 16px; }
+        .login-required-box h4 { font-size: 1.15rem; font-weight: 700; color: #2a4a46; margin-bottom: 8px; }
+        .login-required-box p { font-size: 0.9rem; color: #7a9a96; margin-bottom: 24px; line-height: 1.65; }
+
+        .progress-wrap { display: none; margin-top: 20px; }
+        .progress-wrap.visible { display: block; }
+        .progress-bar-outer { height: 8px; background: #ddecea; border-radius: 4px; overflow: hidden; }
+        .progress-bar-inner {
+            height: 100%;
+            background: linear-gradient(90deg, #2b8a7e, #3dbfb3);
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+        .progress-status { font-size: 0.83rem; color: #4a8a85; margin-top: 7px; font-weight: 600; }
+
+        @keyframes pop { 0%{transform:scale(0.6);opacity:0} 70%{transform:scale(1.1)} 100%{transform:scale(1);opacity:1} }
+        @media (max-width: 640px) {
+            .step-card { padding: 20px 18px; }
+            .btn-submit-revised { padding: 14px 30px; font-size: 0.97rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="layout-wrapper">
+
+    <!-- Quick Sidebar -->
+    <aside class="quick-sidebar">
+        <div class="sidebar-toggle"><i class="fa-solid fa-bars"></i><span>Quick Menu</span></div>
+        <nav class="sidebar-nav">
+            <a href="news.html" class="side-link"><i class="fa-solid fa-bullhorn"></i><span class="side-text">공지사항</span></a>
+            <a href="admission.html" class="side-link"><i class="fa-solid fa-user-plus"></i><span class="side-text">입회안내</span></a>
+            <a href="submission.html" class="side-link"><i class="fa-solid fa-file-arrow-up"></i><span class="side-text">논문 온라인투고</span></a>
+            <a href="activities.html" class="side-link"><i class="fa-solid fa-calendar-days"></i><span class="side-text">학술대회 세미나</span></a>
+            <a href="forms.html" class="side-link"><i class="fa-solid fa-folder-open"></i><span class="side-text">자료실</span></a>
+        </nav>
+    </aside>
+
+    <!-- Top Util Bar -->
+    <div class="top-util-bar">
+        <div class="container">
+            <div class="util-right">
+                <div class="util-links">
+                    <a href="login.html" class="util-link" id="util-login-link"><i class="fa-solid fa-right-to-bracket"></i> 로그인</a>
+                    <a href="register.html" class="util-link"><i class="fa-solid fa-user-plus"></i> 회원가입</a>
+                    <a href="sitemap.html" class="util-link"><i class="fa-solid fa-sitemap"></i> 사이트맵</a>
+                </div>
+                <form action="search.html" method="GET" class="top-search">
+                    <input type="text" name="query" placeholder="검색..." required>
+                    <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="main-header">
+        <div class="container header-container">
+            <a href="index.html" class="logo">
+                <img src="main_logo.png" alt="한국음악학회 로고 마크" class="logo-icon-img">
+                <div class="logo-text">
+                    <h1>한국음악학회</h1>
+                    <div class="logo-divider"></div>
+                    <span class="logo-en">the society for korean music &amp; culture studies</span>
+                </div>
+            </a>
+            <nav class="main-nav">
+                <ul>
+                    <li class="nav-item"><a href="index.html">Home</a><div class="hover-bar white"></div></li>
+                    <li class="nav-item">
+                        <a href="about.html">학회소개</a><div class="hover-bar red"></div><span class="sub-text">about us</span>
+                        <ul class="dropdown-menu">
+                            <li><a href="about.html">인사말</a></li>
+                            <li><a href="organization.html">조직도/임원진</a></li>
+                            <li><a href="history.html">학회 연혁</a></li>
+                            <li><a href="rules.html">학회 정관</a></li>
+                            <li><a href="directions.html">오시는 길</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a href="news.html">학회소식</a><div class="hover-bar black"></div><span class="sub-text">news</span>
+                        <ul class="dropdown-menu">
+                            <li><a href="news.html?tab=notice">공지사항</a></li>
+                            <li><a href="news.html?tab=freeboard">자유게시판</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a href="issue.html">학회지</a><div class="hover-bar green"></div><span class="sub-text">journal</span>
+                        <ul class="dropdown-menu">
+                            <li><a href="issue.html">최신호</a></li>
+                            <li><a href="archive.html">지난호 (아카이브)</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a href="submission.html">논문투고</a><div class="hover-bar yellow"></div><span class="sub-text">submission</span>
+                        <ul class="dropdown-menu">
+                            <li><a href="submission.html">논문투고안내</a></li>
+                            <li><a href="submission_rules.html">논문투고규정</a></li>
+                            <li><a href="submission_review.html">심사규정</a></li>
+                            <li><a href="submission.html?tab=online">온라인 투고시스템</a></li>
+                            <li><a href="revised_submission.html" style="color:#2b8a7e;font-weight:700;"><i class="fa-solid fa-file-pen" style="font-size:0.8em;"></i> 수정논문 제출</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a href="activities.html">학술활동</a><div class="hover-bar grey"></div><span class="sub-text">activities</span>
+                        <ul class="dropdown-menu">
+                            <li><a href="activities.html?tab=conference">학술대회 일정</a></li>
+                            <li><a href="activities.html?tab=seminar">연구모임/세미나</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a href="admission.html">회원서비스</a><div class="hover-bar blue"></div><span class="sub-text">member service</span>
+                        <ul class="dropdown-menu">
+                            <li><a href="admission.html">입회안내</a></li>
+                            <li><a href="mypage.html">마이페이지</a></li>
+                            <li><a href="forms.html">양식모음</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Banner -->
+    <div class="revised-hero">
+        <i class="fa-solid fa-file-pen hero-icon"></i>
+        <h2>수정논문 제출</h2>
+        <p>심사 결과 <strong style="color:#fff;">「수정 후 게재」</strong> 판정을 받으신 논문의 수정본을<br>이 페이지에서 온라인으로 제출하실 수 있습니다.</p>
+    </div>
+
+    <!-- Main Content -->
+    <main class="content-area">
+        <div class="container subpage-area">
+            <div class="sub-util-row">
+                <div class="breadcrumb">
+                    <i class="fa-solid fa-house"></i>
+                    <span class="depth">논문투고</span>
+                    <i class="fa-solid fa-angle-right divider"></i>
+                    <span class="depth current">수정논문 제출</span>
+                </div>
+                <div class="page-utils">
+                    <a href="#" title="인쇄"><i class="fa-solid fa-print"></i></a>
+                    <a href="#" title="공유"><i class="fa-solid fa-share-nodes"></i></a>
+                </div>
+            </div>
+
+            <div style="max-width:780px; margin:0 auto; padding:10px 0 60px;">
+
+                <!-- ① 비로그인 -->
+                <div id="section-login-required" style="display:none;">
+                    <div class="login-required-box">
+                        <div class="lock-icon"><i class="fa-solid fa-lock"></i></div>
+                        <h4>로그인이 필요한 서비스입니다</h4>
+                        <p>수정논문 제출은 학회 회원만 이용할 수 있습니다.<br>로그인 후 이용해 주십시오.</p>
+                        <a href="login.html?redirect=revised_submission.html"
+                           style="display:inline-flex;align-items:center;gap:8px;padding:12px 30px;font-size:0.97rem;font-weight:700;background:#2b8a7e;color:#fff;border-radius:6px;text-decoration:none;">
+                            <i class="fa-solid fa-right-to-bracket"></i> 로그인 하기
+                        </a>
+                    </div>
+                </div>
+
+                <!-- ② 수정후게재 논문 없음 -->
+                <div id="section-no-revisable" style="display:none;">
+                    <div class="notice-banner warning">
+                        <i class="fa-solid fa-circle-exclamation" style="margin-right:6px;"></i>
+                        현재 <strong>「수정 후 게재」</strong> 상태인 논문이 없습니다.
+                        심사 결과를 이메일로 확인하시거나,
+                        <a href="submission.html?tab=history" style="color:inherit;font-weight:700;">투고 내역</a>에서 심사 상태를 확인해 주십시오.
+                    </div>
+                    <div style="text-align:center;padding:30px 0;">
+                        <a href="submission.html?tab=history" class="btn-outline"
+                           style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;font-weight:600;">
+                            <i class="fa-solid fa-list-ul"></i> 투고 내역 확인하기
+                        </a>
+                    </div>
+                </div>
+
+                <!-- ③ 제출 양식 -->
+                <div id="section-form" style="display:none;">
+
+                    <div class="notice-banner" style="margin-bottom:28px;">
+                        <i class="fa-solid fa-circle-info" style="margin-right:6px;"></i>
+                        심사위원의 지적 사항에 따라 수정된 논문 원고(<strong>.hwp</strong> 권장)와
+                        수정이행서를 함께 제출해 주십시오. 제출된 파일은 Google Drive에 안전하게 저장됩니다.
+                    </div>
+
+                    <!-- STEP 1 -->
+                    <div class="step-card">
+                        <div class="step-badge"><i class="fa-solid fa-1"></i> STEP 1</div>
+                        <h4>수정 대상 논문 선택 <span style="color:#cb3c31;">*</span></h4>
+                        <p class="desc">「수정 후 게재」 판정을 받은 논문 중 수정본을 제출할 논문을 선택하십시오.</p>
+                        <select id="rvsub-paper-select" class="paper-select">
+                            <option value="">-- 논문을 선택하십시오 --</option>
+                        </select>
+                        <div class="paper-info-card" id="rvsub-paper-info">
+                            <div class="paper-title" id="rvsub-paper-title">-</div>
+                            <div class="paper-meta">
+                                <span class="meta-item"><i class="fa-solid fa-hashtag"></i> <span id="rvsub-paper-id">-</span></span>
+                                <span class="meta-item"><i class="fa-solid fa-book"></i> <span id="rvsub-paper-journal">-</span></span>
+                                <span class="meta-item"><i class="fa-solid fa-tag"></i> <span id="rvsub-paper-category">-</span></span>
+                                <span class="meta-item"><i class="fa-solid fa-calendar"></i> <span id="rvsub-paper-date">-</span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- STEP 2: 수정논문 (필수) -->
+                    <div class="step-card">
+                        <div class="step-badge"><i class="fa-solid fa-2"></i> STEP 2</div>
+                        <h4>수정논문 파일 업로드 <span style="color:#cb3c31;">*</span></h4>
+                        <p class="desc">수정이 완료된 논문 원고 파일을 업로드하십시오.
+                            <strong>HWP</strong> 파일을 권장하며, HWPX · DOCX · PDF도 허용됩니다.
+                            파일명에 저자 성명을 포함하지 마십시오. (최대 30MB)</p>
+                        <div class="upload-zone" id="zone-manuscript"
+                             ondragover="handleDragOver(event,'zone-manuscript')"
+                             ondragleave="handleDragLeave(event,'zone-manuscript')"
+                             ondrop="handleDrop(event,'rvsub-file-manuscript','zone-manuscript')">
+                            <input type="file" id="rvsub-file-manuscript" accept=".hwp,.hwpx,.docx,.doc,.pdf">
+                            <div class="upload-icon"><i class="fa-solid fa-file-pen"></i></div>
+                            <span class="upload-label">클릭 또는 파일을 여기에 끌어다 놓으세요</span>
+                            <span class="upload-hint">.hwp / .hwpx / .docx / .pdf &nbsp;|&nbsp; 최대 30MB</span>
+                        </div>
+                        <div class="file-selected-info" id="info-manuscript">
+                            <i class="fa-solid fa-file-check" style="color:#2b8a7e;font-size:1.1rem;flex-shrink:0;"></i>
+                            <span class="file-name" id="info-manuscript-name"></span>
+                            <span id="info-manuscript-size" style="color:#7aaa9a;font-size:0.8rem;white-space:nowrap;"></span>
+                            <button class="btn-clear-file" onclick="clearFile('rvsub-file-manuscript','info-manuscript','rvsub-ms-required')" title="파일 해제">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                        <div id="rvsub-ms-required" style="display:none;margin-top:8px;font-size:0.82rem;color:#cb3c31;">
+                            <i class="fa-solid fa-triangle-exclamation"></i> 수정논문 파일은 필수입니다.
+                        </div>
+                    </div>
+
+                    <!-- STEP 3: 수정이행서 (선택) -->
+                    <div class="step-card">
+                        <div class="step-badge" style="background:#5a7a76;"><i class="fa-solid fa-3"></i> STEP 3</div>
+                        <h4>수정이행서 업로드 <span style="color:#5a7a76;font-size:0.82rem;font-weight:500;">(선택)</span></h4>
+                        <p class="desc">심사위원의 지적 사항별로 수정 내용을 기술한 수정이행서(Response Letter)를 함께 제출하시면
+                            재심사에 유리합니다. HWP · HWPX · DOCX · PDF 허용. (최대 10MB)</p>
+                        <div class="upload-zone" id="zone-compliance"
+                             ondragover="handleDragOver(event,'zone-compliance')"
+                             ondragleave="handleDragLeave(event,'zone-compliance')"
+                             ondrop="handleDrop(event,'rvsub-file-compliance','zone-compliance')">
+                            <input type="file" id="rvsub-file-compliance" accept=".hwp,.hwpx,.docx,.doc,.pdf">
+                            <div class="upload-icon" style="color:#5a7a76;"><i class="fa-solid fa-file-lines"></i></div>
+                            <span class="upload-label" style="color:#5a7a76;">수정이행서 파일 선택 (선택사항)</span>
+                            <span class="upload-hint">.hwp / .hwpx / .docx / .pdf &nbsp;|&nbsp; 최대 10MB</span>
+                        </div>
+                        <div class="file-selected-info" id="info-compliance">
+                            <i class="fa-solid fa-file-check" style="color:#5a7a76;font-size:1.1rem;flex-shrink:0;"></i>
+                            <span class="file-name" id="info-compliance-name"></span>
+                            <span id="info-compliance-size" style="color:#7aaa9a;font-size:0.8rem;white-space:nowrap;"></span>
+                            <button class="btn-clear-file" onclick="clearFile('rvsub-file-compliance','info-compliance',null)" title="파일 해제">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- STEP 4: 메모 -->
+                    <div class="step-card">
+                        <div class="step-badge" style="background:#5a7a76;"><i class="fa-solid fa-4"></i> STEP 4</div>
+                        <h4>수정 내용 요약 <span style="color:#5a7a76;font-size:0.82rem;font-weight:500;">(선택)</span></h4>
+                        <p class="desc">심사위원의 주요 지적 사항에 대한 수정 내용을 간략히 기술해 주시면 편집위원회 검토에 도움이 됩니다.</p>
+                        <textarea id="rvsub-memo" class="memo-textarea"
+                            placeholder="예: 2장 악보 분석 부분을 보완하였으며, 선행연구 검토 범위를 확대하였습니다. 심사위원 2번의 제안에 따라 결론 부분을 전면 재작성하였습니다."></textarea>
+                    </div>
+
+                    <!-- STEP 5: 체크리스트 -->
+                    <div class="step-card">
+                        <div class="step-badge" style="background:#4a6a5e;"><i class="fa-solid fa-5"></i> STEP 5</div>
+                        <h4>제출 전 최종 확인</h4>
+                        <p class="desc">아래 항목을 모두 확인하신 후 제출 버튼을 눌러주십시오.</p>
+                        <ul class="checklist">
+                            <li>
+                                <input type="checkbox" id="chk1">
+                                <label for="chk1">수정논문 파일에서 저자 정보(성명, 소속 등)가 모두 제거되었습니다. (블라인드 심사 원칙)</label>
+                            </li>
+                            <li>
+                                <input type="checkbox" id="chk2">
+                                <label for="chk2">심사위원이 요청한 수정 사항이 빠짐없이 반영되었습니다.</label>
+                            </li>
+                            <li>
+                                <input type="checkbox" id="chk3">
+                                <label for="chk3">파일 형식과 용량 조건 (수정논문 30MB 이하, 수정이행서 10MB 이하)을 확인하였습니다.</label>
+                            </li>
+                            <li>
+                                <input type="checkbox" id="chk4">
+                                <label for="chk4">본 논문은 현재 타 학술지에 중복 제출되어 있지 않습니다.</label>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- 진행 바 -->
+                    <div class="progress-wrap" id="rvsub-progress">
+                        <div class="progress-bar-outer">
+                            <div class="progress-bar-inner" id="rvsub-progress-bar"></div>
+                        </div>
+                        <div class="progress-status" id="rvsub-progress-status">준비 중...</div>
+                    </div>
+
+                    <!-- 제출 버튼 -->
+                    <div style="text-align:center;padding-top:28px;">
+                        <button id="btn-rvsub-submit" class="btn-submit-revised" onclick="submitRevisedSubmission()">
+                            <i class="fa-solid fa-paper-plane"></i> 수정논문 제출하기
+                        </button>
+                        <p style="margin-top:14px;font-size:0.83rem;color:#9aafac;">
+                            <i class="fa-solid fa-shield-halved"></i>
+                            제출된 파일은 Google Drive에 안전하게 보관됩니다.
+                        </p>
+                    </div>
+
+                </div><!-- /#section-form -->
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="container footer-container">
+            <div class="footer-left">
+                <div class="footer-main-row" style="display:flex;align-items:center;gap:30px;margin-bottom:12px;">
+                    <a href="index.html" class="footer-logo-block" style="display:flex;align-items:flex-end;text-decoration:none;color:inherit;flex-shrink:0;">
+                        <img src="main_logo_white.png" alt="한국음악학회 로고" style="height:65px;width:auto;">
+                        <div class="logo-text-footer" style="text-align:left;padding-bottom:2px;">
+                            <h4 style="font-size:1.15rem;font-weight:800;margin:0;color:white;line-height:1.1;">한국음악학회</h4>
+                            <div class="logo-divider" style="margin:2px 0;"></div>
+                            <span class="logo-en" style="font-size:0.55rem;font-weight:500;text-transform:uppercase;color:rgba(255,255,255,0.6);display:block;">the society for korean music &amp; culture studies</span>
+                        </div>
+                    </a>
+                    <div style="width:1px;height:35px;background:rgba(255,255,255,0.15);flex-shrink:0;"></div>
+                    <div class="footer-address" style="font-size:0.82rem;line-height:1.6;color:#bbb;">
+                        <p style="margin:0;">주소: (04620) 서울특별시 중구 필동로 1길 30 동국대학교 문화관 &nbsp;|&nbsp; E-mail: skmcs@dgu.ac.kr</p>
+                        <p style="margin:2px 0 0;color:#777;">Copyright &copy; 2026 The Society for Korean Music &amp; Culture Studies. All Rights Reserved.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-right">
+                <div class="designed-by">
+                    <span>Designed by</span>
+                    <span class="designer-logo"><i class="fa-solid fa-fire" style="color:#e65100"></i> Woochang Choi</span>
+                </div>
+            </div>
+        </div>
+        <a href="#" class="btn-top"><i class="fa-solid fa-chevron-up"></i></a>
+    </footer>
+
+</div><!-- /.layout-wrapper -->
+
+<script src="share.js"></script>
+<script src="db.js"></script>
+<script>
+const ADMIN_ROLES_REV = ["admin", "secretary", "editor", "president"];
+let loadedSubmissions = [];
+let currentUser = null;
+
+function formatBytes(bytes, dec = 1) {
+    if (!bytes || bytes === 0) return '0 B';
+    const k = 1024, sizes = ['B','KB','MB','GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dec)) + ' ' + sizes[i];
+}
+
+function getBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = reject;
+    });
+}
+
+function handleDragOver(e, zoneId) {
+    e.preventDefault();
+    document.getElementById(zoneId).classList.add('dragover');
+}
+function handleDragLeave(e, zoneId) {
+    document.getElementById(zoneId).classList.remove('dragover');
+}
+function handleDrop(e, inputId, zoneId) {
+    e.preventDefault();
+    document.getElementById(zoneId).classList.remove('dragover');
+    const files = e.dataTransfer.files;
+    if (files && files[0]) {
+        const input = document.getElementById(inputId);
+        const dt = new DataTransfer();
+        dt.items.add(files[0]);
+        input.files = dt.files;
+        input.dispatchEvent(new Event('change'));
+    }
+}
+
+function clearFile(inputId, infoId, errorId) {
+    const input = document.getElementById(inputId);
+    if (input) input.value = '';
+    const info = document.getElementById(infoId);
+    if (info) info.classList.remove('visible');
+    if (errorId) {
+        const err = document.getElementById(errorId);
+        if (err) err.style.display = 'none';
+    }
+}
+
+function bindFileInput(inputId, infoId, nameId, sizeId, maxMB, errorId) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    input.addEventListener('change', function () {
+        const file = this.files && this.files[0];
+        const info = document.getElementById(infoId);
+        if (!file) { if (info) info.classList.remove('visible'); return; }
+        if (file.size > maxMB * 1024 * 1024) {
+            alert('파일 크기가 ' + maxMB + 'MB를 초과합니다.');
+            this.value = '';
+            if (info) info.classList.remove('visible');
+            return;
+        }
+        document.getElementById(nameId).textContent = file.name;
+        document.getElementById(sizeId).textContent = '(' + formatBytes(file.size) + ')';
+        if (info) info.classList.add('visible');
+        if (errorId) document.getElementById(errorId).style.display = 'none';
+    });
+}
+
+function bindPaperSelect() {
+    const sel = document.getElementById('rvsub-paper-select');
+    if (!sel) return;
+    sel.addEventListener('change', function () {
+        const val = this.value;
+        const card = document.getElementById('rvsub-paper-info');
+        if (!val) { card && card.classList.remove('visible'); return; }
+        const sub = loadedSubmissions.find(s => s.id === val);
+        if (!sub || !card) return;
+        document.getElementById('rvsub-paper-title').textContent = sub.title_ko || '-';
+        document.getElementById('rvsub-paper-id').textContent = sub.id;
+        document.getElementById('rvsub-paper-journal').textContent = sub.journal || '-';
+        document.getElementById('rvsub-paper-category').textContent = sub.category || '-';
+        document.getElementById('rvsub-paper-date').textContent = sub.date ? String(sub.date).slice(0, 10) : '-';
+        card.classList.add('visible');
+    });
+}
+
+function setProgress(pct, msg) {
+    const wrap = document.getElementById('rvsub-progress');
+    const bar  = document.getElementById('rvsub-progress-bar');
+    const stat = document.getElementById('rvsub-progress-status');
+    if (wrap) wrap.classList.add('visible');
+    if (bar) bar.style.width = pct + '%';
+    if (stat) stat.textContent = msg;
+}
+
+async function submitRevisedSubmission() {
+    const sel    = document.getElementById('rvsub-paper-select');
+    const msIn   = document.getElementById('rvsub-file-manuscript');
+    const cpIn   = document.getElementById('rvsub-file-compliance');
+    const memoEl = document.getElementById('rvsub-memo');
+    const btn    = document.getElementById('btn-rvsub-submit');
+    const msReq  = document.getElementById('rvsub-ms-required');
+
+    if (!sel || !sel.value) {
+        alert('수정 대상 논문을 선택해주세요.');
+        if (sel) sel.focus();
+        return;
+    }
+    const msFile = msIn && msIn.files && msIn.files[0] ? msIn.files[0] : null;
+    if (!msFile) {
+        if (msReq) msReq.style.display = 'block';
+        return;
+    }
+    const checks = ['chk1','chk2','chk3','chk4'];
+    if (checks.some(id => !document.getElementById(id).checked)) {
+        alert('제출 전 최종 확인 체크리스트를 모두 확인해 주십시오.');
+        return;
+    }
+
+    const submissionId = sel.value;
+    const sub = loadedSubmissions.find(s => s.id === submissionId);
+    const titleKo = sub ? (sub.title_ko || '논문') : '논문';
+    const memo = memoEl ? memoEl.value.trim() : '';
+    const cpFile = cpIn && cpIn.files && cpIn.files[0] ? cpIn.files[0] : null;
+
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 처리 중...'; }
+
+    setProgress(10, '파일 변환 중...');
+    let msBase64, cpBase64 = null;
+    try {
+        msBase64 = await getBase64(msFile);
+        if (cpFile) cpBase64 = await getBase64(cpFile);
+    } catch (err) {
+        alert('파일 처리 중 오류가 발생했습니다: ' + err.message);
+        resetBtn(btn);
+        return;
+    }
+
+    setProgress(35, 'Google Drive에 업로드 중...');
+    const payload = {
+        action: 'uploadRevisedFiles',
+        id: submissionId,
+        title_ko: titleKo,
+        memo: memo,
+        file_revised_data: { base64: msBase64, name: msFile.name, mimeType: msFile.type || 'application/octet-stream' }
+    };
+    if (cpBase64 && cpFile) {
+        payload.file_response_data = { base64: cpBase64, name: cpFile.name, mimeType: cpFile.type || 'application/octet-stream' };
+    }
+
+    try {
+        setProgress(60, '서버에서 처리 중...');
+        const result = await window.DB_uploadRevisedFiles(payload);
+        if (!result.ok) {
+            alert('수정논문 제출 실패: ' + (result.error || '알 수 없는 오류'));
+            resetBtn(btn);
+            document.getElementById('rvsub-progress').classList.remove('visible');
+            return;
+        }
+
+        setProgress(90, '논문 상태 업데이트 중...');
+        await window.DB_updateSubmission(submissionId, { status: '수정본제출' });
+        setProgress(100, '제출 완료!');
+
+        setTimeout(() => showSuccessBanner(submissionId), 600);
+    } catch (err) {
+        console.error('수정논문 제출 오류:', err);
+        alert('서버 통신 오류가 발생했습니다.\n\n' + err.message);
+        resetBtn(btn);
+        document.getElementById('rvsub-progress').classList.remove('visible');
+    }
+}
+
+function resetBtn(btn) {
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> 수정논문 제출하기'; }
+}
+
+function showSuccessBanner(id) {
+    const formSection = document.getElementById('section-form');
+    if (!formSection) return;
+    formSection.innerHTML = `
+        <div style="text-align:center;padding:60px 20px;">
+            <div style="font-size:4rem;color:#2b8a7e;margin-bottom:20px;animation:pop 0.4s ease;">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <h3 style="font-size:1.6rem;font-weight:800;color:#1a3e3a;margin-bottom:12px;">수정논문이 성공적으로 제출되었습니다!</h3>
+            <p style="font-size:0.97rem;color:#4a7a75;line-height:1.8;margin-bottom:8px;">
+                논문 ID: <strong style="color:#1a3e3a;">${id}</strong><br>
+                파일이 Google Drive에 안전하게 저장되었으며, 논문 상태가 <strong>「수정본제출」</strong>로 변경되었습니다.
+            </p>
+            <p style="font-size:0.88rem;color:#7aaa9a;margin-bottom:32px;">
+                편집위원회에서 수정 내용을 검토한 후 결과를 이메일로 안내해 드립니다.
+            </p>
+            <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+                <a href="submission.html?tab=history"
+                   style="display:inline-flex;align-items:center;gap:8px;padding:13px 28px;font-weight:700;background:#2b8a7e;color:#fff;border-radius:7px;text-decoration:none;">
+                    <i class="fa-solid fa-list-ul"></i> 투고 내역 확인
+                </a>
+                <a href="index.html"
+                   style="display:inline-flex;align-items:center;gap:8px;padding:13px 28px;font-weight:700;border-radius:7px;text-decoration:none;border:2px solid #2b8a7e;color:#2b8a7e;">
+                    <i class="fa-solid fa-house"></i> 홈으로 돌아가기
+                </a>
+            </div>
+        </div>
+    `;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function initPage() {
+    const user = window.SESSION_get ? window.SESSION_get() : null;
+    currentUser = user;
+
+    const loginLink = document.getElementById('util-login-link');
+    if (loginLink && user) {
+        loginLink.innerHTML = '<i class="fa-solid fa-user"></i> ' + (user.name || user.email);
+        loginLink.href = 'mypage.html';
+    }
+
+    if (!user) {
+        document.getElementById('section-login-required').style.display = 'block';
+        return;
+    }
+
+    try {
+        loadedSubmissions = await window.DB_getSubmissions();
+    } catch (e) {
+        console.error('투고 데이터 로드 실패:', e);
+        loadedSubmissions = [];
+    }
+
+    const isAdmin = ADMIN_ROLES_REV.includes(user.role);
+    const revisable = loadedSubmissions.filter(s => {
+        if (s.deleted) return false;
+        if (s.status !== '수정후게재') return false;
+        if (isAdmin) return true;
+        return s.author_email === user.email || (s.authors && s.authors.some(a => a.email === user.email));
+    });
+
+    if (revisable.length === 0) {
+        document.getElementById('section-no-revisable').style.display = 'block';
+        return;
+    }
+
+    const sel = document.getElementById('rvsub-paper-select');
+    revisable.forEach(sub => {
+        const opt = document.createElement('option');
+        opt.value = sub.id;
+        const t = sub.title_ko || '(제목 없음)';
+        opt.textContent = '[' + sub.id + '] ' + (t.length > 45 ? t.substring(0, 45) + '…' : t);
+        sel.appendChild(opt);
+    });
+
+    if (revisable.length === 1) {
+        sel.value = revisable[0].id;
+        sel.dispatchEvent(new Event('change'));
+    }
+
+    bindPaperSelect();
+    bindFileInput('rvsub-file-manuscript', 'info-manuscript', 'info-manuscript-name', 'info-manuscript-size', 30, 'rvsub-ms-required');
+    bindFileInput('rvsub-file-compliance', 'info-compliance', 'info-compliance-name', 'info-compliance-size', 10, null);
+
+    document.getElementById('section-form').style.display = 'block';
+}
+
+document.addEventListener('DOMContentLoaded', initPage);
+</script>
+</body>
+</html>
