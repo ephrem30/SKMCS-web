@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>세미나 아카이브 · 한국음악학회</title>
+    <meta name="description" content="한국음악학회가 개최한 정기세미나·특별세미나·기획세미나의 기록을 연도별로 아카이브합니다.">
+    <link rel="stylesheet" href="styles_v2.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <style>
+        /* ── 공통 유틸 ── */
+        *, *::before, *::after { box-sizing: border-box; }
+
+        /* ── 히어로 배너 ── */
+        .sa-hero {
+            background: linear-gradient(135deg, #1c2e38 0%, #2d4a5e 55%, #1c3040 100%);
+            padding: 56px 0 44px;
+            position: relative;
+            overflow: hidden;
+        }
+        .sa-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: url('bg_activities.png') center/cover no-repeat;
+            opacity: 0.08;
+        }
+        .sa-hero-inner {
+            position: relative;
+            z-index: 1;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+        .sa-hero-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            background: rgba(43,138,126,0.25);
+            border: 1px solid rgba(43,138,126,0.5);
+            color: #6ecfc4;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 5px 13px;
+            border-radius: 100px;
+            margin-bottom: 14px;
+        }
+        .sa-hero h2 {
+            font-size: 2.1rem;
+            font-weight: 900;
+            color: #fff;
+            margin: 0 0 10px;
+            letter-spacing: -0.02em;
+        }
+        .sa-hero p {
+            color: rgba(255,255,255,0.65);
+            font-size: 0.98rem;
+            margin: 0;
+        }
+
+        /* ── 필터 바 ── */
+        .filter-bar {
+            background: white;
+            border-bottom: 1.5px solid var(--border-color);
+            padding: 16px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+        .filter-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filter-select, .filter-search input {
+            padding: 9px 14px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            background: var(--bg-offwhite);
+            color: var(--text-dark);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .filter-select:focus, .filter-search input:focus {
+            border-color: var(--color-green);
+            background: white;
+        }
+        .filter-search {
+            flex: 1;
+            min-width: 200px;
+            position: relative;
+        }
+        .filter-search input { width: 100%; padding-left: 36px; }
+        .filter-search .icon-search {
+            position: absolute;
+            left: 11px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+        .filter-count {
+            margin-left: auto;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            font-weight: 600;
+        }
+
+        /* ── 컨텐츠 영역 ── */
+        .sa-content {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 36px 24px 60px;
+        }
+
+        /* ── 관리자 패널 ── */
+        .admin-bar {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            background: #eaf4f2;
+            border: 1.5px solid #b2dbd6;
+            border-radius: 8px;
+            padding: 13px 18px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .admin-bar p { font-size: 0.88rem; color: var(--color-green); font-weight: 700; margin: 0; }
+
+        /* ── 카드 그리드 ── */
+        .sa-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+            gap: 20px;
+        }
+
+        /* ── 카드 ── */
+        .sa-card {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.22s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+        .sa-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 28px rgba(0,0,0,0.1);
+            border-color: var(--color-green);
+        }
+        .sa-card-top {
+            height: 6px;
+            background: var(--color-green);
+            flex-shrink: 0;
+        }
+        .sa-card-top.type-special  { background: var(--color-blue); }
+        .sa-card-top.type-planned  { background: var(--color-yellow); }
+        .sa-card-body {
+            padding: 20px 22px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .sa-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            gap: 8px;
+        }
+        .sa-type-badge {
+            font-size: 0.7rem;
+            font-weight: 800;
+            padding: 3px 10px;
+            border-radius: 100px;
+            color: white;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .badge-regular  { background: var(--color-green); }
+        .badge-special  { background: var(--color-blue); }
+        .badge-planned  { background: var(--color-yellow); color: #333; }
+        .badge-other    { background: var(--bg-slate); }
+
+        .sa-card-date {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .sa-card-title {
+            font-size: 1.02rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            line-height: 1.45;
+            margin-bottom: 10px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .sa-card-presenter {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .sa-card-footer {
+            margin-top: auto;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .sa-card-location {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex: 1;
+        }
+        .btn-dl {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 11px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            border: 1.5px solid var(--color-green);
+            color: var(--color-green);
+            border-radius: 5px;
+            background: white;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.15s;
+            flex-shrink: 0;
+        }
+        .btn-dl:hover { background: var(--color-green); color: white; }
+        .btn-dl:disabled, .btn-dl.no-file { border-color: var(--border-color); color: var(--text-muted); pointer-events: none; }
+
+        /* ── 관리자 카드 액션 ── */
+        .sa-admin-actions {
+            display: flex;
+            gap: 6px;
+            justify-content: flex-end;
+            padding: 10px 16px;
+            border-top: 1px solid var(--border-color);
+            background: #fafaf8;
+        }
+
+        /* ── 빈 상태 ── */
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 80px 20px;
+            color: var(--text-muted);
+        }
+        .empty-state svg { width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.3; }
+        .empty-state p { font-size: 1rem; }
+
+        /* ── 모달 ── */
+        .sa-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            z-index: 2000;
+            overflow-y: auto;
+            padding: 40px 16px;
+        }
+        .sa-modal-box {
+            background: white;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 620px;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.2);
+            border-top: 4px solid var(--color-green);
+            margin: auto;
+            animation: saModalIn 0.25s ease;
+        }
+        @keyframes saModalIn {
+            from { transform: translateY(-18px); opacity: 0; }
+            to   { transform: translateY(0); opacity: 1; }
+        }
+        .sa-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px 16px;
+            border-bottom: 1.5px solid var(--border-color);
+        }
+        .sa-modal-header h3 {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .sa-modal-body { padding: 20px 24px; }
+        .sa-modal-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem; padding: 4px; border-radius: 4px; transition: color 0.2s; }
+        .sa-modal-close:hover { color: var(--color-red); }
+        .fgrp { margin-bottom: 14px; display: flex; flex-direction: column; gap: 5px; }
+        .fgrp label { font-size: 0.83rem; font-weight: 700; color: var(--text-dark); }
+        .fgrp input, .fgrp select, .fgrp textarea {
+            padding: 9px 12px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            background: var(--bg-offwhite);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .fgrp input:focus, .fgrp select:focus, .fgrp textarea:focus {
+            border-color: var(--color-green);
+            background: white;
+        }
+        .fgrp textarea { resize: vertical; }
+        .fgrp-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .sa-modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding: 16px 24px 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* ── 섹션 헤더 (연도별) ── */
+        .sa-year-bar {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin: 32px 0 18px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border-color);
+        }
+        .sa-year-bar:first-child { margin-top: 0; }
+        .sa-year-num { font-size: 1.5rem; font-weight: 900; color: var(--text-dark); }
+        .sa-year-cnt { font-size: 0.82rem; background: var(--color-green); color: white; padding: 3px 10px; border-radius: 100px; font-weight: 700; }
+
+        /* 반응형 */
+        @media (max-width: 640px) {
+            .sa-hero h2 { font-size: 1.5rem; }
+            .fgrp-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="layout-wrapper">
+
+    <aside class="quick-sidebar">
+        <div class="sidebar-toggle"><i class="fa-solid fa-bars"></i><span>Quick Menu</span></div>
+        <nav class="sidebar-nav">
+            <a href="news.html" class="side-link"><i class="fa-solid fa-bullhorn"></i><span class="side-text">공지사항</span></a>
+            <a href="activities.html" class="side-link"><i class="fa-solid fa-calendar-days"></i><span class="side-text">학술대회 세미나</span></a>
+            <a href="seminar_archive.html" class="side-link"><i class="fa-solid fa-box-archive"></i><span class="side-text">세미나 아카이브</span></a>
+            <a href="past_seminars.html" class="side-link"><i class="fa-solid fa-clock-rotate-left"></i><span class="side-text">지난 세미나</span></a>
+            <a href="forms.html" class="side-link"><i class="fa-solid fa-folder-open"></i><span class="side-text">자료실</span></a>
+        </nav>
+    </aside>
+
+    <div class="top-util-bar">
+        <div class="container">
+            <div class="util-right">
+                <div class="util-links">
+                    <a href="login.html" class="util-link"><i class="fa-solid fa-right-to-bracket"></i> 로그인</a>
+                    <a href="#" class="util-link"><i class="fa-solid fa-user-plus"></i> 회원가입</a>
+                    <a href="#" class="util-link"><i class="fa-solid fa-sitemap"></i> 사이트맵</a>
+                </div>
+                <form action="search.html" method="GET" class="top-search">
+                    <input type="text" name="query" placeholder="검색..." required>
+                    <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <header class="main-header">
+        <div class="container header-container">
+            <a href="index.html" class="logo">
+                <img src="main_logo.png" alt="한국음악학회 로고 마크" class="logo-icon-img">
+                <div class="logo-text">
+                    <h1>한국음악학회</h1>
+                    <div class="logo-divider"></div>
+                    <span class="logo-en">the society for korean music &amp; culture studies</span>
+                </div>
+            </a>
+            <nav class="main-nav">
+                <ul>
+                    <li class="nav-item"><a href="index.html">Home</a><div class="hover-bar white"></div></li>
+                    <li class="nav-item">
+                        <a href="about.html">학회소개</a><div class="hover-bar red"></div><span class="sub-text">about us</span>
+                        <ul class="dropdown-menu">
+                            <li><a href="about.html">인사말</a></li><li><a href="organization.html">조직도/임원진</a></li>
+                            <li><a href="history.html">학회 연혁</a></li><li><a href="rules.html">학회 정관</a></li><li><a href="directions.html">오시는 길</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a href="news.html">학회소식</a><div class="hover-bar black"></div><span class="sub-text">news</span>
+                        <ul class="dropdown-menu"><li><a href="news.html?tab=notice">공지사항</a></li><li><a href="news.html?tab=freeboard">자유게시판</a></li></ul>
+                    </li>
+                    <li class="nav-item">
+                        <a href="issue.html">학회지</a><div class="hover-bar green"></div><span class="sub-text">journal</span>
+                        <ul class="dropdown-menu"><li><a href="issue.html">최신호</a></li><li><a href="archive.html">지난호 (아카이브)</a></li></ul>
+                    </li>
+                    <li class="nav-item">
+                        <a href="submission.html">논문투고</a><div class="hover-bar yellow"></div><span class="sub-text">submission</span>
+                        <ul class="dropdown-menu">
+                            <li><a href="submission.html">논문투고안내</a></li><li><a href="submission_rules.html">논문투고규정</a></li>
+                            <li><a href="submission_review.html">심사규정</a></li><li><a href="submission.html?tab=online">온라인 투고시스템</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a href="activities.html">학술활동</a><div class="hover-bar grey"></div><span class="sub-text">activities</span>
+                        <ul class="dropdown-menu">
+                            <li><a href="activities.html?tab=conference">학술대회 일정</a></li>
+                            <li><a href="activities.html?tab=seminar">연구모임/세미나</a></li>
+                            <li><a href="past_seminars.html">지난 세미나 기록</a></li>
+                            <li><a href="seminar_archive.html">세미나 아카이브</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a href="admission.html">회원서비스</a><div class="hover-bar blue"></div><span class="sub-text">member service</span>
+                        <ul class="dropdown-menu">
+                            <li><a href="admission.html">입회안내</a></li><li><a href="mypage.html">마이페이지</a></li>
+                            <li><a href="#">추천사이트</a></li><li><a href="forms.html">양식모음</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Sub Visual -->
+    <div class="sub-visual" style="background-image: linear-gradient(rgba(0,0,0,0.58),rgba(0,0,0,0.58)), url('bg_activities.png');">
+        <div class="visual-text"><h2>세미나 아카이브</h2></div>
+    </div>
+
+    <main>
+        <!-- 브레드크럼 -->
+        <div style="background: white; border-bottom: 1px solid var(--border-color); padding: 10px 0;">
+            <div style="max-width:1100px; margin:0 auto; padding:0 24px; display:flex; justify-content:space-between; align-items:center;">
+                <div class="breadcrumb">
+                    <i class="fa-solid fa-house"></i>
+                    <a href="activities.html" style="color:inherit; text-decoration:none;"><span class="depth">학술활동</span></a>
+                    <i class="fa-solid fa-angle-right divider"></i>
+                    <span class="depth current">세미나 아카이브</span>
+                </div>
+                <div class="page-utils">
+                    <a href="#" title="인쇄"><i class="fa-solid fa-print"></i></a>
+                    <a href="#" title="공유"><i class="fa-solid fa-share-nodes"></i></a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 필터 바 -->
+        <div class="filter-bar">
+            <div class="filter-inner">
+                <select class="filter-select" id="f-year"><option value="">전체 연도</option></select>
+                <select class="filter-select" id="f-type">
+                    <option value="">전체 유형</option>
+                    <option value="정기세미나">정기세미나</option>
+                    <option value="특별세미나">특별세미나</option>
+                    <option value="기획세미나">기획세미나</option>
+                    <option value="기타">기타</option>
+                </select>
+                <div class="filter-search">
+                    <i data-lucide="search" class="icon-search" style="width:15px;height:15px;"></i>
+                    <input type="text" id="f-search" placeholder="제목, 발제자, 장소 검색...">
+                </div>
+                <span class="filter-count" id="result-count"></span>
+            </div>
+        </div>
+
+        <!-- 컨텐츠 -->
+        <div class="sa-content">
+            <!-- 관리자 패널 -->
+            <div class="admin-bar" id="admin-bar">
+                <p><i class="fa-solid fa-shield-halved"></i> 관리자 모드 — 세미나 아카이브 등록·편집이 가능합니다.</p>
+                <button id="btn-new" class="btn-solid" style="background:var(--color-green);border-color:var(--color-green);padding:9px 18px;font-size:0.88rem;display:inline-flex;align-items:center;gap:7px;cursor:pointer;border-radius:6px;">
+                    <i data-lucide="plus-circle" style="width:15px;height:15px;"></i> 새 세미나 등록
+                </button>
+            </div>
+
+            <!-- 목록 컨테이너 -->
+            <div id="sa-list"></div>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <div class="container footer-container">
+            <div class="footer-left">
+                <div class="footer-main-row" style="display:flex;align-items:center;gap:30px;margin-bottom:12px;">
+                    <a href="index.html" style="display:flex;align-items:flex-end;gap:0;text-decoration:none;color:inherit;flex-shrink:0;">
+                        <img src="main_logo_white.png" alt="한국음악학회 로고" style="height:65px;width:auto;object-fit:contain;">
+                        <div style="text-align:left;padding-bottom:2px;">
+                            <h4 style="font-size:1.15rem;font-weight:800;letter-spacing:0.05em;margin:0;color:white;line-height:1.1;">한국음악학회</h4>
+                            <div class="logo-divider" style="margin:2px 0;"></div>
+                            <span style="font-size:0.55rem;font-weight:500;text-transform:uppercase;color:rgba(255,255,255,0.6);display:block;letter-spacing:0.03em;margin-top:1px;line-height:1.1;">the society for korean music &amp; culture studies</span>
+                        </div>
+                    </a>
+                    <div style="width:1px;height:35px;background:rgba(255,255,255,0.15);flex-shrink:0;"></div>
+                    <div style="text-align:left;font-size:0.82rem;line-height:1.6;color:#bbb;">
+                        <p style="margin:0;">주소: (04620) 서울특별시 중구 필동로 1길 30 동국대학교 문화관 &nbsp;|&nbsp; E-mail: skmcs@dgu.ac.kr</p>
+                        <p style="margin:2px 0 0;color:#777;">Copyright &copy; 2026 The Society for Korean Music &amp; Culture Studies. All Rights Reserved.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-right"><div class="designed-by"><span>Designed by</span><span class="designer-logo"><i class="fa-solid fa-fire" style="color:#e65100"></i> Woochang Choi</span></div></div>
+        </div>
+        <a href="#" class="btn-top"><i class="fa-solid fa-chevron-up"></i></a>
+    </footer>
+</div>
+
+<!-- 등록/수정 모달 -->
+<div id="sa-modal" class="sa-modal-overlay" style="display:none;">
+    <div class="sa-modal-box">
+        <div class="sa-modal-header">
+            <h3 id="modal-title-txt">
+                <i data-lucide="calendar-plus" style="width:18px;height:18px;color:var(--color-green);"></i>
+                세미나 등록
+            </h3>
+            <button class="sa-modal-close" id="modal-close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="sa-modal-body">
+            <form id="sa-form" onsubmit="handleSubmit(event)">
+                <div class="fgrp">
+                    <label>제목 <span style="color:var(--color-red);">*</span></label>
+                    <input type="text" id="f-title" required placeholder="예: 제12회 정기세미나 — 판소리의 현대적 계승">
+                </div>
+                <div class="fgrp-row">
+                    <div class="fgrp">
+                        <label>세미나 유형 <span style="color:var(--color-red);">*</span></label>
+                        <select id="f-seminar-type" required>
+                            <option value="정기세미나">정기세미나</option>
+                            <option value="특별세미나">특별세미나</option>
+                            <option value="기획세미나">기획세미나</option>
+                            <option value="기타">기타</option>
+                        </select>
+                    </div>
+                    <div class="fgrp">
+                        <label>개최일자 <span style="color:var(--color-red);">*</span></label>
+                        <input type="date" id="f-date" required>
+                    </div>
+                </div>
+                <div class="fgrp">
+                    <label>장소 <span style="color:var(--color-red);">*</span></label>
+                    <input type="text" id="f-location" required placeholder="예: 동국대학교 문화관 3층 세미나실">
+                </div>
+                <div class="fgrp-row">
+                    <div class="fgrp">
+                        <label>발제자</label>
+                        <input type="text" id="f-presenter" placeholder="예: 홍길동 교수 (서울대)">
+                    </div>
+                    <div class="fgrp">
+                        <label>사회자</label>
+                        <input type="text" id="f-moderator" placeholder="예: 김영재 교수 (동국대)">
+                    </div>
+                </div>
+                <div class="fgrp">
+                    <label>행사 취지 및 발표 요약 <span style="color:var(--color-red);">*</span></label>
+                    <textarea id="f-summary" rows="5" required placeholder="세미나 취지, 주요 발표 내용, 토론 내용 등을 입력하세요."></textarea>
+                </div>
+                <div class="fgrp">
+                    <label>자료집/발제문 PDF 링크 (Google Drive 공유 URL)</label>
+                    <input type="url" id="f-attachment" placeholder="https://drive.google.com/file/d/...">
+                </div>
+                <div class="fgrp">
+                    <label>현장 사진 URL (쉼표로 구분, 여러 장 가능)</label>
+                    <textarea id="f-photos" rows="2" placeholder="https://example.com/img1.jpg, https://example.com/img2.jpg"></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="sa-modal-footer">
+            <button type="button" class="btn-outline" id="modal-cancel">취소</button>
+            <button type="submit" form="sa-form" class="btn-solid" style="background:var(--color-green);border-color:var(--color-green);display:inline-flex;align-items:center;gap:6px;cursor:pointer;">
+                <i data-lucide="save" style="width:14px;height:14px;"></i> 저장하기
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="share.js"></script>
+<script>
+// ── 데이터 ──────────────────────────────────────────────────
+const SA_KEY = "seminar_archive_db";
+const SAMPLE = [
+    { id:"sa_1", title:"제12회 정기세미나 — 판소리 사설의 구비문학적 특성", seminar_type:"정기세미나", date:"2025-11-08", location:"동국대학교 문화관 3층 세미나실", presenter:"이상은 교수 (한국예술종합학교)", moderator:"김영재 교수 (동국대학교)", summary:"본 세미나는 판소리 사설에 나타난 구비문학적 특성을 다각도로 분석하였다. 발제자는 조선후기 판소리 여섯 마당의 사설 구조를 통시적으로 검토하고, 민담·설화와의 상호텍스트성을 규명하였다. 참석자들은 판소리의 현대적 재해석과 공연 예술로서의 가능성에 대해 심도 있는 토론을 이어갔다.", attachment_file:"#", photos:[], year:2025 },
+    { id:"sa_2", title:"특별세미나: 국악 디지털 아카이빙의 현황과 과제", seminar_type:"특별세미나", date:"2025-06-14", location:"국립국악원 풍류사랑방", presenter:"박진우 박사 (국립국악원)", moderator:"윤소희 박사 (서울대학교)", summary:"디지털 기술의 급격한 발전이 전통음악 기록 및 보존 방식에 가져온 변화를 집중 조명하였다. 음향 아카이빙 표준화 문제, 메타데이터 구축 방안, 그리고 AI 기반 분류 시스템 도입 가능성에 대해 발표가 이루어졌으며, 현장 종사자들과 학자들 간의 활발한 토론이 진행되었다.", attachment_file:"#", photos:[], year:2025 },
+    { id:"sa_3", title:"기획세미나: 동아시아 음악 교류의 역사적 맥락", seminar_type:"기획세미나", date:"2024-09-28", location:"예술의전당 음악아카데미 강의실", presenter:"정지훈 교수 (한양대학교), 야마모토 켄지 교수 (도쿄대학)", moderator:"박소연 박사", summary:"한·중·일 세 나라의 전통 음악 간 교류 양상을 비교 연구한 결과를 발표하였다. 특히 고려 아악의 대성악 수용 과정과 일본 아악의 전래 경로를 비교하며, 동아시아 음악 문화권의 공통성과 차별성을 논의하였다.", attachment_file:"", photos:[], year:2024 }
+];
+
+let isAdmin = false;
+let editingId = null;
+
+function initDB() { if (!localStorage.getItem(SA_KEY)) localStorage.setItem(SA_KEY, JSON.stringify(SAMPLE)); }
+function getAll() { return JSON.parse(localStorage.getItem(SA_KEY) || "[]"); }
+function save(records) { localStorage.setItem(SA_KEY, JSON.stringify(records)); }
+function escHtml(s) { return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+function checkAdmin() {
+    try {
+        const u = JSON.parse(localStorage.getItem("logged_in_user") || "null");
+        if (!u) return;
+        isAdmin = ['admin','secretary','reviewer','editor','president'].includes(u.role);
+    } catch(e) {}
+}
+
+const TYPE_MAP = {
+    "정기세미나": { badgeCls:"badge-regular",  topCls:"",              label:"정기" },
+    "특별세미나": { badgeCls:"badge-special",  topCls:"type-special",  label:"특별" },
+    "기획세미나": { badgeCls:"badge-planned",  topCls:"type-planned",  label:"기획" },
+    "기타":       { badgeCls:"badge-other",    topCls:"type-other",    label:"기타" },
+};
+
+// ── 렌더 ────────────────────────────────────────────────────
+function render() {
+    const q    = document.getElementById("f-search").value.toLowerCase();
+    const year = document.getElementById("f-year").value;
+    const type = document.getElementById("f-type").value;
+    const list = document.getElementById("sa-list");
+
+    let records = getAll().sort((a,b) => new Date(b.date) - new Date(a.date));
+
+    // 연도 드롭다운 채우기
+    const yearSel = document.getElementById("f-year");
+    const curYear = yearSel.value;
+    const years = [...new Set(records.map(r => r.year || (r.date||"").slice(0,4)).filter(Boolean))].sort((a,b)=>b-a);
+    yearSel.innerHTML = `<option value="">전체 연도</option>` + years.map(y=>`<option value="${y}" ${String(y)===curYear?"selected":""}>${y}년</option>`).join("");
+
+    if (q)    records = records.filter(r => (r.title+r.presenter+r.location).toLowerCase().includes(q));
+    if (year) records = records.filter(r => String(r.year || (r.date||"").slice(0,4)) === String(year));
+    if (type) records = records.filter(r => r.seminar_type === type);
+
+    document.getElementById("result-count").textContent = `총 ${records.length}건`;
+    list.innerHTML = "";
+
+    if (!records.length) {
+        list.innerHTML = `<div class="empty-state"><svg data-lucide="inbox"></svg><p>검색 결과가 없습니다.</p></div>`;
+        lucide.createIcons();
+        return;
+    }
+
+    // 연도별 그룹
+    const groups = {};
+    records.forEach(r => {
+        const y = r.year || (r.date||"").slice(0,4) || "미상";
+        if (!groups[y]) groups[y] = [];
+        groups[y].push(r);
+    });
+
+    Object.keys(groups).sort((a,b)=>b-a).forEach(y => {
+        const yBar = document.createElement("div");
+        yBar.className = "sa-year-bar";
+        yBar.innerHTML = `<span class="sa-year-num">${y}년</span><span class="sa-year-cnt">${groups[y].length}건</span>`;
+        list.appendChild(yBar);
+
+        const grid = document.createElement("div");
+        grid.className = "sa-grid";
+
+        groups[y].forEach(r => {
+            const t = TYPE_MAP[r.seminar_type] || TYPE_MAP["기타"];
+            const dateStr = r.date ? r.date.replace(/-/g,". ")+"." : "-";
+            const hasPdf = r.attachment_file && r.attachment_file !== "#" && r.attachment_file !== "";
+
+            const card = document.createElement("div");
+            card.className = "sa-card";
+            card.innerHTML = `
+                <div class="sa-card-top ${t.topCls}"></div>
+                <div class="sa-card-body">
+                    <div class="sa-card-header">
+                        <span class="sa-type-badge ${t.badgeCls}">${escHtml(r.seminar_type)}</span>
+                        <span class="sa-card-date"><i data-lucide="calendar" style="width:12px;height:12px;"></i> ${escHtml(dateStr)}</span>
+                    </div>
+                    <div class="sa-card-title">${escHtml(r.title)}</div>
+                    ${r.presenter ? `<div class="sa-card-presenter"><i data-lucide="mic" style="width:13px;height:13px;"></i> ${escHtml(r.presenter)}</div>` : ""}
+                    <div class="sa-card-footer">
+                        ${r.location ? `<div class="sa-card-location"><i data-lucide="map-pin" style="width:12px;height:12px;"></i> ${escHtml(r.location)}</div>` : ""}
+                        ${hasPdf
+                            ? `<a href="${escHtml(r.attachment_file)}" target="_blank" class="btn-dl" onclick="event.stopPropagation();"><i data-lucide="download" style="width:12px;height:12px;"></i> 자료집</a>`
+                            : `<span class="btn-dl no-file"><i data-lucide="file-x" style="width:12px;height:12px;"></i> 자료없음</span>`}
+                    </div>
+                </div>
+                ${isAdmin ? `
+                <div class="sa-admin-actions">
+                    <button class="btn-outline" onclick="event.stopPropagation(); openEdit('${r.id}')" style="padding:4px 11px;font-size:0.78rem;display:inline-flex;align-items:center;gap:4px;color:var(--color-green);border-color:var(--color-green);">
+                        <i data-lucide="pencil" style="width:12px;height:12px;"></i> 수정
+                    </button>
+                    <button class="btn-outline" onclick="event.stopPropagation(); deleteSA('${r.id}')" style="padding:4px 11px;font-size:0.78rem;display:inline-flex;align-items:center;gap:4px;color:var(--color-red);border-color:var(--color-red);">
+                        <i data-lucide="trash-2" style="width:12px;height:12px;"></i> 삭제
+                    </button>
+                </div>` : ""}
+            `;
+            card.addEventListener("click", () => {
+                const params = new URLSearchParams({ id: r.id });
+                window.location.href = `seminar_archive_detail.html?${params}`;
+            });
+            grid.appendChild(card);
+        });
+        list.appendChild(grid);
+    });
+
+    lucide.createIcons();
+}
+
+// ── CRUD ────────────────────────────────────────────────────
+window.deleteSA = function(id) {
+    if (!isAdmin || !confirm("이 세미나 기록을 삭제하시겠습니까?")) return;
+    save(getAll().filter(r => r.id !== id));
+    render();
+};
+
+window.openEdit = function(id) {
+    const r = getAll().find(r => r.id === id);
+    if (!r) return;
+    editingId = id;
+    document.getElementById("f-title").value         = r.title || "";
+    document.getElementById("f-seminar-type").value  = r.seminar_type || "정기세미나";
+    document.getElementById("f-date").value           = r.date || "";
+    document.getElementById("f-location").value       = r.location || "";
+    document.getElementById("f-presenter").value      = r.presenter || "";
+    document.getElementById("f-moderator").value      = r.moderator || "";
+    document.getElementById("f-summary").value        = r.summary || "";
+    document.getElementById("f-attachment").value     = r.attachment_file || "";
+    document.getElementById("f-photos").value         = (r.photos || []).join(", ");
+    document.getElementById("modal-title-txt").innerHTML = `<i data-lucide="pencil" style="width:18px;height:18px;color:var(--color-green);"></i> 세미나 수정`;
+    document.getElementById("sa-modal").style.display = "flex";
+    lucide.createIcons();
+};
+
+window.handleSubmit = function(e) {
+    e.preventDefault();
+    if (!isAdmin) return;
+    const photos = document.getElementById("f-photos").value.split(",").map(s=>s.trim()).filter(Boolean);
+    const dateVal = document.getElementById("f-date").value;
+    const rec = {
+        id:            editingId || ("sa_" + Date.now()),
+        title:         document.getElementById("f-title").value.trim(),
+        seminar_type:  document.getElementById("f-seminar-type").value,
+        date:          dateVal,
+        year:          parseInt(dateVal.slice(0,4)) || new Date().getFullYear(),
+        location:      document.getElementById("f-location").value.trim(),
+        presenter:     document.getElementById("f-presenter").value.trim(),
+        moderator:     document.getElementById("f-moderator").value.trim(),
+        summary:       document.getElementById("f-summary").value.trim(),
+        attachment_file: document.getElementById("f-attachment").value.trim(),
+        photos,
+    };
+    if (!rec.title || !rec.date || !rec.location || !rec.summary) { alert("필수 항목을 입력해 주세요."); return; }
+    let records = getAll();
+    if (editingId) { const i = records.findIndex(r=>r.id===editingId); if(i!==-1) records[i]=rec; }
+    else records.unshift(rec);
+    save(records);
+    closeModal();
+    render();
+    alert(editingId ? "✅ 수정되었습니다." : "✅ 등록되었습니다.");
+};
+
+function closeModal() {
+    document.getElementById("sa-modal").style.display = "none";
+    document.getElementById("sa-form").reset();
+    editingId = null;
+    document.getElementById("modal-title-txt").innerHTML = `<i data-lucide="calendar-plus" style="width:18px;height:18px;color:var(--color-green);"></i> 세미나 등록`;
+    lucide.createIcons();
+}
+
+// ── 이벤트 바인딩 ────────────────────────────────────────────
+document.addEventListener("DOMContentLoaded", () => {
+    initDB();
+    checkAdmin();
+    if (isAdmin) document.getElementById("admin-bar").style.display = "flex";
+
+    document.getElementById("f-search").addEventListener("input", render);
+    document.getElementById("f-year").addEventListener("change", render);
+    document.getElementById("f-type").addEventListener("change", render);
+
+    document.getElementById("btn-new").addEventListener("click", () => {
+        editingId = null;
+        document.getElementById("sa-form").reset();
+        document.getElementById("sa-modal").style.display = "flex";
+        lucide.createIcons();
+    });
+    document.getElementById("modal-close").addEventListener("click", closeModal);
+    document.getElementById("modal-cancel").addEventListener("click", closeModal);
+    document.getElementById("sa-modal").addEventListener("click", e => { if(e.target===document.getElementById("sa-modal")) closeModal(); });
+
+    render();
+    lucide.createIcons();
+});
+</script>
+</body>
+</html>
