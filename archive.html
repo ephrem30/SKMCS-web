@@ -213,7 +213,6 @@
                     <a href="archive.html" class="tab-item active">지난호 (아카이브)</a>
                 </div>
 
-                <!-- Archive Selector Row -->
                 <div class="archive-selector-row" style="margin-bottom: 15px; display: flex; align-items: center; gap: 15px; background: white; padding: 10px 20px; border: 1px solid var(--border-color); border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); flex-wrap: wrap;">
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <label for="archive-select" style="font-weight: 600; color: var(--text-dark); font-family: 'Pretendard', sans-serif; line-height: 1.3; display: inline-block; text-align: center; font-size: 0.9rem; padding-right: 5px; white-space: nowrap;">발행호<br>선택</label>
@@ -221,7 +220,16 @@
                             <!-- Options populated dynamically -->
                         </select>
                     </div>
-                    <button type="button" id="btn-upload-issue" class="btn-apply" style="margin-left: auto; height: 38px; display: none; background-color: var(--color-red); font-size: 0.9rem; font-weight: 700; border-radius: 4px; padding: 0 15px; align-items: center; gap: 6px;"><i class="fa-solid fa-plus"></i> 발행호 추가</button>
+                    <div style="margin-left:auto; display:flex; gap:8px; align-items:center;">
+                        <button type="button" id="btn-edit-issue" class="btn-apply"
+                            style="height:38px; display:none; background:var(--color-green); font-size:0.88rem; font-weight:700; border-radius:4px; padding:0 14px; align-items:center; gap:6px;">
+                            <i class="fa-solid fa-pen-to-square"></i> 발행호 수정
+                        </button>
+                        <button type="button" id="btn-upload-issue" class="btn-apply"
+                            style="height:38px; display:none; background-color:var(--color-red); font-size:0.9rem; font-weight:700; border-radius:4px; padding:0 15px; align-items:center; gap:6px;">
+                            <i class="fa-solid fa-plus"></i> 발행호 추가
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Current Issue Summary -->
@@ -272,7 +280,91 @@
             </div>
         </div>
 
-        <!-- Upload Issue Modal -->
+        <!-- 발행호 수정 모달 (Edit Issue Modal) -->
+        <div id="edit-issue-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center; padding:20px;">
+            <div style="background:#fff; width:95%; max-width:580px; max-height:90vh; border-radius:12px; overflow-y:auto; display:flex; flex-direction:column; box-shadow:0 15px 35px rgba(0,0,0,0.3);">
+                <!-- Header -->
+                <div style="display:flex; align-items:center; justify-content:space-between; padding:16px 22px; background:var(--color-green); color:#fff; flex-shrink:0;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <i class="fa-solid fa-pen-to-square" style="font-size:1.1rem;"></i>
+                        <span style="font-size:1.05rem; font-weight:700;">발행호 정보 수정</span>
+                    </div>
+                    <button id="edit-issue-close" style="background:none; border:none; color:#fff; font-size:1.5rem; cursor:pointer; line-height:1;">&times;</button>
+                </div>
+
+                <!-- Body -->
+                <form id="edit-issue-form" style="padding:24px; display:flex; flex-direction:column; gap:18px;">
+                    <input type="hidden" id="edit-issue-id">
+                    <input type="hidden" id="edit-issue-tonggwon">
+
+                    <!-- 표지 미리보기 + 업로드 -->
+                    <div style="display:flex; flex-direction:column; gap:6px;">
+                        <label style="font-size:0.85rem; font-weight:700; color:var(--text-dark);">표지 이미지 <span style="font-size:0.77rem; color:var(--text-muted); font-weight:400;">(선택 — 미선택 시 현재 표지 유지)</span></label>
+                        <div style="display:flex; align-items:flex-start; gap:14px; flex-wrap:wrap;">
+                            <div style="width:65px; height:90px; border:1px solid var(--border-color); border-radius:4px; overflow:hidden; flex-shrink:0;">
+                                <img id="edit-cover-preview" src="cover.png" style="width:100%; height:100%; object-fit:cover;">
+                            </div>
+                            <div style="display:flex; flex-direction:column; gap:8px;">
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <input type="file" id="edit-cover-file" accept="image/*" style="display:none;">
+                                    <button type="button" onclick="document.getElementById('edit-cover-file').click()"
+                                        style="padding:7px 13px; border:1px solid #aaa; background:#f8f8f8; color:#555; border-radius:4px; font-size:0.83rem; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:5px;">
+                                        <i class="fa-solid fa-image"></i> 이미지 변경
+                                    </button>
+                                    <button type="button" id="edit-cover-clear"
+                                        style="display:none; background:none; border:none; color:var(--color-red); cursor:pointer; font-size:0.9rem; padding:2px 5px;"
+                                        onclick="clearEditCover()"><i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </div>
+                                <span id="edit-cover-name" style="font-size:0.78rem; color:#888;">미선택 (현재 표지 유지)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 발행호명 -->
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                        <div style="display:flex; flex-direction:column; gap:5px;">
+                            <label style="font-size:0.83rem; font-weight:700; color:var(--text-dark);">발행호명 <span style="color:var(--color-red);">*</span></label>
+                            <input type="text" id="edit-title" placeholder="예: 제8호"
+                                style="padding:9px 11px; border:1px solid var(--border-color); border-radius:4px; font-size:0.88rem; font-family:inherit;">
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:5px;">
+                            <label style="font-size:0.83rem; font-weight:700; color:var(--text-dark);">전체 제목 <span style="color:var(--color-red);">*</span></label>
+                            <input type="text" id="edit-full-title" placeholder="예: 한국음악문화 제8호"
+                                style="padding:9px 11px; border:1px solid var(--border-color); border-radius:4px; font-size:0.88rem; font-family:inherit;">
+                        </div>
+                    </div>
+
+                    <!-- 발간일 -->
+                    <div style="display:flex; flex-direction:column; gap:5px;">
+                        <label style="font-size:0.83rem; font-weight:700; color:var(--text-dark);">발간일 <span style="color:var(--color-red);">*</span></label>
+                        <input type="text" id="edit-date" placeholder="예: 2026. 06. 30."
+                            style="padding:9px 11px; border:1px solid var(--border-color); border-radius:4px; font-size:0.88rem; font-family:inherit;">
+                    </div>
+
+                    <!-- 요약 설명 -->
+                    <div style="display:flex; flex-direction:column; gap:5px;">
+                        <label style="font-size:0.83rem; font-weight:700; color:var(--text-dark);">발행호 요약 설명</label>
+                        <textarea id="edit-desc" rows="3"
+                            style="padding:9px 11px; border:1px solid var(--border-color); border-radius:4px; font-size:0.88rem; font-family:inherit; resize:vertical;"></textarea>
+                    </div>
+
+                    <!-- 버튼 -->
+                    <div style="display:flex; gap:10px; justify-content:flex-end; padding-top:8px; border-top:1px solid var(--border-color);">
+                        <button type="button" id="btn-edit-issue-cancel"
+                            style="padding:10px 20px; border:1px solid var(--border-color); background:#fff; color:var(--text-dark); border-radius:4px; font-size:0.88rem; font-weight:600; cursor:pointer;">
+                            취소
+                        </button>
+                        <button type="submit"
+                            style="padding:10px 22px; background:var(--color-green); border:none; color:#fff; border-radius:4px; font-size:0.9rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:7px;">
+                            <i class="fa-solid fa-floppy-disk"></i> 수정 저장
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Upload Issue Modal -->\n
         <div id="upload-issue-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center; padding: 20px;">
             <div style="background:#fff; width:95%; max-width:650px; max-height: 90vh; border-radius:12px; overflow-y:auto; display:flex; flex-direction:column; box-shadow:0 15px 35px rgba(0,0,0,0.3); border: 1px solid var(--border-color);">
                 <div style="display:flex; align-items:center; justify-content:space-between; padding:18px 24px; background:var(--color-red); color:#fff; flex-shrink:0;">
@@ -637,6 +729,7 @@
 
         // 4. Admin Upload Form Logic
         const btnUploadIssue = document.getElementById('btn-upload-issue');
+        const btnEditIssue   = document.getElementById('btn-edit-issue');
         const uploadModal = document.getElementById('upload-issue-modal');
         const uploadClose = document.getElementById('upload-issue-close');
         const uploadCancel = document.getElementById('btn-upload-issue-cancel');
@@ -644,7 +737,7 @@
         const articlesContainer = document.getElementById('articles-input-container');
         const uploadForm = document.getElementById('upload-issue-form');
 
-        // Show button only for admins
+        // Show buttons only for admins
         const loggedInUserStr = localStorage.getItem("logged_in_user");
         const ADMIN_ROLES = ["admin", "secretary", "editor", "president"];
         if (loggedInUserStr) {
@@ -652,12 +745,171 @@
                 const user = JSON.parse(loggedInUserStr);
                 if (ADMIN_ROLES.includes(user.role)) {
                     btnUploadIssue.style.display = 'inline-flex';
+                    btnEditIssue.style.display   = 'inline-flex';
                 }
             } catch(e){}
         }
 
-        // Open Modal
+        // ── 수정 모달 로직 ──────────────────────────────────────
+        const editModal     = document.getElementById('edit-issue-modal');
+        const editForm      = document.getElementById('edit-issue-form');
+        const editClose     = document.getElementById('edit-issue-close');
+        const editCancelBtn = document.getElementById('btn-edit-issue-cancel');
+        const editCoverFile = document.getElementById('edit-cover-file');
+        let editCoverFileObj = null;
+
+        function openEditModal(issue) {
+            document.getElementById('edit-issue-id').value      = issue.id   || '';
+            document.getElementById('edit-issue-tonggwon').value = issue.tonggwon || issue.ho || '';
+            document.getElementById('edit-title').value          = issue.title     || '';
+            document.getElementById('edit-full-title').value     = issue.fullTitle || '';
+            document.getElementById('edit-date').value           = issue.date      || '';
+            document.getElementById('edit-desc').value           = issue.desc      || '';
+            // 표지 미리보기
+            document.getElementById('edit-cover-preview').src   = issue.cover || 'cover.png';
+            document.getElementById('edit-cover-name').textContent = '미선택 (현재 표지 유지)';
+            document.getElementById('edit-cover-clear').style.display = 'none';
+            editCoverFileObj = null;
+            editCoverFile.value = '';
+
+            editModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeEditModal() {
+            editModal.style.display = 'none';
+            document.body.style.overflow = '';
+            editCoverFileObj = null;
+        }
+
+        function clearEditCover() {
+            editCoverFileObj = null;
+            editCoverFile.value = '';
+            document.getElementById('edit-cover-name').textContent = '미선택 (현재 표지 유지)';
+            document.getElementById('edit-cover-clear').style.display = 'none';
+            // 원래 표지로 복구
+            const curId = document.getElementById('edit-issue-id').value;
+            const curIssue = journalData.find(j => j.id === curId);
+            document.getElementById('edit-cover-preview').src = (curIssue && curIssue.cover) ? curIssue.cover : 'cover.png';
+        }
+
+        // 표지 파일 선택 → 미리보기
+        editCoverFile.addEventListener('change', function() {
+            if (this.files[0]) {
+                editCoverFileObj = this.files[0];
+                document.getElementById('edit-cover-name').textContent = this.files[0].name;
+                document.getElementById('edit-cover-clear').style.display = 'inline-flex';
+                const reader = new FileReader();
+                reader.onload = e => { document.getElementById('edit-cover-preview').src = e.target.result; };
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+
+        btnEditIssue.addEventListener('click', () => {
+            const selId = selectEl.value;
+            const issue = journalData.find(j => j.id === selId);
+            if (!issue) { alert('먼저 발행호를 선택해주세요.'); return; }
+            openEditModal(issue);
+        });
+
+        editClose.addEventListener('click', closeEditModal);
+        editCancelBtn.addEventListener('click', closeEditModal);
+        editModal.addEventListener('click', e => { if (e.target === editModal) closeEditModal(); });
+
+        // ── 수정 저장 ──────────────────────────────────────────
+        editForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const id       = document.getElementById('edit-issue-id').value;
+            const title    = document.getElementById('edit-title').value.trim();
+            const fullTitle= document.getElementById('edit-full-title').value.trim();
+            const date     = document.getElementById('edit-date').value.trim();
+            const desc     = document.getElementById('edit-desc').value.trim();
+            const tonggwon = document.getElementById('edit-issue-tonggwon').value;
+
+            if (!title || !fullTitle || !date) { alert('발행호명, 전체 제목, 발간일은 필수 항목입니다.'); return; }
+
+            const submitBtn = editForm.querySelector('button[type="submit"]');
+            const origText  = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 저장 중...';
+            submitBtn.disabled = true;
+
+            // 현재 이슈 찾기
+            const curIssue = journalData.find(j => j.id === id);
+            const updatedIssue = Object.assign({}, curIssue, { id, title, fullTitle, date, desc, tonggwon });
+
+            // 표지 새로 업로드
+            if (editCoverFileObj) {
+                try {
+                    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 표지 업로드 중...';
+                    const b64 = await new Promise((res, rej) => {
+                        const fr = new FileReader();
+                        fr.onload = () => res(fr.result.split(',')[1]);
+                        fr.onerror = rej;
+                        fr.readAsDataURL(editCoverFileObj);
+                    });
+                    const coverRes = await window.DB_uploadJournalPdf(
+                        String(tonggwon),
+                        `${fullTitle}_표지`,
+                        { base64: b64, name: editCoverFileObj.name, mimeType: editCoverFileObj.type || 'image/jpeg' }
+                    );
+                    if (coverRes && coverRes.ok) {
+                        updatedIssue.cover = coverRes.pdfUrl;
+                    } else {
+                        console.warn('표지 업로드 실패:', coverRes.error);
+                    }
+                } catch(coverErr) {
+                    console.warn('표지 업로드 실패 (무시):', coverErr);
+                }
+                submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 저장 중...';
+            }
+
+            // DB 저장
+            try {
+                const res = await window.DB_addJournal(updatedIssue); // upsert
+                if (res && res.ok) {
+                    // localStorage 업데이트
+                    let local = JSON.parse(localStorage.getItem('journal_db') || '[]');
+                    const idx = local.findIndex(j => j.id === id);
+                    if (idx !== -1) local[idx] = updatedIssue;
+                    else local.push(updatedIssue);
+                    localStorage.setItem('journal_db', JSON.stringify(local));
+
+                    submitBtn.innerHTML = origText;
+                    submitBtn.disabled = false;
+                    alert(`${title} 수정이 완료되었습니다.`);
+                    closeEditModal();
+                    await initPage();
+                    selectEl.value = id;
+                    const fresh = journalData.find(j => j.id === id);
+                    if (fresh) displayIssue(fresh);
+                } else {
+                    throw new Error((res && res.error) || '저장 실패');
+                }
+            } catch(err) {
+                // localStorage에만 저장
+                let local = JSON.parse(localStorage.getItem('journal_db') || '[]');
+                const idx = local.findIndex(j => j.id === id);
+                if (idx !== -1) local[idx] = updatedIssue;
+                else local.push(updatedIssue);
+                localStorage.setItem('journal_db', JSON.stringify(local));
+
+                journalData = local.sort((a,b) => parseInt(b.tonggwon||0) - parseInt(a.tonggwon||0));
+                populateDropdown();
+                selectEl.value = id;
+                displayIssue(local.find(j => j.id === id));
+
+                alert(`임시 저장 완료 (Sheets 연동 실패: ${err.message}).\n현재 세션에만 반영됩니다.\n\n※ GAS 재배포 후 다시 시도해주세요.`);
+                closeEditModal();
+            } finally {
+                submitBtn.innerHTML = origText;
+                submitBtn.disabled = false;
+            }
+        });
+
+        // ── 추가 모달 열기 ───────────────────────────────────────
         let articleRowCount = 0;
+
         btnUploadIssue.addEventListener('click', () => {
             uploadModal.style.display = 'flex';
             document.body.style.overflow = 'hidden';
