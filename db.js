@@ -201,7 +201,10 @@ window.DB_getSubmissions = async function() {
             try {
                 return typeof s.authors === "string" ? JSON.parse(s.authors) : (s.authors || []);
             } catch(e) { return []; }
-        })()
+        })(),
+        // deleted 값을 항상 boolean으로 정규화
+        // Sheets에서 true(bool), "TRUE", "true", "false", ""(빈 문자열) 등 다양하게 올 수 있음
+        deleted: s.deleted === true || s.deleted === "true" || s.deleted === "TRUE"
     }));
 };
 

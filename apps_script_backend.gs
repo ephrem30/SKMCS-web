@@ -184,6 +184,7 @@ function handleWrite(body) {
       if (rowIdx === -1) return makeResponse({ ok: false, error: "해당 레코드를 찾을 수 없습니다." });
       const actualRow = rowIdx + 2;
       const PHONE_FIELDS_UPDATE = ["phone", "home_phone", "work_phone"];
+      const BOOLEAN_FIELDS = ["deleted"];
       Object.keys(data).forEach(field => {
         const colIdx = headers.indexOf(field) + 1;
         if (colIdx > 0) {
@@ -191,6 +192,10 @@ function handleWrite(body) {
           // 전화번호 필드는 앞자리 0 보존을 위해 텍스트 prefix 처리
           if (PHONE_FIELDS_UPDATE.includes(field) && val !== "" && val !== null && val !== undefined) {
             val = "'" + String(val).replace(/^'+/, "");
+          }
+          // boolean 필드는 실제 boolean으로 저장 (문자열 "true"/"false" 방지)
+          if (BOOLEAN_FIELDS.includes(field)) {
+            val = (val === true || val === "true" || val === "TRUE");
           }
           sheet.getRange(actualRow, colIdx).setValue(val);
         }
