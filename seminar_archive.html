@@ -271,6 +271,29 @@
             padding: 10px 16px;
             border-top: 1px solid var(--border-color);
             background: #fafaf8;
+            flex-wrap: wrap;
+        }
+
+        /* 학회소식 공유 버튼 (아카이브용) */
+        .btn-share-news-sa {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: linear-gradient(135deg, #1a6b5c, #2b8a7e);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 4px 11px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .btn-share-news-sa:hover {
+            background: linear-gradient(135deg, #145249, #226e63);
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
         }
 
         /* ── 빈 상태 ── */
@@ -741,7 +764,14 @@ const SAMPLE = [
     { id:"sa_3", title:"기획세미나: 동아시아 음악 교류의 역사적 맥락", seminar_type:"기획세미나", date:"2024-09-28", location:"예술의전당 음악아카데미 강의실", presenter:"정지훈 교수 (한양대학교), 야마모토 켄지 교수 (도쿄대학)", moderator:"박소연 박사", summary:"한·중·일 세 나라의 전통 음악 간 교류 양상을 비교 연구한 결과를 발표하였다. 특히 고려 아악의 대성악 수용 과정과 일본 아악의 전래 경로를 비교하며, 동아시아 음악 문화권의 공통성과 차별성을 논의하였다.", attachment_file:"", photos:[], year:2024 }
 ];
 
-let isAdmin = true;  // 수정/삭제 버튼 항상 표시
+const ADMIN_ROLES_SA = ['admin', 'secretary', 'editor', 'president'];
+function getAdminStatus() {
+    try {
+        const u = JSON.parse(localStorage.getItem('logged_in_user') || 'null');
+        return u && ADMIN_ROLES_SA.includes(u.role);
+    } catch(e) { return false; }
+}
+let isAdmin = getAdminStatus();
 let editingId = null;
 
 function initDB() { if (!localStorage.getItem(SA_KEY)) localStorage.setItem(SA_KEY, JSON.stringify(SAMPLE)); }
@@ -826,6 +856,9 @@ function render() {
                 </div>
                 ${isAdmin ? `
                 <div class="sa-admin-actions">
+                    <button class="btn-share-news-sa" onclick="event.stopPropagation(); shareArchiveToNews('${r.id}')" title="학회소식 세미나 소식 탭에 공유">
+                        <i class="fa-solid fa-bullhorn" style="font-size:0.7rem;"></i> 학회소식 공유
+                    </button>
                     <button class="btn-outline" onclick="event.stopPropagation(); openEdit('${r.id}')" style="padding:4px 11px;font-size:0.78rem;display:inline-flex;align-items:center;gap:4px;color:var(--color-green);border-color:var(--color-green);">
                         <i data-lucide="pencil" style="width:12px;height:12px;"></i> 수정
                     </button>
@@ -942,6 +975,54 @@ window.deleteSA = function(id) {
     if (!isAdmin || !confirm('이 세미나 기록을 삭제하시겠습니까?')) return;
     save(getAll().filter(r => r.id !== id));
     render();
+};
+
+// ── 학회소식 공유 ─────────────────────────────────────────────
+window.shareArchiveToNews = function(id) {
+    if (!isAdmin) return;
+    const r = getAll().find(x => x.id === id);
+    if (!r) { alert('항목을 찾을 수 없습니다.'); return; }
+
+    const today = new Date().toISOString().slice(0, 10);
+    const idx   = parseInt(localStorage.getItem('seminar_news_idx') || '2');
+
+    const content = [
+        r.presenter  ? `【발표자】${r.presenter}` : '',
+        r.moderator  ? `【사회자】${r.moderator}` : '',
+        r.location   ? `【장소】${r.location}` : '',
+        r.summary    ? `\n${r.summary}` : '',
+    ].filter(Boolean).join('\n');
+
+    const newPost = {
+        id:          idx,
+        category:    r.seminar_type || '정기세미나',
+        title:       r.title,
+        seminarDate: r.date || today,
+        location:    r.location || '',
+        content:     content,
+        link:        `seminar_archive_detail.html?id=${encodeURIComponent(r.id)}`,
+        thumbnail:   (r.photos && r.photos[0]) ? r.photos[0] : '',
+        createdAt:   today,
+    };
+
+    const posts  = JSON.parse(localStorage.getItem('seminar_news_posts') || '[]');
+    const dupIdx = posts.findIndex(p => p.title === newPost.title);
+
+    if (dupIdx !== -1) {
+        if (!confirm(`"${newPost.title}" 항목이 이미 학회소식에 있습니다.\n덮어쓰시겠습니까?`)) return;
+        posts[dupIdx] = { ...posts[dupIdx], ...newPost, id: posts[dupIdx].id };
+        localStorage.setItem('seminar_news_posts', JSON.stringify(posts));
+        alert('✅ 학회소식이 업데이트되었습니다.');
+    } else {
+        posts.unshift(newPost);
+        localStorage.setItem('seminar_news_idx', String(idx + 1));
+        localStorage.setItem('seminar_news_posts', JSON.stringify(posts));
+        alert('✅ 학회소식 > 세미나 소식에 공유되었습니다.');
+    }
+
+    if (confirm('학회소식 페이지로 이동하시겠습니까?')) {
+        window.location.href = 'news.html?tab=seminar_news';
+    }
 };
 
 window.openEdit = function(id) {
@@ -1093,7 +1174,9 @@ document.addEventListener('DOMContentLoaded', () => {
     initDB();
     setupPhotoDropzone();
     setupPdfInput();
-    document.getElementById('admin-bar').style.display = 'flex';  // 항상 표시
+    // 관리자만 admin-bar 표시
+    isAdmin = getAdminStatus();
+    if (isAdmin) document.getElementById('admin-bar').style.display = 'flex';
 
     document.getElementById('f-search').addEventListener('input', render);
     document.getElementById('f-year').addEventListener('change', render);
