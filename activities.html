@@ -391,15 +391,14 @@
                                 <li><a href="submission.html?tab=online">온라인 투고시스템</a></li>
                             </ul>
                         </li>
-                        <li class="nav-item">
+                        <li class="nav-item active">
                             <a href="activities.html">학술활동</a>
                             <div class="hover-bar grey"></div>
                             <span class="sub-text">activities</span>
                             <ul class="dropdown-menu">
                                 <li><a href="activities.html?tab=conference">학술대회 일정</a></li>
                                 <li><a href="activities.html?tab=seminar">연구모임/세미나</a></li>
-                                <li><a href="past_seminars.html">지난 세미나 기록</a></li>
-                                <li><a href="seminar_archive.html">세미나 아카이브</a></li>
+                                <li><a href="activities.html?tab=archive">세미나 아카이브</a></li>
                             </ul>
                         </li>
                         <li class="nav-item">
@@ -447,7 +446,7 @@
                 <div class="sub-tabs">
                     <a href="?tab=conference" class="tab-item active" data-tab="conference">학술대회 일정</a>
                     <a href="?tab=seminar" class="tab-item" data-tab="seminar">연구모임/세미나</a>
-                    <a href="?tab=archive" class="tab-item" data-tab="archive" style="display:inline-flex;align-items:center;gap:5px;">
+                    <a href="seminar_archive.html" class="tab-item" data-tab="archive" style="display:inline-flex;align-items:center;gap:5px;">
                         <i class="fa-solid fa-box-archive" style="font-size:0.85em;"></i> 세미나 아카이브
                     </a>
                 </div>
@@ -494,11 +493,6 @@
                         <div id="seminar-list-container">
                             <!-- Dynamically loaded seminar cards will be rendered here -->
                         </div>
-                    </div>
-                </div>
-
-                        <!-- 지난 세미나 목록 -->
-                        <div id="past-seminar-list-container"></div>
                     </div>
                 </div>
 
@@ -832,7 +826,11 @@
                 initArchiveDB();
                 renderArchive();
                 bindArchiveFilters();
-                document.getElementById('admin-archive-controls').style.display = 'block';
+                // 관리자인 경우 archive 관리자 컨트롤 표시
+                if (isAdmin) {
+                    const archiveAdminCtrl = document.getElementById('admin-archive-controls');
+                    if (archiveAdminCtrl) archiveAdminCtrl.style.display = 'block';
+                }
             }
         }
 

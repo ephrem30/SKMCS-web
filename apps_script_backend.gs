@@ -17,6 +17,7 @@ const DRIVE_FOLDER = {
   submissions: "한국음악학회_논문투고파일",
   forms:       "한국음악학회_양식파일",
   revised:     "한국음악학회_수정논문파일",
+  seminars:    "한국음악학회_세미나아카이브",
 };
 
 function makeResponse(data) {
@@ -127,6 +128,7 @@ function handleWrite(body) {
     if (action === "addFormFile")           return handleFormFileUpload(body);
     if (action === "uploadMemberDocument")  return handleMemberDocumentUpload(body);
     if (action === "uploadRevisedFiles")    return handleRevisedFileUpload(body);
+    if (action === "uploadSeminarFiles")    return handleSeminarFileUpload(body);
 
     const sheetName = SHEET_NAMES[sheetKey];
     if (!sheetName) return makeResponse({ ok: false, error: "unknown sheet: " + sheetKey });
@@ -356,6 +358,38 @@ function saveFileToDrive(fileData, folder, fileName) {
   // drive.usercontent.google.com 형식: Safari/Chrome/Firefox 모두에서 올바른 다운로드 헤더를 반환
   const fileId = file.getId();
   return "https://drive.usercontent.google.com/download?id=" + fileId + "&export=download&confirm=t";
+}
+
+// ── 세미나 아카이브 파일 업로드 핸들러 ──
+// body: { seminarTitle, pdfFile: {base64,name,mimeType}, photoFiles: [{base64,name,mimeType}] }
+function handleSeminarFileUpload(body) {
+  try {
+    const folder  = getDriveFolder(DRIVE_FOLDER.seminars);
+    const dateStr = new Date().toISOString().slice(0,10).replace(/-/g,"");
+    const safeTitle = ((body.seminarTitle||"세미나")).substring(0,20).replace(/[\s<>:"\/\\|?*\x00-\x1F]/g,"_");
+    const result = {};
+
+    // 1) 자료집 PDF 업로드
+    if (body.pdfFile && body.pdfFile.base64) {
+      const pdfName = dateStr + "_" + safeTitle + "_자료집_" + (body.pdfFile.name || "자료집.pdf");
+      result.pdfUrl = saveFileToDrive(body.pdfFile, folder, pdfName);
+    }
+
+    // 2) 현장사진 업로드 (여러 장)
+    const photoFiles = body.photoFiles || [];
+    if (photoFiles.length > 0) {
+      result.photoUrls = [];
+      photoFiles.forEach(function(photo, idx) {
+        const photoName = dateStr + "_" + safeTitle + "_사진" + (idx+1) + "_" + (photo.name || ("photo_"+(idx+1)+".jpg"));
+        const url = saveFileToDrive(photo, folder, photoName);
+        result.photoUrls.push(url);
+      });
+    }
+
+    return makeResponse({ ok: true, ...result });
+  } catch(e) {
+    return makeResponse({ ok: false, error: "세미나 파일 업로드 실패: " + e.message });
+  }
 }
 
 function uploadFileToDrive(fileData, userName) {

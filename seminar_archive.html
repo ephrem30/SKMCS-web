@@ -368,6 +368,76 @@
         .sa-year-num { font-size: 1.5rem; font-weight: 900; color: var(--text-dark); }
         .sa-year-cnt { font-size: 0.82rem; background: var(--color-green); color: white; padding: 3px 10px; border-radius: 100px; font-weight: 700; }
 
+        /* ── 사진 업로드 드롭존 ── */
+        .photo-dropzone {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 22px 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--bg-offwhite);
+        }
+        .photo-dropzone.dragover, .photo-dropzone:hover {
+            border-color: var(--color-green);
+            background: #f0faf8;
+        }
+        .photo-dropzone p { margin: 5px 0 0; font-size: 0.82rem; color: var(--text-muted); }
+        .photo-dropzone-icon { font-size: 2rem; color: var(--color-green); margin-bottom: 4px; }
+        /* 사진 미리보기 그리드 */
+        .photo-preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .photo-preview-item {
+            position: relative;
+            border-radius: 6px;
+            overflow: hidden;
+            aspect-ratio: 1;
+            background: #eee;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+        }
+        .photo-preview-item img { width: 100%; height: 100%; object-fit: cover; }
+        .photo-remove {
+            position: absolute; top: 3px; right: 3px;
+            background: rgba(0,0,0,0.6); color: white;
+            border: none; border-radius: 50%;
+            width: 20px; height: 20px;
+            cursor: pointer; font-size: 0.7rem;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .photo-done-overlay {
+            position: absolute; inset: 0;
+            background: rgba(43,138,126,0.65);
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 0.7rem; font-weight: 700;
+            flex-direction: column; gap: 2px;
+            pointer-events: none;
+        }
+        /* 업로드 진행 표시 */
+        .upload-progress {
+            display: none;
+            margin-top: 10px;
+            background: #e8f5f3;
+            border: 1px solid #c3e8e2;
+            border-radius: 6px;
+            padding: 10px 14px;
+        }
+        .upload-progress-label { font-size: 0.82rem; color: var(--color-green); font-weight: 700; margin-bottom: 6px; }
+        .upload-progress-track { background: #d0ede9; border-radius: 100px; height: 6px; overflow: hidden; }
+        .upload-progress-bar { height: 100%; background: var(--color-green); border-radius: 100px; transition: width 0.3s ease; width: 0%; }
+        .upload-progress-pct { font-size: 0.78rem; color: var(--text-muted); text-align: right; margin-top: 3px; }
+        /* PDF 선택 표시 */
+        .pdf-chosen-bar {
+            display: none; align-items: center; gap: 8px;
+            margin-top: 6px; padding: 7px 12px;
+            background: #fff5f5; border: 1px solid #ffcccc; border-radius: 5px;
+            font-size: 0.83rem; color: var(--color-red); font-weight: 600;
+        }
+        .pdf-chosen-bar button { margin-left: auto; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.9rem; }
+
         /* 반응형 */
         @media (max-width: 640px) {
             .sa-hero h2 { font-size: 1.5rem; }
@@ -440,13 +510,12 @@
                             <li><a href="submission_review.html">심사규정</a></li><li><a href="submission.html?tab=online">온라인 투고시스템</a></li>
                         </ul>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item active">
                         <a href="activities.html">학술활동</a><div class="hover-bar grey"></div><span class="sub-text">activities</span>
                         <ul class="dropdown-menu">
                             <li><a href="activities.html?tab=conference">학술대회 일정</a></li>
                             <li><a href="activities.html?tab=seminar">연구모임/세미나</a></li>
-                            <li><a href="past_seminars.html">지난 세미나 기록</a></li>
-                            <li><a href="seminar_archive.html">세미나 아카이브</a></li>
+                            <li><a href="activities.html?tab=archive">세미나 아카이브</a></li>
                         </ul>
                     </li>
                     <li class="nav-item">
@@ -463,13 +532,13 @@
 
     <!-- Sub Visual -->
     <div class="sub-visual" style="background-image: linear-gradient(rgba(0,0,0,0.58),rgba(0,0,0,0.58)), url('bg_activities.png');">
-        <div class="visual-text"><h2>세미나 아카이브</h2></div>
+        <div class="visual-text"><h2>학술활동</h2></div>
     </div>
 
-    <main>
-        <!-- 브레드크럼 -->
-        <div style="background: white; border-bottom: 1px solid var(--border-color); padding: 10px 0;">
-            <div style="max-width:1100px; margin:0 auto; padding:0 24px; display:flex; justify-content:space-between; align-items:center;">
+    <main class="content-area">
+        <div class="container subpage-area">
+            <!-- 브레드크럼 & 페이지 유틸 -->
+            <div class="sub-util-row">
                 <div class="breadcrumb">
                     <i class="fa-solid fa-house"></i>
                     <a href="activities.html" style="color:inherit; text-decoration:none;"><span class="depth">학술활동</span></a>
@@ -481,39 +550,53 @@
                     <a href="#" title="공유"><i class="fa-solid fa-share-nodes"></i></a>
                 </div>
             </div>
-        </div>
 
-        <!-- 필터 바 -->
-        <div class="filter-bar">
-            <div class="filter-inner">
-                <select class="filter-select" id="f-year"><option value="">전체 연도</option></select>
-                <select class="filter-select" id="f-type">
-                    <option value="">전체 유형</option>
-                    <option value="정기세미나">정기세미나</option>
-                    <option value="특별세미나">특별세미나</option>
-                    <option value="기획세미나">기획세미나</option>
-                    <option value="기타">기타</option>
-                </select>
-                <div class="filter-search">
-                    <i data-lucide="search" class="icon-search" style="width:15px;height:15px;"></i>
-                    <input type="text" id="f-search" placeholder="제목, 발제자, 장소 검색...">
+            <!-- Sub-Tabs -->
+            <div class="sub-tabs">
+                <a href="activities.html?tab=conference" class="tab-item">학술대회 일정</a>
+                <a href="activities.html?tab=seminar" class="tab-item">연구모임/세미나</a>
+                <a href="seminar_archive.html" class="tab-item active" style="display:inline-flex;align-items:center;gap:5px;">
+                    <i class="fa-solid fa-box-archive" style="font-size:0.85em;"></i> 세미나 아카이브
+                </a>
+            </div>
+
+            <div class="greeting-wrap" style="text-align: left;">
+                <h3 style="margin-bottom:8px; font-size:1.5rem; color:var(--text-dark); display:flex; align-items:center; gap:10px;">
+                    <i class="fa-solid fa-box-archive" style="color:var(--color-green);"></i> 세미나 아카이브
+                </h3>
+                <p style="margin-bottom:24px; font-size:1rem; color:var(--text-muted); line-height:1.7;">
+                    한국음악학회가 개최한 정기·특별·기획 세미나의 기록을 연도별로 아카이브합니다.
+                </p>
+
+                <!-- 관리자 패널 -->
+                <div class="admin-bar" id="admin-bar">
+                    <p><i class="fa-solid fa-shield-halved"></i> 관리자 모드 — 세미나 아카이브 등록·편집이 가능합니다.</p>
+                    <button id="btn-new" class="btn-solid" style="background:var(--color-green);border-color:var(--color-green);padding:9px 18px;font-size:0.88rem;display:inline-flex;align-items:center;gap:7px;cursor:pointer;border-radius:6px;">
+                        <i data-lucide="plus-circle" style="width:15px;height:15px;"></i> 새 세미나 등록
+                    </button>
                 </div>
-                <span class="filter-count" id="result-count"></span>
-            </div>
-        </div>
 
-        <!-- 컨텐츠 -->
-        <div class="sa-content">
-            <!-- 관리자 패널 -->
-            <div class="admin-bar" id="admin-bar">
-                <p><i class="fa-solid fa-shield-halved"></i> 관리자 모드 — 세미나 아카이브 등록·편집이 가능합니다.</p>
-                <button id="btn-new" class="btn-solid" style="background:var(--color-green);border-color:var(--color-green);padding:9px 18px;font-size:0.88rem;display:inline-flex;align-items:center;gap:7px;cursor:pointer;border-radius:6px;">
-                    <i data-lucide="plus-circle" style="width:15px;height:15px;"></i> 새 세미나 등록
-                </button>
-            </div>
+                <!-- 필터 영역 -->
+                <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; align-items:center;">
+                    <select id="f-year" style="padding:9px 14px; border:1.5px solid var(--border-color); border-radius:5px; font-family:inherit; font-size:0.92rem; background:white; outline:none; min-width:110px;"><option value="">전체 연도</option></select>
+                    <select id="f-type" style="padding:9px 14px; border:1.5px solid var(--border-color); border-radius:5px; font-family:inherit; font-size:0.92rem; background:white; outline:none; min-width:120px;">
+                        <option value="">전체 유형</option>
+                        <option value="정기세미나">정기세미나</option>
+                        <option value="특별세미나">특별세미나</option>
+                        <option value="기획세미나">기획세미나</option>
+                        <option value="기타">기타</option>
+                    </select>
+                    <div style="position:relative; flex:1; min-width:200px;">
+                        <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:0.83rem;"></i>
+                        <input type="text" id="f-search" placeholder="제목, 발제자, 장소 검색..."
+                            style="width:100%;padding:9px 12px 9px 34px;border:1.5px solid var(--border-color);border-radius:5px;font-family:inherit;font-size:0.92rem;outline:none;box-sizing:border-box;">
+                    </div>
+                    <span id="result-count" style="font-size:0.85rem;color:var(--text-muted);white-space:nowrap;font-weight:600;"></span>
+                </div>
 
-            <!-- 목록 컨테이너 -->
-            <div id="sa-list"></div>
+                <!-- 카드 목록 컨테이너 -->
+                <div id="sa-list"></div>
+            </div>
         </div>
     </main>
 
@@ -589,27 +672,65 @@
                 </div>
                 <div class="fgrp">
                     <label>행사 취지 및 발표 요약 <span style="color:var(--color-red);">*</span></label>
-                    <textarea id="f-summary" rows="5" required placeholder="세미나 취지, 주요 발표 내용, 토론 내용 등을 입력하세요."></textarea>
+                    <textarea id="f-summary" rows="4" required placeholder="세미나 취지, 주요 발표 내용, 토론 내용 등을 입력하세요."></textarea>
                 </div>
+
+                <!-- 자료집 PDF 업로드 -->
                 <div class="fgrp">
-                    <label>자료집/발제문 PDF 링크 (Google Drive 공유 URL)</label>
-                    <input type="url" id="f-attachment" placeholder="https://drive.google.com/file/d/...">
+                    <label>
+                        <i class="fa-solid fa-file-pdf" style="color:var(--color-red);margin-right:4px;"></i>
+                        자료집/발제문 PDF
+                        <span style="color:var(--text-muted);font-weight:400;font-size:0.8rem;"> — 파일 업로드 또는 URL 직접 입력</span>
+                    </label>
+                    <div style="display:flex;gap:8px;align-items:center;">
+                        <input type="text" id="f-attachment" placeholder="https://drive.google.com/... (URL 입력)" style="flex:1;">
+                        <label style="cursor:pointer;display:inline-flex;align-items:center;gap:5px;padding:8px 12px;border:1.5px solid var(--border-color);border-radius:5px;font-size:0.82rem;white-space:nowrap;background:white;font-family:inherit;color:var(--text-dark);transition:all 0.15s;" onmouseover="this.style.borderColor='var(--color-red)'" onmouseout="this.style.borderColor='var(--border-color)'">
+                            <i class="fa-solid fa-upload" style="color:var(--color-red);"></i> 파일 선택
+                            <input type="file" id="f-pdf-file" accept=".pdf,.doc,.docx,.hwp,.pptx" style="display:none;">
+                        </label>
+                    </div>
+                    <div id="pdf-chosen" class="pdf-chosen-bar">
+                        <i class="fa-solid fa-file-pdf"></i>
+                        <span id="pdf-chosen-name"></span>
+                        <button type="button" onclick="clearPdfFile()" title="제거"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
                 </div>
+
+                <!-- 현장 사진 업로드 -->
                 <div class="fgrp">
-                    <label>현장 사진 URL (쉼표로 구분, 여러 장 가능)</label>
-                    <textarea id="f-photos" rows="2" placeholder="https://example.com/img1.jpg, https://example.com/img2.jpg"></textarea>
+                    <label>
+                        <i class="fa-solid fa-images" style="color:var(--color-green);margin-right:4px;"></i>
+                        현장 사진
+                        <span style="color:var(--text-muted);font-weight:400;font-size:0.8rem;"> — 최대 10장 · 구글 드라이브 자동 저장</span>
+                    </label>
+                    <div class="photo-dropzone" id="photo-dropzone">
+                        <input type="file" id="f-photos-input" accept="image/*" multiple style="display:none;">
+                        <div class="photo-dropzone-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                        <strong style="font-size:0.9rem;color:var(--text-dark);">클릭하거나 사진을 끌어다 놓으세요</strong>
+                        <p>JPG, PNG, WebP · 장당 최대 10MB · 최대 10장</p>
+                    </div>
+                    <div class="photo-preview-grid" id="photo-preview-grid"></div>
+                    <!-- 업로드 진행 표시 -->
+                    <div class="upload-progress" id="upload-progress">
+                        <div class="upload-progress-label" id="upload-label">드라이브에 업로드 중...</div>
+                        <div class="upload-progress-track">
+                            <div class="upload-progress-bar" id="upload-bar"></div>
+                        </div>
+                        <div class="upload-progress-pct" id="upload-pct">0%</div>
+                    </div>
                 </div>
             </form>
         </div>
         <div class="sa-modal-footer">
             <button type="button" class="btn-outline" id="modal-cancel">취소</button>
-            <button type="submit" form="sa-form" class="btn-solid" style="background:var(--color-green);border-color:var(--color-green);display:inline-flex;align-items:center;gap:6px;cursor:pointer;">
+            <button type="submit" form="sa-form" id="btn-save" class="btn-solid" style="background:var(--color-green);border-color:var(--color-green);display:inline-flex;align-items:center;gap:6px;cursor:pointer;">
                 <i data-lucide="save" style="width:14px;height:14px;"></i> 저장하기
             </button>
         </div>
     </div>
 </div>
 
+<script src="db.js"></script>
 <script src="share.js"></script>
 <script>
 // ── 데이터 ──────────────────────────────────────────────────
@@ -725,9 +846,100 @@ function render() {
     lucide.createIcons();
 }
 
-// ── CRUD ────────────────────────────────────────────────────
+// ── 사진/PDF 파일 상태 관리 ──────────────────────────────────
+let pendingPhotoFiles = [];   // { file, previewUrl, uploaded, driveUrl }
+let pendingPdfFile    = null; // { file } | null
+
+function setupPhotoDropzone() {
+    const dz    = document.getElementById('photo-dropzone');
+    const input = document.getElementById('f-photos-input');
+    dz.addEventListener('click', () => input.click());
+    input.addEventListener('change', () => { addPhotoFiles(Array.from(input.files)); input.value = ''; });
+    dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('dragover'); });
+    dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+    dz.addEventListener('drop', e => {
+        e.preventDefault(); dz.classList.remove('dragover');
+        addPhotoFiles(Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/')));
+    });
+}
+
+function addPhotoFiles(files) {
+    const remaining = 10 - pendingPhotoFiles.length;
+    if (remaining <= 0) { alert('현장 사진은 최대 10장까지 등록 가능합니다.'); return; }
+    files.slice(0, remaining).forEach(file => {
+        if (file.size > 10 * 1024 * 1024) { alert(`${file.name}: 파일 크기가 10MB를 초과합니다.`); return; }
+        pendingPhotoFiles.push({ file, previewUrl: URL.createObjectURL(file), uploaded: false, driveUrl: '' });
+    });
+    renderPhotoPreview();
+}
+
+function renderPhotoPreview() {
+    const grid = document.getElementById('photo-preview-grid');
+    grid.innerHTML = '';
+    pendingPhotoFiles.forEach((item, idx) => {
+        const div = document.createElement('div');
+        div.className = 'photo-preview-item';
+        div.innerHTML = `
+            <img src="${item.previewUrl}" alt="사진 ${idx+1}">
+            <button type="button" class="photo-remove" onclick="removePhoto(${idx})" title="제거">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            ${item.uploaded ? `<div class="photo-done-overlay"><i class="fa-solid fa-check-circle" style="font-size:1.2rem;"></i><span>드라이브 저장됨</span></div>` : ''}
+        `;
+        grid.appendChild(div);
+    });
+}
+
+window.removePhoto = function(idx) {
+    const item = pendingPhotoFiles[idx];
+    if (!item.uploaded) URL.revokeObjectURL(item.previewUrl);
+    pendingPhotoFiles.splice(idx, 1);
+    renderPhotoPreview();
+};
+
+function setupPdfInput() {
+    document.getElementById('f-pdf-file').addEventListener('change', function() {
+        const file = this.files[0];
+        if (!file) return;
+        pendingPdfFile = { file };
+        document.getElementById('pdf-chosen-name').textContent = file.name;
+        document.getElementById('pdf-chosen').style.display = 'flex';
+        // URL 입력란 비우기 (파일 선택 시 URL 우선 순위 낮춤)
+        document.getElementById('f-attachment').placeholder = 'URL 대신 파일이 선택됨';
+    });
+}
+
+window.clearPdfFile = function() {
+    pendingPdfFile = null;
+    document.getElementById('f-pdf-file').value = '';
+    document.getElementById('pdf-chosen').style.display = 'none';
+    document.getElementById('pdf-chosen-name').textContent = '';
+    document.getElementById('f-attachment').placeholder = 'https://drive.google.com/... (URL 입력)';
+};
+
+// Base64 변환
+function fileToBase64(file) {
+    return new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload = e => res(e.target.result.split(',')[1]);
+        r.onerror = rej;
+        r.readAsDataURL(file);
+    });
+}
+
+// 진행 표시 헬퍼
+function setProgress(show, label, pct) {
+    const wrap = document.getElementById('upload-progress');
+    if (!show) { wrap.style.display = 'none'; return; }
+    wrap.style.display = 'block';
+    document.getElementById('upload-label').textContent = label || '업로드 중...';
+    document.getElementById('upload-bar').style.width   = (pct || 0) + '%';
+    document.getElementById('upload-pct').textContent   = (pct || 0) + '%';
+}
+
+// ── CRUD ─────────────────────────────────────────────────────
 window.deleteSA = function(id) {
-    if (!isAdmin || !confirm("이 세미나 기록을 삭제하시겠습니까?")) return;
+    if (!isAdmin || !confirm('이 세미나 기록을 삭제하시겠습니까?')) return;
     save(getAll().filter(r => r.id !== id));
     render();
 };
@@ -736,74 +948,173 @@ window.openEdit = function(id) {
     const r = getAll().find(r => r.id === id);
     if (!r) return;
     editingId = id;
-    document.getElementById("f-title").value         = r.title || "";
-    document.getElementById("f-seminar-type").value  = r.seminar_type || "정기세미나";
-    document.getElementById("f-date").value           = r.date || "";
-    document.getElementById("f-location").value       = r.location || "";
-    document.getElementById("f-presenter").value      = r.presenter || "";
-    document.getElementById("f-moderator").value      = r.moderator || "";
-    document.getElementById("f-summary").value        = r.summary || "";
-    document.getElementById("f-attachment").value     = r.attachment_file || "";
-    document.getElementById("f-photos").value         = (r.photos || []).join(", ");
-    document.getElementById("modal-title-txt").innerHTML = `<i data-lucide="pencil" style="width:18px;height:18px;color:var(--color-green);"></i> 세미나 수정`;
-    document.getElementById("sa-modal").style.display = "flex";
+    document.getElementById('f-title').value        = r.title || '';
+    document.getElementById('f-seminar-type').value = r.seminar_type || '정기세미나';
+    document.getElementById('f-date').value          = r.date || '';
+    document.getElementById('f-location').value      = r.location || '';
+    document.getElementById('f-presenter').value     = r.presenter || '';
+    document.getElementById('f-moderator').value     = r.moderator || '';
+    document.getElementById('f-summary').value       = r.summary || '';
+    document.getElementById('f-attachment').value    = r.attachment_file || '';
+    // 기존 사진 URL 표시 (이미 업로드된 것으로 처리)
+    pendingPhotoFiles = (r.photos || []).map(url => ({ file: null, previewUrl: url, uploaded: true, driveUrl: url }));
+    renderPhotoPreview();
+    document.getElementById('modal-title-txt').innerHTML = `<i data-lucide="pencil" style="width:18px;height:18px;color:var(--color-green);"></i> 세미나 수정`;
+    document.getElementById('sa-modal').style.display = 'flex';
     lucide.createIcons();
 };
 
-window.handleSubmit = function(e) {
+window.handleSubmit = async function(e) {
     e.preventDefault();
     if (!isAdmin) return;
-    const photos = document.getElementById("f-photos").value.split(",").map(s=>s.trim()).filter(Boolean);
-    const dateVal = document.getElementById("f-date").value;
+
+    const title    = document.getElementById('f-title').value.trim();
+    const dateVal  = document.getElementById('f-date').value;
+    const location = document.getElementById('f-location').value.trim();
+    const summary  = document.getElementById('f-summary').value.trim();
+    if (!title || !dateVal || !location || !summary) { alert('필수 항목을 입력해 주세요.'); return; }
+
+    const saveBtn = document.getElementById('btn-save');
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="width:14px;height:14px;"></i> 처리 중...';
+
+    // 이미 드라이브에 올라간 사진과 새로 추가된 파일 분리
+    const existingUrls  = pendingPhotoFiles.filter(p => p.uploaded).map(p => p.driveUrl);
+    const newPhotoItems = pendingPhotoFiles.filter(p => !p.uploaded && p.file);
+    let finalPhotoUrls  = [...existingUrls];
+    let finalPdfUrl     = document.getElementById('f-attachment').value.trim();
+
+    // ── 드라이브 업로드 (새 파일이 있을 때만) ──
+    if (newPhotoItems.length > 0 || pendingPdfFile) {
+        try {
+            setProgress(true, '파일 읽는 중...', 10);
+
+            const photoPayloads = await Promise.all(newPhotoItems.map(async p => ({
+                base64:   await fileToBase64(p.file),
+                name:     p.file.name,
+                mimeType: p.file.type || 'image/jpeg',
+            })));
+
+            let pdfPayload = null;
+            if (pendingPdfFile) {
+                setProgress(true, 'PDF 변환 중...', 25);
+                pdfPayload = {
+                    base64:   await fileToBase64(pendingPdfFile.file),
+                    name:     pendingPdfFile.file.name,
+                    mimeType: pendingPdfFile.file.type || 'application/pdf',
+                };
+            }
+
+            setProgress(true, '구글 드라이브에 업로드 중... (잠시 기다려 주세요)', 50);
+
+            const upRes = await window.DB_uploadSeminarFiles({
+                seminarTitle: title,
+                photoFiles:   photoPayloads,
+                pdfFile:      pdfPayload,
+            });
+
+            if (!upRes.ok) {
+                setProgress(false);
+                const proceed = confirm(`드라이브 업로드 실패: ${upRes.error || '알 수 없는 오류'}\n\n파일 없이 텍스트 정보만 저장하시겠습니까?`);
+                if (!proceed) {
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = '<i data-lucide="save" style="width:14px;height:14px;"></i> 저장하기';
+                    lucide.createIcons(); return;
+                }
+            } else {
+                setProgress(true, '완료!', 100);
+                if (upRes.photoUrls && upRes.photoUrls.length > 0) {
+                    finalPhotoUrls = [...existingUrls, ...upRes.photoUrls];
+                    newPhotoItems.forEach((p, i) => { p.uploaded = true; p.driveUrl = upRes.photoUrls[i] || ''; });
+                    renderPhotoPreview();
+                }
+                if (upRes.pdfUrl) finalPdfUrl = upRes.pdfUrl;
+            }
+        } catch (err) {
+            setProgress(false);
+            const proceed = confirm(`업로드 중 오류가 발생했습니다.\n${err.message}\n\n텍스트 정보만 저장하시겠습니까?`);
+            if (!proceed) {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i data-lucide="save" style="width:14px;height:14px;"></i> 저장하기';
+                lucide.createIcons(); return;
+            }
+        }
+    }
+
+    // ── localStorage 저장 ──
     const rec = {
-        id:            editingId || ("sa_" + Date.now()),
-        title:         document.getElementById("f-title").value.trim(),
-        seminar_type:  document.getElementById("f-seminar-type").value,
-        date:          dateVal,
-        year:          parseInt(dateVal.slice(0,4)) || new Date().getFullYear(),
-        location:      document.getElementById("f-location").value.trim(),
-        presenter:     document.getElementById("f-presenter").value.trim(),
-        moderator:     document.getElementById("f-moderator").value.trim(),
-        summary:       document.getElementById("f-summary").value.trim(),
-        attachment_file: document.getElementById("f-attachment").value.trim(),
-        photos,
+        id:              editingId || ('sa_' + Date.now()),
+        title,
+        seminar_type:    document.getElementById('f-seminar-type').value,
+        date:            dateVal,
+        year:            parseInt(dateVal.slice(0, 4)) || new Date().getFullYear(),
+        location,
+        presenter:       document.getElementById('f-presenter').value.trim(),
+        moderator:       document.getElementById('f-moderator').value.trim(),
+        summary,
+        attachment_file: finalPdfUrl,
+        photos:          finalPhotoUrls,
     };
-    if (!rec.title || !rec.date || !rec.location || !rec.summary) { alert("필수 항목을 입력해 주세요."); return; }
+
     let records = getAll();
-    if (editingId) { const i = records.findIndex(r=>r.id===editingId); if(i!==-1) records[i]=rec; }
-    else records.unshift(rec);
+    if (editingId) {
+        const i = records.findIndex(r => r.id === editingId);
+        if (i !== -1) records[i] = rec;
+    } else {
+        records.unshift(rec);
+    }
     save(records);
+
+    setProgress(false);
+    saveBtn.disabled = false;
+    saveBtn.innerHTML = '<i data-lucide="save" style="width:14px;height:14px;"></i> 저장하기';
+    lucide.createIcons();
+
     closeModal();
     render();
-    alert(editingId ? "✅ 수정되었습니다." : "✅ 등록되었습니다.");
+    alert(editingId ? '✅ 수정되었습니다.' : '✅ 등록되었습니다.');
 };
 
 function closeModal() {
-    document.getElementById("sa-modal").style.display = "none";
-    document.getElementById("sa-form").reset();
+    document.getElementById('sa-modal').style.display = 'none';
+    document.getElementById('sa-form').reset();
+    pendingPhotoFiles = [];
+    pendingPdfFile    = null;
+    renderPhotoPreview();
+    clearPdfFile();
+    setProgress(false);
     editingId = null;
-    document.getElementById("modal-title-txt").innerHTML = `<i data-lucide="calendar-plus" style="width:18px;height:18px;color:var(--color-green);"></i> 세미나 등록`;
+    document.getElementById('modal-title-txt').innerHTML = `<i data-lucide="calendar-plus" style="width:18px;height:18px;color:var(--color-green);"></i> 세미나 등록`;
     lucide.createIcons();
 }
 
-// ── 이벤트 바인딩 ────────────────────────────────────────────
-document.addEventListener("DOMContentLoaded", () => {
+// ── 이벤트 바인딩 ─────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
     initDB();
-    document.getElementById("admin-bar").style.display = "flex";  // 항상 표시
+    setupPhotoDropzone();
+    setupPdfInput();
+    document.getElementById('admin-bar').style.display = 'flex';  // 항상 표시
 
-    document.getElementById("f-search").addEventListener("input", render);
-    document.getElementById("f-year").addEventListener("change", render);
-    document.getElementById("f-type").addEventListener("change", render);
+    document.getElementById('f-search').addEventListener('input', render);
+    document.getElementById('f-year').addEventListener('change', render);
+    document.getElementById('f-type').addEventListener('change', render);
 
-    document.getElementById("btn-new").addEventListener("click", () => {
+    document.getElementById('btn-new').addEventListener('click', () => {
         editingId = null;
-        document.getElementById("sa-form").reset();
-        document.getElementById("sa-modal").style.display = "flex";
+        pendingPhotoFiles = [];
+        pendingPdfFile    = null;
+        document.getElementById('sa-form').reset();
+        renderPhotoPreview();
+        clearPdfFile();
+        setProgress(false);
+        document.getElementById('sa-modal').style.display = 'flex';
         lucide.createIcons();
     });
-    document.getElementById("modal-close").addEventListener("click", closeModal);
-    document.getElementById("modal-cancel").addEventListener("click", closeModal);
-    document.getElementById("sa-modal").addEventListener("click", e => { if(e.target===document.getElementById("sa-modal")) closeModal(); });
+    document.getElementById('modal-close').addEventListener('click', closeModal);
+    document.getElementById('modal-cancel').addEventListener('click', closeModal);
+    document.getElementById('sa-modal').addEventListener('click', e => {
+        if (e.target === document.getElementById('sa-modal')) closeModal();
+    });
 
     render();
     lucide.createIcons();

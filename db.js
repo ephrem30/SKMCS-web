@@ -322,6 +322,29 @@ window.DB_deleteJournal = async function(id) {
     return await _dbPost({ action: "delete", sheet: "journals", key: "id", value: id });
 };
 
+// ============================================================
+// 7. 세미나 아카이브 파일 업로드 (Google Drive)
+// ============================================================
+
+/**
+ * 세미나 사진/PDF를 구글 드라이브에 업로드합니다.
+ * @param {object} opts
+ * @param {string} opts.seminarTitle - 세미나 제목 (폴더명/파일명에 사용)
+ * @param {Array<{base64,name,mimeType}>} opts.photoFiles - 현장 사진 파일 배열
+ * @param {{base64,name,mimeType}|null} opts.pdfFile - 자료집 PDF (선택)
+ * @returns {{ ok:boolean, photoUrls?:string[], pdfUrl?:string, error?:string }}
+ */
+window.DB_uploadSeminarFiles = async function(opts) {
+    const payload = {
+        action: "uploadSeminarFiles",
+        seminarTitle: opts.seminarTitle || "세미나",
+        photoFiles: opts.photoFiles || [],
+        pdfFile: opts.pdfFile || null,
+    };
+    // 파일 크기가 클 수 있으므로 직접 POST 사용
+    return await _dbPostDirect(payload);
+};
+
 console.log("[db.js] 데이터베이스 클라이언트 로드 완료 →", DB_URL.substring(0, 60) + "...");
 
 
