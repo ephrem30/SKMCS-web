@@ -304,8 +304,19 @@
                             <input type="text" name="date" required placeholder="예: 2026. 06. 30" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.9rem;">
                         </div>
                         <div style="display: flex; flex-direction: column; gap: 6px;">
-                            <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-dark);">전체 PDF 파일명</label>
-                            <input type="text" name="pdf" placeholder="예: 한국음악문화 제8호.pdf (기본값 '#')" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.9rem;">
+                            <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-dark);">전체호 PDF 파일 <span style="color:var(--color-red);">*</span></label>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <input type="file" id="input-pdf-file" accept=".pdf" style="display:none;">
+                                <button type="button" id="btn-select-pdf"
+                                    onclick="document.getElementById('input-pdf-file').click()"
+                                    style="padding:8px 14px; border:1px solid var(--color-green); background:#f0f9f7;
+                                    color:var(--color-green); border-radius:4px; font-size:0.88rem; font-weight:700;
+                                    cursor:pointer; display:flex; align-items:center; gap:6px; white-space:nowrap;">
+                                    <i class="fa-solid fa-file-arrow-up"></i> PDF 선택
+                                </button>
+                                <span id="pdf-file-name" style="font-size:0.85rem; color:#555; word-break:break-all;">선택된 파일 없음</span>
+                            </div>
+                            <span style="font-size:0.78rem; color:var(--text-muted);">선택한 PDF는 Google Drive에 자동 저장됩니다.</span>
                         </div>
                     </div>
                     <div style="display: flex; flex-direction: column; gap: 6px;">
@@ -654,6 +665,20 @@
 
         btnAddArticleRow.addEventListener('click', addArticleInputRow);
 
+        // PDF 파일 선택 시 파일명 표시
+        document.getElementById('input-pdf-file').addEventListener('change', function() {
+            const nameEl = document.getElementById('pdf-file-name');
+            if (this.files && this.files[0]) {
+                nameEl.textContent = this.files[0].name;
+                nameEl.style.color = 'var(--color-green)';
+                nameEl.style.fontWeight = '700';
+            } else {
+                nameEl.textContent = '선택된 파일 없음';
+                nameEl.style.color = '#555';
+                nameEl.style.fontWeight = '';
+            }
+        });
+
         // 호 번호 미리보기 실시간 업데이트
         document.getElementById('input-ho').addEventListener('input', function() {
             const val = this.value.trim();
@@ -674,9 +699,17 @@
             const formData = new FormData(this);
             const ho = parseInt(formData.get('ho'));
             const date = formData.get('date');
-            const pdf = formData.get('pdf') || '#';
             const desc = formData.get('desc');
             const cover = formData.get('cover') || 'cover.png';
+
+            if (!ho || isNaN(ho) || ho < 1) {
+                alert('호 번호를 올바르게 입력해주세요.');
+                return;
+            }
+
+            // PDF 파일 확인
+            const pdfFileEl = document.getElementById('input-pdf-file');
+            const pdfFile = pdfFileEl && pdfFileEl.files && pdfFileEl.files[0] ? pdfFileEl.files[0] : null;
             
             const id = `ho${ho}`;
             const title = `제${ho}호`;
@@ -724,7 +757,7 @@
                 bannerInfo: bannerInfo,
                 date: date,
                 cover: cover,
-                pdf: pdf,
+                pdf: '#',  // Drive 업로드 후 덮어쓰기
                 desc: desc,
                 articles: articles
             };
@@ -754,6 +787,36 @@
             const origText = btn.innerHTML;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 저장 중...';
             btn.disabled = true;
+
+            // PDF 파일 → Google Drive 업로드
+            let pdfUrl = '#';
+            if (pdfFile) {
+                try {
+                    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> PDF 업로드 중...';
+                    const reader = new FileReader();
+                    const base64 = await new Promise((resolve, reject) => {
+                        reader.onload = () => resolve(reader.result.split(',')[1]);
+                        reader.onerror = reject;
+                        reader.readAsDataURL(pdfFile);
+                    });
+                    const uploadRes = await window.DB_uploadJournalPdf(
+                        String(ho),
+                        fullTitle,
+                        { base64, name: pdfFile.name, mimeType: pdfFile.type || 'application/pdf' }
+                    );
+                    if (uploadRes && uploadRes.ok) {
+                        pdfUrl = uploadRes.pdfUrl;
+                    } else {
+                        throw new Error(uploadRes.error || 'PDF 업로드 실패');
+                    }
+                } catch(pdfErr) {
+                    alert('PDF 업로드 실패: ' + pdfErr.message + '\n\nPDF 없이 발행호 정보만 저장합니다.');
+                    pdfUrl = '#';
+                }
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 저장 중...';
+            }
+
+            newIssue.pdf = pdfUrl;
 
             try {
                 const res = await window.DB_addJournal(newIssue);

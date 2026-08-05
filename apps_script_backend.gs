@@ -18,6 +18,7 @@ const DRIVE_FOLDER = {
   forms:       "한국음악학회_양식파일",
   revised:     "한국음악학회_수정논문파일",
   seminars:    "한국음악학회_세미나아카이브",
+  journals:    "한국음악학회_학회지PDF",
 };
 
 function makeResponse(data) {
@@ -129,6 +130,7 @@ function handleWrite(body) {
     if (action === "uploadMemberDocument")  return handleMemberDocumentUpload(body);
     if (action === "uploadRevisedFiles")    return handleRevisedFileUpload(body);
     if (action === "uploadSeminarFiles")    return handleSeminarFileUpload(body);
+    if (action === "uploadJournalPdf")      return handleJournalPdfUpload(body);
 
     const sheetName = SHEET_NAMES[sheetKey];
     if (!sheetName) return makeResponse({ ok: false, error: "unknown sheet: " + sheetKey });
@@ -473,6 +475,22 @@ function handleRevisedFileUpload(body) {
   });
 
   return makeResponse({ ok: true, message: "수정논문 업로드 완료", urls: updateFields });
+}
+
+// ── 학회지 PDF 업로드 핸들러 ──
+// body: { ho, title, pdfFile: {base64, name, mimeType} }
+function handleJournalPdfUpload(body) {
+  try {
+    const pdfData = body.pdfFile;
+    if (!pdfData || !pdfData.base64) return makeResponse({ ok: false, error: "PDF 파일 데이터가 없습니다." });
+    const folder  = getDriveFolder(DRIVE_FOLDER.journals);
+    const safeTitle = (body.title || "학회지").replace(/[\s<>:"\/\\|?*\x00-\x1F]/g, "_");
+    const fileName = safeTitle + "_" + (pdfData.name || "전체.pdf");
+    const url = saveFileToDrive(pdfData, folder, fileName);
+    return makeResponse({ ok: true, pdfUrl: url, message: "학회지 PDF 업로드 완료" });
+  } catch(e) {
+    return makeResponse({ ok: false, error: "학회지 PDF 업로드 실패: " + e.message });
+  }
 }
 
 // ── 드라이브 권한 테스트 (한 번만 실행 → 권한 승인) ──

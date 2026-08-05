@@ -325,6 +325,22 @@ window.DB_deleteJournal = async function(id) {
     return await _dbPost({ action: "delete", sheet: "journals", key: "id", value: id });
 };
 
+/**
+ * 학회지 전체 PDF를 Google Drive에 업로드합니다.
+ * @param {string} ho - 호 번호 (예: "8")
+ * @param {string} title - 발행호 제목 (예: "한국음악문화 제8호")
+ * @param {{base64, name, mimeType}} pdfFile - PDF 파일 데이터
+ * @returns {{ ok:boolean, pdfUrl?:string, error?:string }}
+ */
+window.DB_uploadJournalPdf = async function(ho, title, pdfFile) {
+    return await _dbPostDirect({
+        action: "uploadJournalPdf",
+        ho: ho,
+        title: title,
+        pdfFile: pdfFile
+    });
+};
+
 // ============================================================
 // 7. 세미나 아카이브 파일 업로드 (Google Drive)
 // ============================================================
