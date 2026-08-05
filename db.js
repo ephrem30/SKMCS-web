@@ -310,14 +310,14 @@ window.DB_getJournals = async function() {
     }).sort((a, b) => parseInt(b.tonggwon || 0) - parseInt(a.tonggwon || 0));
 };
 
-/** 학회지 추가 */
+/** 학회지 추가 — 아티클 PDF URL 등 데이터가 크므로 직접 POST 사용 */
 window.DB_addJournal = async function(issueData) {
-    return await _dbPost({ action: "add", sheet: "journals", data: issueData });
+    return await _dbPostDirect({ action: "add", sheet: "journals", data: issueData });
 };
 
 /** 학회지 수정 */
 window.DB_updateJournal = async function(id, updates) {
-    return await _dbPost({ action: "update", sheet: "journals", key: "id", value: id, data: updates });
+    return await _dbPostDirect({ action: "update", sheet: "journals", key: "id", value: id, data: updates });
 };
 
 /** 학회지 삭제 */
