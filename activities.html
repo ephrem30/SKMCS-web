@@ -162,6 +162,29 @@
             color: var(--color-red);
         }
 
+        /* 학회소식 공유 버튼 */
+        .btn-share-news {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: linear-gradient(135deg, #1a6b5c, #2b8a7e);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 4px 10px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .btn-share-news:hover {
+            background: linear-gradient(135deg, #145249, #226e63);
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+        }
+        .btn-share-news i { font-size: 0.72rem; }
+
         .activity-header-right {
             display: flex;
             align-items: center;
@@ -937,6 +960,9 @@
                 let deleteBtnHtml = "";
                 if (isAdmin) {
                     deleteBtnHtml = `
+                        <button class="btn-share-news" onclick="shareToNews('seminar', '${seminar.id}')" title="학회소식 세미나 소식 탭에 공유">
+                            <i class="fa-solid fa-bullhorn"></i> 학회소식 공유
+                        </button>
                         <button class="btn-delete-seminar" onclick="deleteSeminar('${seminar.id}')" title="세미나 삭제">
                             <i class="fa-solid fa-trash-can"></i>
                         </button>
@@ -1035,6 +1061,77 @@
         }
 
         // Global functions for inline event handlers
+        // ── 학회소식 공유 ──
+        window.shareToNews = function(type, id) {
+            if (!isAdmin) return;
+
+            let item = null;
+            if (type === 'seminar') {
+                const list = JSON.parse(localStorage.getItem('seminar_activities') || '[]');
+                item = list.find(x => x.id === id);
+            } else if (type === 'conference') {
+                const list = JSON.parse(localStorage.getItem('conference_activities') || '[]');
+                item = list.find(x => x.id === id);
+            }
+            if (!item) { alert('항목을 찾을 수 없습니다.'); return; }
+
+            const today = new Date().toISOString().slice(0, 10);
+            const idx   = parseInt(localStorage.getItem('seminar_news_idx') || '2');
+
+            let newPost;
+            if (type === 'seminar') {
+                newPost = {
+                    id:          idx,
+                    category:    '정기세미나',
+                    title:       item.title,
+                    seminarDate: today,
+                    location:    '',
+                    content:     (item.purpose ? '【목적】' + item.purpose + '\n' : '') +
+                                 (item.schedule ? '【일정】' + item.schedule + '\n' : '') +
+                                 (item.organizer ? '【담당자】' + item.organizer : ''),
+                    link:        'activities.html?tab=seminar',
+                    thumbnail:   '',
+                    createdAt:   today,
+                };
+            } else {
+                newPost = {
+                    id:          idx,
+                    category:    '학술대회',
+                    title:       item.title,
+                    seminarDate: item.date || today,
+                    location:    item.place || '',
+                    content:     (item.theme  ? '【주제】'  + item.theme  + '\n' : '') +
+                                 (item.date   ? '【일시】'  + item.date   + '\n' : '') +
+                                 (item.place  ? '【장소】'  + item.place  + '\n' : '') +
+                                 (item.program ? '【프로그램】' + item.program : ''),
+                    link:        'activities.html?tab=conference',
+                    thumbnail:   '',
+                    createdAt:   today,
+                };
+            }
+
+            const posts = JSON.parse(localStorage.getItem('seminar_news_posts') || '[]');
+
+            // 중복 방지: 같은 제목이 이미 있으면 덮어쓸지 확인
+            const dupIdx = posts.findIndex(p => p.title === newPost.title);
+            if (dupIdx !== -1) {
+                if (!confirm(`"${newPost.title}" 항목이 이미 학회소식에 있습니다.\n덮어쓰시겠습니까?`)) return;
+                posts[dupIdx] = { ...posts[dupIdx], ...newPost, id: posts[dupIdx].id };
+                localStorage.setItem('seminar_news_posts', JSON.stringify(posts));
+                alert('✅ 학회소식이 업데이트되었습니다.');
+            } else {
+                posts.unshift(newPost);
+                localStorage.setItem('seminar_news_idx', String(idx + 1));
+                localStorage.setItem('seminar_news_posts', JSON.stringify(posts));
+                alert('✅ 학회소식 > 세미나 소식에 공유되었습니다.\n학회소식 페이지에서 확인하세요.');
+            }
+
+            // 학회소식 탭으로 이동 여부 확인
+            if (confirm('학회소식 페이지로 이동하시겠습니까?')) {
+                window.location.href = 'news.html?tab=seminar_news';
+            }
+        };
+
         window.deleteSeminar = function(id) {
             if (!confirm("정말 이 세미나/연구모임을 삭제하시겠습니까?")) return;
             let seminars = JSON.parse(localStorage.getItem("seminar_activities") || "[]");
@@ -1094,6 +1191,9 @@
                 let deleteBtnHtml = "";
                 if (isAdmin) {
                     deleteBtnHtml = `
+                        <button class="btn-share-news" onclick="shareToNews('conference', '${conf.id}')" title="학회소식 세미나 소식 탭에 공유">
+                            <i class="fa-solid fa-bullhorn"></i> 학회소식 공유
+                        </button>
                         <button onclick="openProgBookModal('${conf.id}')" title="프로그램북 및 신청양식 링크 등록/수정" class="btn-outline" style="padding: 4px 10px; font-size: 0.78rem; border-color: var(--color-red); color: var(--color-red); display: inline-flex; align-items: center; gap: 4px;">
                             <i class="fa-solid fa-file-pdf"></i> 프로그램북 등록/수정
                         </button>
