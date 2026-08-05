@@ -305,7 +305,7 @@
                         </div>
                         <div style="display: flex; flex-direction: column; gap: 6px;">
                             <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-dark);">전체호 PDF 파일 <span style="color:var(--color-red);">*</span></label>
-                            <div style="display:flex; align-items:center; gap:8px;">
+                            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                                 <input type="file" id="input-pdf-file" accept=".pdf" style="display:none;">
                                 <button type="button" id="btn-select-pdf"
                                     onclick="document.getElementById('input-pdf-file').click()"
@@ -314,9 +314,20 @@
                                     cursor:pointer; display:flex; align-items:center; gap:6px; white-space:nowrap;">
                                     <i class="fa-solid fa-file-arrow-up"></i> PDF 선택
                                 </button>
-                                <span id="pdf-file-name" style="font-size:0.85rem; color:#555; word-break:break-all;">선택된 파일 없음</span>
+                                <span id="pdf-file-name"
+                                    onclick="document.getElementById('input-pdf-file').click()"
+                                    title="클릭하여 파일 재선택"
+                                    style="font-size:0.85rem; color:#555; word-break:break-all; cursor:pointer;"
+                                    >선택된 파일 없음</span>
+                                <button type="button" id="btn-clear-pdf"
+                                    style="display:none; background:none; border:none; color:var(--color-red);
+                                    cursor:pointer; font-size:1rem; padding:2px 6px; line-height:1;"
+                                    title="파일 선택 취소"
+                                    onclick="clearPdfSelection()">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
                             </div>
-                            <span style="font-size:0.78rem; color:var(--text-muted);">선택한 PDF는 Google Drive에 자동 저장됩니다.</span>
+                            <span style="font-size:0.78rem; color:var(--text-muted);">선택한 PDF는 Google Drive에 자동 저장됩니다. 파일명을 클릭하면 재선택할 수 있습니다.</span>
                         </div>
                     </div>
                     <div style="display: flex; flex-direction: column; gap: 6px;">
@@ -636,13 +647,61 @@
                     <div style="display: flex; flex-direction: column; gap: 4px;">
                         <input type="text" placeholder="분야 (예: 불교음악) *" required class="art-cat" style="padding: 8px 10px; border-radius: 4px; font-size: 0.85rem; width: 100%;">
                     </div>
-                    <div style="grid-column: span 2; display: flex; flex-direction: column; gap: 4px;">
-                        <input type="text" placeholder="원문 PDF 파일명 (선택, 예: 논문파일명.pdf)" class="art-pdf" style="padding: 8px 10px; border-radius: 4px; font-size: 0.85rem; width: 100%;">
-                    </div>
+                 <input type="hidden" class="art-pdf-url" value="">
+                 <div style="grid-column: span 2; display: flex; flex-direction: column; gap: 4px;">
+                     <label style="font-size:0.78rem; color:var(--text-muted);">원문 PDF (선택)</label>
+                     <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                         <input type="file" class="art-pdf-input" accept=".pdf" style="display:none;">
+                         <button type="button" class="btn-art-pdf"
+                             style="padding:5px 12px; border:1px solid #aaa; background:#f8f8f8;
+                             color:#555; border-radius:4px; font-size:0.8rem; font-weight:600;
+                             cursor:pointer; display:flex; align-items:center; gap:5px; white-space:nowrap;">
+                             <i class="fa-solid fa-file-pdf"></i> PDF 선택
+                         </button>
+                         <span class="art-pdf-name" style="font-size:0.8rem; color:#888;">선택 안 함</span>
+                         <button type="button" class="btn-art-pdf-clear"
+                             style="display:none; background:none; border:none; color:var(--color-red);
+                             cursor:pointer; font-size:0.85rem; padding:2px 4px; line-height:1;"
+                             title="파일 선택 취소">
+                             <i class="fa-solid fa-xmark"></i>
+                         </button>
+                     </div>
+                 </div>
                 </div>
             `;
             
-            // Add delete event handler for this card
+            // PDF 선택 이벤트 및 X단추 연결
+            const artPdfInput = card.querySelector('.art-pdf-input');
+            const artPdfBtn   = card.querySelector('.btn-art-pdf');
+            const artPdfName  = card.querySelector('.art-pdf-name');
+            const artPdfClear = card.querySelector('.btn-art-pdf-clear');
+            const artPdfUrl   = card.querySelector('.art-pdf-url');
+
+            artPdfBtn.addEventListener('click', () => artPdfInput.click());
+            artPdfInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    artPdfName.textContent = this.files[0].name;
+                    artPdfName.style.color = 'var(--color-green)';
+                    artPdfName.style.fontWeight = '700';
+                    artPdfClear.style.display = 'inline-flex';
+                    artPdfUrl.value = ''; // 우선 비우기, 업로드 시 채움
+                } else {
+                    artPdfName.textContent = '선택 안 함';
+                    artPdfName.style.color = '#888';
+                    artPdfName.style.fontWeight = '';
+                    artPdfClear.style.display = 'none';
+                }
+            });
+            artPdfClear.addEventListener('click', () => {
+                artPdfInput.value = '';
+                artPdfName.textContent = '선택 안 함';
+                artPdfName.style.color = '#888';
+                artPdfName.style.fontWeight = '';
+                artPdfClear.style.display = 'none';
+                artPdfUrl.value = '';
+            });
+
+            // 삭제 이벤트
             card.querySelector('.btn-remove-card').addEventListener('click', () => {
                 card.remove();
                 reindexCards();
@@ -665,6 +724,16 @@
 
         btnAddArticleRow.addEventListener('click', addArticleInputRow);
 
+        // PDF 파일 선택 취소
+        function clearPdfSelection() {
+            document.getElementById('input-pdf-file').value = '';
+            const nameEl = document.getElementById('pdf-file-name');
+            nameEl.textContent = '선택된 파일 없음';
+            nameEl.style.color = '#555';
+            nameEl.style.fontWeight = '';
+            document.getElementById('btn-clear-pdf').style.display = 'none';
+        }
+
         // PDF 파일 선택 시 파일명 표시
         document.getElementById('input-pdf-file').addEventListener('change', function() {
             const nameEl = document.getElementById('pdf-file-name');
@@ -672,10 +741,9 @@
                 nameEl.textContent = this.files[0].name;
                 nameEl.style.color = 'var(--color-green)';
                 nameEl.style.fontWeight = '700';
+                document.getElementById('btn-clear-pdf').style.display = 'inline-flex';
             } else {
-                nameEl.textContent = '선택된 파일 없음';
-                nameEl.style.color = '#555';
-                nameEl.style.fontWeight = '';
+                clearPdfSelection();
             }
         });
 
@@ -724,27 +792,27 @@
             }
             const bannerInfo = `제${ho}호 (${bannerDate})`;
 
-            // Extract articles from cards
-            const articles = [];
             const articleCards = document.querySelectorAll('.article-input-card');
+            const articles = [];
             articleCards.forEach((card, index) => {
-                const titleInput = card.querySelector('.art-title').value;
-                const authorInput = card.querySelector('.art-author').value;
-                const catInput = card.querySelector('.art-cat').value;
-                const pdfInput = card.querySelector('.art-pdf').value || '#';
-                
-                let enTitle = card.querySelector('.art-en-title').value;
+                const titleInput  = card.querySelector('.art-title').value.trim();
+                const authorInput = card.querySelector('.art-author').value.trim();
+                const catInput    = card.querySelector('.art-cat').value.trim();
+                let enTitle = card.querySelector('.art-en-title').value.trim();
                 if (!enTitle) {
                     enTitle = titleInput.split(' ').map(w => w.charAt(0).toUpperCase() + w.substring(1)).join(' ') + " (English translation pending)";
                 }
-                
+                // PDF: 파일이 선택되었으면 File 객체 저장, 아니면 '#'
+                const pdfInput = card.querySelector('.art-pdf-input');
+                const pdfFileObj = pdfInput && pdfInput.files && pdfInput.files[0] ? pdfInput.files[0] : null;
                 articles.push({
                     num: articleCards.length - index,
                     category: catInput,
                     title: titleInput,
                     enTitle: enTitle,
                     author: authorInput,
-                    pdf: pdfInput
+                    pdf: '#',       // 업로드 후 콜로
+                    _pdfFile: pdfFileObj  // 임시 파일 첨부
                 });
             });
 
@@ -816,7 +884,35 @@
                 btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 저장 중...';
             }
 
+            // 논문별 PDF 업로드
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 논문 PDF 업로드 중...';
+            for (let i = 0; i < articles.length; i++) {
+                const art = articles[i];
+                if (art._pdfFile) {
+                    try {
+                        const reader2 = new FileReader();
+                        const b64 = await new Promise((res2, rej2) => {
+                            reader2.onload = () => res2(reader2.result.split(',')[1]);
+                            reader2.onerror = rej2;
+                            reader2.readAsDataURL(art._pdfFile);
+                        });
+                        const artRes = await window.DB_uploadJournalPdf(
+                            String(ho),
+                            `${fullTitle}_논문${articles.length - i}`,
+                            { base64: b64, name: art._pdfFile.name, mimeType: art._pdfFile.type || 'application/pdf' }
+                        );
+                        art.pdf = (artRes && artRes.ok) ? artRes.pdfUrl : '#';
+                    } catch(e) {
+                        console.warn('논문 PDF 업로드 실패:', e);
+                        art.pdf = '#';
+                    }
+                }
+                delete art._pdfFile; // 직렬화 전 제거
+            }
+
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 저장 중...';
             newIssue.pdf = pdfUrl;
+            newIssue.articles = articles;
 
             try {
                 const res = await window.DB_addJournal(newIssue);
