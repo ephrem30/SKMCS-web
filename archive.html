@@ -905,6 +905,7 @@
             const newIssue = {
                 id: id,
                 ho: ho,
+                tonggwon: String(ho),   // 정렬 기준 필드
                 title: title,
                 fullTitle: fullTitle,
                 label: label,
@@ -998,9 +999,13 @@
 
             // 논문별 PDF 업로드
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 논문 PDF 업로드 중...';
+            const artTotal = articles.filter(a => a._pdfFile).length;
+            let artDone = 0;
             for (let i = 0; i < articles.length; i++) {
                 const art = articles[i];
                 if (art._pdfFile) {
+                    artDone++;
+                    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 논문 PDF (${artDone}/${artTotal}) 업로드 중...`;
                     try {
                         const reader2 = new FileReader();
                         const b64 = await new Promise((res2, rej2) => {
@@ -1029,30 +1034,39 @@
             try {
                 const res = await window.DB_addJournal(newIssue);
                 if (res && res.ok) {
-                    // localStorage도 업데이트
                     let localJournals = JSON.parse(localStorage.getItem("journal_db") || "[]");
                     const dupIdx = localJournals.findIndex(j => j.id === id);
                     if (dupIdx !== -1) localJournals[dupIdx] = newIssue;
                     else localJournals.push(newIssue);
                     localStorage.setItem("journal_db", JSON.stringify(localJournals));
 
+                    btn.innerHTML = origText;
+                    btn.disabled = false;
                     alert(`${title} 저장 완료! 학회지 시트에 등록되었습니다.`);
                     closeUploadModal();
-                    initPage(); // 페이지 재로드 없이 데이터 새로고침
+                    await initPage();
+                    // 새로 등록한 호 자동 선택 및 표시
+                    selectEl.value = id;
+                    const freshIssue = journalData.find(j => j.id === id);
+                    if (freshIssue) displayIssue(freshIssue);
                 } else {
                     throw new Error((res && res.error) || '저장 실패');
                 }
             } catch(err) {
-                // Sheets 실패 시 localStorage만에라도 저장
                 let localJournals = JSON.parse(localStorage.getItem("journal_db") || "[]");
                 const dupIdx = localJournals.findIndex(j => j.id === id);
                 if (dupIdx !== -1) localJournals[dupIdx] = newIssue;
                 else localJournals.push(newIssue);
                 localStorage.setItem("journal_db", JSON.stringify(localJournals));
 
-                alert(`임시 저장 완료 (Sheets 연동 실패: ${err.message}).\n로칼에만 저장되었습니다.`);
+                // localStorage에 저장된 데이터로 즉시 표시
+                journalData = localJournals.sort((a, b) => parseInt(b.tonggwon||0) - parseInt(a.tonggwon||0));
+                populateDropdown();
+                selectEl.value = id;
+                displayIssue(localJournals.find(j => j.id === id));
+
+                alert(`임시 저장 완료 (Sheets 연동 실패: ${err.message}).\n현재 세션에만 표시됩니다.\n\n\u203b Google Apps Script 재배포 후 다시 시도해주세요.`);
                 closeUploadModal();
-                initPage();
             } finally {
                 btn.innerHTML = origText;
                 btn.disabled = false;
