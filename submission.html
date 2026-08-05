@@ -392,73 +392,21 @@
                     </div>
                 </div>
 
-                <!-- [NEW] 수정논문 제출 섹션 -->
+                <!-- [수정논문 제출] → 전용 독립 페이지로 이동 -->
                 <div id="section-revised" class="tab-section" style="display: none;">
-                    <div class="greeting-wrap" style="text-align:left;">
-                        <h3 style="margin-bottom:8px; font-size:1.5rem; color:var(--color-green); display:flex; align-items:center; gap:8px;">
-                            <i class="fa-solid fa-file-pen"></i> 수정논문 제출
-                        </h3>
-                        <p style="margin-bottom:25px; font-size:0.95rem; color:var(--text-muted); line-height:1.7;">
-                            심사 결과 <strong>「수정 후 게재」</strong> 판정을 받으신 논문의 수정본을 아래 양식에 따라 제출해 주십시오.
-                            제출된 파일은 구글 드라이브에 안전하게 저장되며, 편집위원회에서 검토 후 연락드립니다.
+                    <div class="greeting-wrap" style="text-align:center; padding: 60px 20px;">
+                        <i class="fa-solid fa-file-pen" style="font-size:3rem; color:var(--color-green); margin-bottom:20px; display:block;"></i>
+                        <h3 style="font-size:1.5rem; color:var(--text-dark); margin-bottom:12px;">수정논문 제출 전용 페이지로 이동합니다</h3>
+                        <p style="color:var(--text-muted); font-size:0.97rem; margin-bottom:28px; line-height:1.7;">
+                            수정원고 및 수정이행서 제출은 전용 페이지에서 진행됩니다.<br>
+                            아래 버튼을 클릭하시거나, 잠시 후 자동으로 이동됩니다.
                         </p>
-
-                        <!-- 알림: 수정 가능 논문 없을 때 -->
-                        <div id="revised-no-papers" style="display:none; padding:25px; background:#fafafa; border:1px solid var(--border-color); border-radius:6px; text-align:center; color:var(--text-muted);">
-                            <i class="fa-solid fa-circle-info" style="font-size:2rem; margin-bottom:12px; display:block; color:#bbb;"></i>
-                            <p style="font-size:0.95rem;">현재 <strong>수정 후 게재</strong> 상태인 투고 논문이 없습니다.<br>심사 결과 안내 이메일을 확인하시거나, 투고 내역 탭에서 진행 상태를 확인해 주십시오.</p>
-                        </div>
-
-                        <!-- 수정논문 제출 양식 -->
-                        <div id="revised-form-container">
-                            <!-- Step: 논문 선택 -->
-                            <div style="margin-bottom:20px; padding:20px; background:#f7fbfa; border:1px solid #c5e4df; border-radius:6px;">
-                                <label style="display:block; font-weight:700; margin-bottom:8px; font-size:1.05rem; color:var(--text-dark);">1. 수정 대상 논문 선택 <span style="color:var(--color-red);">*</span></label>
-                                <p style="margin:0 0 12px 0; font-size:0.85rem; color:var(--text-muted);">수정 후 게재 판정을 받은 논문 중 수정본을 제출할 논문을 선택하십시오.</p>
-                                <select id="revised-paper-select" style="width:100%; padding:10px; border:1px solid var(--border-color); border-radius:4px; font-family:inherit; font-size:0.95rem; background:white;">
-                                    <option value="">-- 논문을 선택하십시오 --</option>
-                                </select>
-                            </div>
-
-                            <!-- Step: 수정 사유/메모 -->
-                            <div style="margin-bottom:20px; padding:20px; background:#fafafa; border:1px solid var(--border-color); border-radius:6px;">
-                                <label style="display:block; font-weight:700; margin-bottom:8px; font-size:1.05rem; color:var(--text-dark);">2. 수정 내용 요약 (선택)</label>
-                                <p style="margin:0 0 12px 0; font-size:0.85rem; color:var(--text-muted);">심사위원의 지적 사항에 대한 주요 수정 내용을 간략히 기술하시면 심사에 도움이 됩니다.</p>
-                                <textarea id="revised-memo" rows="4" placeholder="예: 2장 분석 부분의 악보 예시를 추가하고, 선행연구 검토를 보완하였습니다. 심사위원 3번의 제안에 따라 결론 부분을 전면 수정하였습니다." style="width:100%; padding:10px; border:1px solid var(--border-color); border-radius:4px; font-family:inherit; font-size:0.95rem; resize:vertical; line-height:1.6;"></textarea>
-                            </div>
-
-                            <!-- Step: 파일 업로드 -->
-                            <div style="margin-bottom:20px; padding:20px; border:2px dashed var(--color-green); border-radius:6px; background:#f7fbfa;">
-                                <label style="display:block; font-weight:700; margin-bottom:8px; font-size:1.05rem; color:var(--text-dark);">3. 수정본 원고 파일 업로드 <span style="color:var(--color-red);">*</span></label>
-                                <p style="margin:0 0 15px 0; font-size:0.85rem; color:var(--text-muted);">Hwp, Docx, Pdf 파일만 지원합니다. 파일명에는 저자 정보를 제외하고 제출하십시오.</p>
-                                <div style="display:flex; gap:10px; align-items:center;">
-                                    <input type="file" id="revised-file-manuscript" accept=".hwp,.docx,.pdf" style="display:none;">
-                                    <button type="button" class="btn-outline" onclick="document.getElementById('revised-file-manuscript').click()" style="padding:10px 20px; font-size:0.9rem; font-weight:600; border-color:var(--color-green); color:var(--color-green);">
-                                        <i class="fa-solid fa-file-arrow-up"></i> 수정본 파일 선택
-                                    </button>
-                                    <span id="revised-manuscript-name" style="font-size:0.9rem; color:#555;">선택된 파일 없음</span>
-                                </div>
-                            </div>
-
-                            <div style="margin-bottom:30px; padding:20px; border:1px solid var(--border-color); border-radius:6px; background:white;">
-                                <label style="display:block; font-weight:700; margin-bottom:8px; font-size:1.05rem; color:var(--text-dark);">4. 심사의견 답변서 업로드 (선택)</label>
-                                <p style="margin:0 0 15px 0; font-size:0.85rem; color:var(--text-muted);">심사위원의 지적 사항별 수정 대응 답변서(Response Letter)를 함께 제출하시면 재심사에 도움이 됩니다. PDF 또는 Word 파일.</p>
-                                <div style="display:flex; gap:10px; align-items:center;">
-                                    <input type="file" id="revised-file-response" accept=".hwp,.docx,.pdf" style="display:none;">
-                                    <button type="button" class="btn-outline" onclick="document.getElementById('revised-file-response').click()" style="padding:10px 20px; font-size:0.9rem; font-weight:600;">
-                                        <i class="fa-solid fa-file-lines"></i> 답변서 파일 선택
-                                    </button>
-                                    <span id="revised-response-name" style="font-size:0.9rem; color:#555;">선택된 파일 없음</span>
-                                </div>
-                            </div>
-
-                            <!-- 제출 버튼 -->
-                            <div style="text-align:center; padding-top:10px;">
-                                <button type="button" id="btn-submit-revised" class="btn-solid" style="padding:14px 50px; font-size:1.05rem; font-weight:700; background-color:var(--color-green); border-color:var(--color-green); display:inline-flex; align-items:center; gap:8px;">
-                                    <i class="fa-solid fa-paper-plane"></i> 수정논문 제출하기
-                                </button>
-                            </div>
-                        </div>
+                        <a href="revised_submission.html"
+                           style="display:inline-flex; align-items:center; gap:10px; padding:14px 36px;
+                           background:var(--color-green); color:#fff; border-radius:8px; text-decoration:none;
+                           font-size:1rem; font-weight:700; box-shadow:0 4px 14px rgba(43,138,126,0.3);">
+                            <i class="fa-solid fa-arrow-right"></i> 수정논문 제출 페이지로 이동
+                        </a>
                     </div>
                 </div>
 

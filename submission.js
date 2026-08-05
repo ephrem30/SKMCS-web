@@ -552,7 +552,8 @@ function switchTab(tabName, shouldPushState = true) {
     }
 
     if (tabName === 'revised') {
-        renderRevisedTab();
+        window.location.href = 'revised_submission.html';
+        return;
     }
 
     if (tabName === 'reviewer-space') {
