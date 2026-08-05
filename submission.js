@@ -197,6 +197,8 @@ async function initPageData() {
         
         // 데이터가 성공적으로 로드되면 이력 테이블 및 관리자 뷰 갱신
         renderHistoryTable();
+        if (typeof updateAdminTabVisibility === 'function') updateAdminTabVisibility();
+        if (typeof renderRevisedTab === 'function') renderRevisedTab();
         if (typeof renderReviewerSpaceTable === 'function') renderReviewerSpaceTable();
         if (typeof renderAdminSpaceTable === 'function') renderAdminSpaceTable();
     } catch(e) {
