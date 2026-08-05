@@ -73,10 +73,12 @@ const DEFAULT_FREEBOARD = [
 
 const ADMIN_ROLES = ["admin", "secretary", "editor", "president"];
 
-let currentTab = "notice"; // 'notice' or 'freeboard'
+let currentTab = "notice"; // 'notice' | 'freeboard' | 'seminar_news'
 let noticePage = 1;
 let freeboardPage = 1;
+let seminarNewsPage = 1;
 const ITEMS_PER_PAGE = 5;
+const SN_ITEMS_PER_PAGE = 6;
 
 // Search terms
 let noticeSearchQuery = "";
@@ -85,6 +87,19 @@ let freeboardSearchQuery = "";
 let freeboardSearchType = "all";
 
 const DATA_VERSION = "v2026-05-29b";
+
+const DEFAULT_SEMINAR_NEWS = [
+    {
+        id: 1, category: "정기세미나",
+        title: "제12회 정기세미나 — 판소리의 현대적 계승",
+        seminarDate: "2026-05-15",
+        location: "동국대학교 문화관 3층 세미나실",
+        content: "판소리의 전통 보존과 현대적 연행 방식에 대한 발제와 토론이 진행되었습니다. 홍길동 교수(서울대)의 발제를 중심으로 활발한 논의가 이루어졌으며, 많은 회원 여러분께서 참여해 주셨습니다.",
+        link: "seminar_archive.html",
+        thumbnail: "",
+        createdAt: "2026-05-15"
+    }
+];
 
 function initStorage() {
     if (!localStorage.getItem("notice_posts")) {
@@ -96,6 +111,11 @@ function initStorage() {
     if (!localStorage.getItem("freeboard_posts")) {
         localStorage.setItem("freeboard_posts", JSON.stringify(DEFAULT_FREEBOARD));
         localStorage.setItem("freeboard_posts_idx", "4");
+    }
+
+    if (!localStorage.getItem("seminar_news_posts")) {
+        localStorage.setItem("seminar_news_posts", JSON.stringify(DEFAULT_SEMINAR_NEWS));
+        localStorage.setItem("seminar_news_idx", "2");
     }
 }
 
@@ -118,92 +138,80 @@ function initRouter() {
 
     if (tabParam === "freeboard") {
         currentTab = "freeboard";
+    } else if (tabParam === "seminar_news") {
+        currentTab = "seminar_news";
     } else {
         currentTab = "notice";
     }
 
-    // Switch tabs UI
     updateTabsUI();
 
-    // Bind Tab Click Handlers
-    const tabNoticeBtn = document.getElementById("tab-notice");
+    const tabNoticeBtn    = document.getElementById("tab-notice");
     const tabFreeboardBtn = document.getElementById("tab-freeboard");
+    const tabSnBtn        = document.getElementById("tab-seminar-news");
 
-    if (tabNoticeBtn) {
-        tabNoticeBtn.addEventListener("click", (e) => {
-            e.preventDefault();
-            switchTab("notice");
-        });
-    }
-
-    if (tabFreeboardBtn) {
-        tabFreeboardBtn.addEventListener("click", (e) => {
-            e.preventDefault();
-            switchTab("freeboard");
-        });
-    }
+    if (tabNoticeBtn)    tabNoticeBtn.addEventListener("click",    e => { e.preventDefault(); switchTab("notice"); });
+    if (tabFreeboardBtn) tabFreeboardBtn.addEventListener("click", e => { e.preventDefault(); switchTab("freeboard"); });
+    if (tabSnBtn)        tabSnBtn.addEventListener("click",        e => { e.preventDefault(); switchTab("seminar_news"); });
 }
 
 function switchTab(tabName) {
     if (currentTab === tabName) return;
     currentTab = tabName;
 
-    // Update URL query string
     const url = new URL(window.location);
     url.searchParams.set("tab", tabName);
     window.history.pushState({}, "", url);
 
-    // Render
     updateTabsUI();
     renderActiveTab();
 }
 
 function updateTabsUI() {
-    const tabNoticeBtn = document.getElementById("tab-notice");
-    const tabFreeboardBtn = document.getElementById("tab-freeboard");
-    const sectionNotice = document.getElementById("section-notice");
+    const tabNoticeBtn     = document.getElementById("tab-notice");
+    const tabFreeboardBtn  = document.getElementById("tab-freeboard");
+    const tabSnBtn         = document.getElementById("tab-seminar-news");
+    const sectionNotice    = document.getElementById("section-notice");
     const sectionFreeboard = document.getElementById("section-freeboard");
+    const sectionSn        = document.getElementById("section-seminar-news");
     const breadcrumbCurrent = document.getElementById("breadcrumb-current");
 
+    [tabNoticeBtn, tabFreeboardBtn, tabSnBtn].forEach(btn => btn && btn.classList.remove("active"));
+    [sectionNotice, sectionFreeboard, sectionSn].forEach(s => s && (s.style.display = "none"));
+
     if (currentTab === "notice") {
-        if (tabNoticeBtn) tabNoticeBtn.classList.add("active");
-        if (tabFreeboardBtn) tabFreeboardBtn.classList.remove("active");
-        if (sectionNotice) sectionNotice.style.display = "block";
-        if (sectionFreeboard) sectionFreeboard.style.display = "none";
+        if (tabNoticeBtn)    tabNoticeBtn.classList.add("active");
+        if (sectionNotice)   sectionNotice.style.display = "block";
         if (breadcrumbCurrent) breadcrumbCurrent.textContent = "공지사항";
-    } else {
-        if (tabNoticeBtn) tabNoticeBtn.classList.remove("active");
+    } else if (currentTab === "freeboard") {
         if (tabFreeboardBtn) tabFreeboardBtn.classList.add("active");
-        if (sectionNotice) sectionNotice.style.display = "none";
         if (sectionFreeboard) sectionFreeboard.style.display = "block";
         if (breadcrumbCurrent) breadcrumbCurrent.textContent = "자유게시판";
+    } else if (currentTab === "seminar_news") {
+        if (tabSnBtn)        tabSnBtn.classList.add("active");
+        if (sectionSn)       sectionSn.style.display = "block";
+        if (breadcrumbCurrent) breadcrumbCurrent.textContent = "세미나 소식";
     }
 }
 
 function renderActiveTab() {
-    const user = getLoggedInUser();
+    const user    = getLoggedInUser();
     const isAdmin = user && ADMIN_ROLES.includes(user.role);
 
     if (currentTab === "notice") {
-        // Show write notice button only for admin
         const btnWriteNotice = document.getElementById("btn-write-notice");
-        if (btnWriteNotice) {
-            btnWriteNotice.style.display = isAdmin ? "inline-block" : "none";
-        }
-        // Show bulk delete button only for admin
+        if (btnWriteNotice) btnWriteNotice.style.display = isAdmin ? "inline-block" : "none";
         const btnDeleteSelectedNotice = document.getElementById("btn-delete-selected-notice");
-        if (btnDeleteSelectedNotice) {
-            btnDeleteSelectedNotice.style.display = isAdmin ? "inline-block" : "none";
-        }
+        if (btnDeleteSelectedNotice) btnDeleteSelectedNotice.style.display = isAdmin ? "inline-block" : "none";
         renderNoticeBoard();
-    } else {
-        // Show bulk delete button only for admin
+    } else if (currentTab === "freeboard") {
         const btnDeleteSelectedFreeboard = document.getElementById("btn-delete-selected-freeboard");
-        if (btnDeleteSelectedFreeboard) {
-            btnDeleteSelectedFreeboard.style.display = isAdmin ? "inline-block" : "none";
-        }
-        // Free board write button is always visible, but click handler will check login status
+        if (btnDeleteSelectedFreeboard) btnDeleteSelectedFreeboard.style.display = isAdmin ? "inline-block" : "none";
         renderFreeBoard();
+    } else if (currentTab === "seminar_news") {
+        const btnWriteSn = document.getElementById("btn-write-seminar-news");
+        if (btnWriteSn) btnWriteSn.style.display = isAdmin ? "inline-flex" : "none";
+        renderSeminarNews();
     }
 }
 
@@ -460,16 +468,207 @@ window.changePage = function (type, page, event) {
     if (type === "notice") {
         noticePage = page;
         renderNoticeBoard();
-    } else {
+    } else if (type === "freeboard") {
         freeboardPage = page;
         renderFreeBoard();
+    } else if (type === "seminar_news") {
+        seminarNewsPage = page;
+        renderSeminarNews();
     }
+};
+
+// ==========================================
+// 세미나 소식 — 렌더링 & CRUD
+// ==========================================
+function renderSeminarNews() {
+    const posts   = JSON.parse(localStorage.getItem("seminar_news_posts") || "[]");
+    const user    = getLoggedInUser();
+    const isAdmin = user && ADMIN_ROLES.includes(user.role);
+
+    // 최신 세미나 일자 순 정렬
+    const sorted = [...posts].sort((a, b) => {
+        const da = new Date(a.seminarDate || a.createdAt || 0);
+        const db = new Date(b.seminarDate || b.createdAt || 0);
+        return db - da;
+    });
+
+    const totalEl = document.getElementById("seminar-news-total");
+    if (totalEl) totalEl.textContent = sorted.length;
+
+    const totalPages = Math.max(1, Math.ceil(sorted.length / SN_ITEMS_PER_PAGE));
+    if (seminarNewsPage > totalPages) seminarNewsPage = 1;
+    const start     = (seminarNewsPage - 1) * SN_ITEMS_PER_PAGE;
+    const paginated = sorted.slice(start, start + SN_ITEMS_PER_PAGE);
+
+    const grid = document.getElementById("seminar-news-grid");
+    if (!grid) return;
+
+    if (paginated.length === 0) {
+        grid.innerHTML = `
+            <div class="sn-empty" style="grid-column:1/-1;">
+                <i class="fa-regular fa-calendar-xmark"></i>
+                <p>등록된 세미나 소식이 없습니다.</p>
+                ${isAdmin ? `<button class="btn-apply" style="margin-top:12px;" onclick="openSnModal()"><i class="fa-solid fa-pen"></i> 첫 번째 소식 등록하기</button>` : ''}
+            </div>`;
+        document.getElementById("seminar-news-pagination").innerHTML = '';
+        return;
+    }
+
+    grid.innerHTML = paginated.map(p => {
+        const dateStr = p.seminarDate
+            ? new Date(p.seminarDate).toLocaleDateString('ko-KR', {year:'numeric', month:'long', day:'numeric'})
+            : '';
+        const thumbHtml = p.thumbnail
+            ? `<img src="${escapeHtml(p.thumbnail)}" alt="세미나 이미지" onerror="this.style.display='none'">`
+            : `<i class="fa-solid fa-music"></i>`;
+        const linkHtml = p.link
+            ? `<a href="${escapeHtml(p.link)}" class="sn-card-link"
+                  target="${p.link.startsWith('http') ? '_blank' : '_self'}">
+                   <i class="fa-solid fa-arrow-right"></i> 자세히 보기
+               </a>`
+            : '<span></span>';
+        const adminBtns = isAdmin
+            ? `<div class="sn-card-admin-btns">
+                   <button class="btn-sn-edit"   onclick="openSnModal(${p.id})" title="수정"><i class="fa-solid fa-pen"></i></button>
+                   <button class="btn-sn-delete" onclick="deleteSnPost(${p.id})" title="삭제"><i class="fa-solid fa-trash-can"></i></button>
+               </div>`
+            : '';
+
+        return `
+        <div class="sn-card">
+            <div class="sn-card-thumb">
+                ${thumbHtml}
+                <span class="sn-cat-badge">${escapeHtml(p.category)}</span>
+            </div>
+            <div class="sn-card-body">
+                <div class="sn-card-meta">
+                    ${dateStr   ? `<span><i class="fa-regular fa-calendar"></i>${dateStr}</span>` : ''}
+                    ${p.location ? `<span><i class="fa-solid fa-location-dot"></i>${escapeHtml(p.location)}</span>` : ''}
+                </div>
+                <div class="sn-card-title">${escapeHtml(p.title)}</div>
+                <div class="sn-card-excerpt">${escapeHtml(p.content)}</div>
+            </div>
+            <div class="sn-card-footer">
+                ${linkHtml}
+                ${adminBtns}
+            </div>
+        </div>`;
+    }).join('');
+
+    // 페이지네이션
+    const pEl = document.getElementById("seminar-news-pagination");
+    if (pEl) {
+        const dis = s => s ? 'pointer-events:none;opacity:0.5;' : '';
+        const act = a => a ? 'background:var(--color-green);color:white;border-color:var(--color-green);font-weight:700;' : '';
+        const isFirst = seminarNewsPage === 1;
+        const isLast  = seminarNewsPage === totalPages;
+        let html = '';
+        html += `<a href="#" onclick="changePage('seminar_news',1,event)" class="page-btn${isFirst?' disabled':''}" style="${dis(isFirst)}"><i class="fa-solid fa-angles-left"></i></a>`;
+        html += `<a href="#" onclick="changePage('seminar_news',${Math.max(1,seminarNewsPage-1)},event)" class="page-btn${isFirst?' disabled':''}" style="${dis(isFirst)}"><i class="fa-solid fa-angle-left"></i></a>`;
+        for (let i = 1; i <= totalPages; i++)
+            html += `<a href="#" onclick="changePage('seminar_news',${i},event)" class="page-num${i===seminarNewsPage?' active':''}" style="${act(i===seminarNewsPage)}">${i}</a>`;
+        html += `<a href="#" onclick="changePage('seminar_news',${Math.min(totalPages,seminarNewsPage+1)},event)" class="page-btn${isLast?' disabled':''}" style="${dis(isLast)}"><i class="fa-solid fa-angle-right"></i></a>`;
+        html += `<a href="#" onclick="changePage('seminar_news',${totalPages},event)" class="page-btn${isLast?' disabled':''}" style="${dis(isLast)}"><i class="fa-solid fa-angles-right"></i></a>`;
+        pEl.innerHTML = html;
+    }
+}
+
+window.openSnModal = function(editId) {
+    const overlay = document.getElementById('sn-modal-overlay');
+    if (!overlay) return;
+    document.getElementById('sn-write-form').reset();
+    document.getElementById('sn-post-id').value = '';
+    document.getElementById('sn-modal-title').textContent = '세미나 소식 등록';
+    document.querySelector('#sn-write-form .btn-submit').textContent = '등록';
+
+    if (editId !== undefined) {
+        const posts = JSON.parse(localStorage.getItem('seminar_news_posts') || '[]');
+        const p = posts.find(x => x.id === editId);
+        if (!p) return;
+        document.getElementById('sn-post-id').value    = p.id;
+        document.getElementById('sn-category').value   = p.category || '정기세미나';
+        document.getElementById('sn-date-input').value = p.seminarDate || '';
+        document.getElementById('sn-title').value      = p.title || '';
+        document.getElementById('sn-location').value   = p.location || '';
+        document.getElementById('sn-content').value    = p.content || '';
+        document.getElementById('sn-link').value       = p.link || '';
+        document.getElementById('sn-thumbnail').value  = p.thumbnail || '';
+        document.getElementById('sn-modal-title').textContent = '세미나 소식 수정';
+        document.querySelector('#sn-write-form .btn-submit').textContent = '수정';
+    }
+    overlay.style.display = 'flex';
+};
+
+function closeSnModal() {
+    const overlay = document.getElementById('sn-modal-overlay');
+    if (overlay) overlay.style.display = 'none';
+    document.getElementById('sn-write-form').reset();
+}
+
+window.handleSnSubmit = function(e) {
+    e.preventDefault();
+    const user = getLoggedInUser();
+    if (!user || !ADMIN_ROLES.includes(user.role)) {
+        alert('관리자만 등록할 수 있습니다.');
+        return;
+    }
+
+    const editId = parseInt(document.getElementById('sn-post-id').value) || null;
+    const posts  = JSON.parse(localStorage.getItem('seminar_news_posts') || '[]');
+    const today  = new Date().toISOString().slice(0, 10);
+
+    const rec = {
+        id:          editId || parseInt(localStorage.getItem('seminar_news_idx') || '2'),
+        category:    document.getElementById('sn-category').value,
+        title:       document.getElementById('sn-title').value.trim(),
+        seminarDate: document.getElementById('sn-date-input').value,
+        location:    document.getElementById('sn-location').value.trim(),
+        content:     document.getElementById('sn-content').value.trim(),
+        link:        document.getElementById('sn-link').value.trim(),
+        thumbnail:   document.getElementById('sn-thumbnail').value.trim(),
+        createdAt:   today,
+    };
+
+    if (editId) {
+        const idx = posts.findIndex(p => p.id === editId);
+        if (idx !== -1) posts[idx] = rec;
+    } else {
+        posts.unshift(rec);
+        localStorage.setItem('seminar_news_idx', String(rec.id + 1));
+    }
+
+    localStorage.setItem('seminar_news_posts', JSON.stringify(posts));
+    closeSnModal();
+    renderSeminarNews();
+    alert(editId ? '✅ 수정되었습니다.' : '✅ 세미나 소식이 등록되었습니다.');
+};
+
+window.deleteSnPost = function(id) {
+    const user = getLoggedInUser();
+    if (!user || !ADMIN_ROLES.includes(user.role)) return;
+    if (!confirm('이 세미나 소식을 삭제하시겠습니까?')) return;
+    const posts    = JSON.parse(localStorage.getItem('seminar_news_posts') || '[]');
+    const filtered = posts.filter(p => p.id !== id);
+    localStorage.setItem('seminar_news_posts', JSON.stringify(filtered));
+    renderSeminarNews();
 };
 
 // ==========================================
 // 4. Modal Interactions & CRUD Operations
 // ==========================================
 function initButtonListeners() {
+    // ── 세미나 소식 모달 버튼 ──
+    const btnWriteSn = document.getElementById('btn-write-seminar-news');
+    if (btnWriteSn) btnWriteSn.addEventListener('click', () => openSnModal());
+
+    const btnCloseSn  = document.getElementById('btn-close-sn');
+    const btnCancelSn = document.getElementById('btn-cancel-sn');
+    if (btnCloseSn)  btnCloseSn.addEventListener('click',  closeSnModal);
+    if (btnCancelSn) btnCancelSn.addEventListener('click', closeSnModal);
+
+    const snOverlay = document.getElementById('sn-modal-overlay');
+    if (snOverlay) snOverlay.addEventListener('click', e => { if (e.target === snOverlay) closeSnModal(); });
+
     // Write buttons clicks
     const btnWriteNotice = document.getElementById("btn-write-notice");
     if (btnWriteNotice) {
