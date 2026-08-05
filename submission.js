@@ -2095,7 +2095,8 @@ function handleMaterialUpload() {
 
 /**
  * 수정논문 제출 탭 초기화 및 렌더링
- * - 로그인 사용자의 "수정후게재" 상태 논문만 선택 가능
+ * - 로그인된 회원이면 본인 논문 전체에서 선택 가능 (상태 제한 없음)
+ * - 관리자는 전체 논문 목록 표시
  * - 파일 업로드 이벤트 핸들러 연결
  */
 function renderRevisedTab() {
@@ -2106,10 +2107,9 @@ function renderRevisedTab() {
     const submissions  = getSubmissions();
     const isAdmin      = ADMIN_ROLES.includes(user.role);
 
-    // 관리자는 전체 수정후게재 논문을 볼 수 있고, 일반 회원은 본인 논문만
+    // 로그인된 회원이면 누구든 본인의 삭제되지 않은 논문 전체 선택 가능
     const revisable = submissions.filter(s => {
         if (s.deleted) return false;
-        if (s.status !== "수정후게재") return false;
         if (isAdmin) return true;
         return s.author_email === user.email ||
                (s.authors && s.authors.some(a => a.email === user.email));

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>한국음악학회 - 수정논문 제출</title>
-    <meta name="description" content="한국음악학회 수정논문 온라인 제출 시스템. 심사 결과 수정 후 게재 판정을 받은 논문의 수정본과 수정이행서를 온라인으로 제출하실 수 있습니다.">
+    <meta name="description" content="한국음악학회 수정논문 온라인 제출 시스템. 로그인된 회원은 투고한 논문의 수정본과 수정이행서를 온라인으로 제출하실 수 있습니다.">
     <link rel="stylesheet" href="styles_v2.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -336,7 +336,7 @@
     <div class="revised-hero">
         <i class="fa-solid fa-file-pen hero-icon"></i>
         <h2>수정논문 제출</h2>
-        <p>심사 결과 <strong style="color:#fff;">「수정 후 게재」</strong> 판정을 받으신 논문의 수정본을<br>이 페이지에서 온라인으로 제출하실 수 있습니다.</p>
+        <p>투고하신 논문의 수정본과 수정이행서를<br>이 페이지에서 온라인으로 제출하실 수 있습니다.</p>
     </div>
 
     <!-- Main Content -->
@@ -370,13 +370,12 @@
                     </div>
                 </div>
 
-                <!-- ② 수정후게재 논문 없음 -->
+                <!-- ② 투고 논문 없음 -->
                 <div id="section-no-revisable" style="display:none;">
                     <div class="notice-banner warning">
                         <i class="fa-solid fa-circle-exclamation" style="margin-right:6px;"></i>
-                        현재 <strong>「수정 후 게재」</strong> 상태인 논문이 없습니다.
-                        심사 결과를 이메일로 확인하시거나,
-                        <a href="submission.html?tab=history" style="color:inherit;font-weight:700;">투고 내역</a>에서 심사 상태를 확인해 주십시오.
+                        현재 투고하신 논문이 없습니다.
+                        <a href="submission.html?tab=online" style="color:inherit;font-weight:700;">온라인 투고시스템</a>을 통해 먼저 논문을 투고해 주십시오.
                     </div>
                     <div style="text-align:center;padding:30px 0;">
                         <a href="submission.html?tab=history" class="btn-outline"
@@ -399,7 +398,7 @@
                     <div class="step-card">
                         <div class="step-badge"><i class="fa-solid fa-1"></i> STEP 1</div>
                         <h4>수정 대상 논문 선택 <span style="color:#cb3c31;">*</span></h4>
-                        <p class="desc">「수정 후 게재」 판정을 받은 논문 중 수정본을 제출할 논문을 선택하십시오.</p>
+                        <p class="desc">수정본을 제출할 논문을 선택하십시오. 투고하신 논문 전체가 표시됩니다.</p>
                         <select id="rvsub-paper-select" class="paper-select">
                             <option value="">-- 논문을 선택하십시오 --</option>
                         </select>
@@ -796,9 +795,9 @@ async function initPage() {
     }
 
     const isAdmin = ADMIN_ROLES_REV.includes(user.role);
+    // 상태 제한 없음 — 로그인된 회원이면 본인 논문 전체에서 선택 가능
     const revisable = loadedSubmissions.filter(s => {
         if (s.deleted) return false;
-        if (s.status !== '수정후게재') return false;
         if (isAdmin) return true;
         return s.author_email === user.email || (s.authors && s.authors.some(a => a.email === user.email));
     });
