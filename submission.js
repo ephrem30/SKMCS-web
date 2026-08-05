@@ -140,71 +140,25 @@ function getBase64(file) {
 
 // 비동기 페이지 초기화 및 시드 데이터 적재
 async function initPageData() {
+    let dataLoaded = false;
     try {
+        console.log("[submission] DB_getSubmissions 호출 시작...");
         loadedSubmissions = await window.DB_getSubmissions();
-        
-        // 스프레드시트가 비어있을 경우 기본 데이터 시드
-        if (loadedSubmissions.length === 0) {
-            console.log("[submission] 스프레드시트 비어있음. 기본 논문 시드 개시...");
-            const defaultSubmissions = [
-                {
-                    id: "SUB-2026-0001",
-                    journal: "한국음악문화",
-                    category: "국악",
-                    title_ko: "국악관현악에서 B♭대금과 E♭대금의 운지법 및 활용 방안 연구",
-                    title_en: "A Study on the Fingering and Application of B♭ Daegeum and E♭ Daegeum in Korean Traditional Orchestra",
-                    abstract_ko: "본 논문은 현대 국악관현악단에서 주로 사용되는 B♭대금과 E♭대금의 음역대 조율 및 다양한 운지법과 실제 악곡에서의 활용 방안을 고찰한다. 특히 가락의 진행 중 변청이나 조바꿈이 일어날 때의 대처 요령을 제시한다.",
-                    abstract_en: "This study investigates the range tuning, various fingerings, and practical application of B♭ Daegeum and E♭ Daegeum in contemporary traditional Korean orchestra music, focusing on scale changes and modulations.",
-                    keywords: "대금, 국악관현악, 운지법, 개량국악기",
-                    authors: [
-                        { name: "정지훈", affiliation: "동국대학교", email: "jihoon@gmail.com", role: "Primary" },
-                        { name: "김철수", affiliation: "서울대학교", email: "chulsoo@gmail.com", role: "Co-Author" }
-                    ],
-                    file_manuscript: "국악관현악에서 B♭대금과 E♭대금의 - 정지훈.pdf",
-                    file_agreement: "agreement.pdf",
-                    date: "2026-05-10",
-                    status: "심사중",
-                    author_email: "jihoon@gmail.com",
-                    reviewer_email: "reviewer@gmail.com",
-                    review_files: []
-                },
-                {
-                    id: "SUB-2026-0002",
-                    journal: "한국음악문화",
-                    category: "이론",
-                    title_ko: "신라의 범패 통도소리 의미와 가치 연구",
-                    title_en: "A Study on the Meaning and Value of Tongdori Beompae in Silla",
-                    abstract_ko: "본 논문은 통도사에서 전승되는 통도소리의 선율적 특징과 신라 시대 범패와의 역사적 상관성을 규명하고, 현대 무형문화유산적 가치를 밝혀내는 것을 목적으로 한다.",
-                    abstract_en: "This study examines the melodic characteristics of Tongdori Beompae preserved at Tongdosa, traces its historical connection back to Silla dynasty Buddhist chants, and evaluates its modern cultural value.",
-                    keywords: "범패, 통도소리, 신라불교, 불교음악",
-                    authors: [
-                        { name: "윤소희", affiliation: "동국대학교", email: "sohee@gmail.com", role: "Primary" }
-                    ],
-                    file_manuscript: "신라의 범패 통도소리 의미와 가치 - 윤소희.pdf",
-                    file_agreement: "agreement2.pdf",
-                    date: "2026-05-12",
-                    status: "접수완료",
-                    author_email: "sohee@gmail.com",
-                    reviewer_email: "",
-                    review_files: []
-                }
-            ];
-            for (const sub of defaultSubmissions) {
-                await window.DB_addSubmission(sub);
-            }
-            loadedSubmissions = await window.DB_getSubmissions();
-        }
-        
-        // 데이터가 성공적으로 로드되면 이력 테이블 및 관리자 뷰 갱신
+        console.log("[submission] 로드된 논문 수:", loadedSubmissions.length);
+        dataLoaded = true;
+    } catch(e) {
+        console.error("[submission] 논문 데이터 로드 실패:", e);
+        loadedSubmissions = [];
+    } finally {
+        // 데이터 로드 성공 여부와 관계없이 UI는 항상 렌더링
         renderHistoryTable();
         if (typeof updateAdminTabVisibility === 'function') updateAdminTabVisibility();
         if (typeof renderRevisedTab === 'function') renderRevisedTab();
         if (typeof renderReviewerSpaceTable === 'function') renderReviewerSpaceTable();
         if (typeof renderAdminSpaceTable === 'function') renderAdminSpaceTable();
-    } catch(e) {
-        console.error("비동기 논문 데이터 로드 에러:", e);
     }
 }
+
 
 document.addEventListener("DOMContentLoaded", () => {
     // 0. Initialize databases (redundant check for safety)
