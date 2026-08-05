@@ -234,6 +234,65 @@
 
 
 
+                    <!-- Google Apps Script 재배포 패널 -->
+                    <div style="margin-bottom: 30px; background: linear-gradient(135deg, #f0f7ff, #e8f5e9); border: 1.5px solid #90caf9; border-radius: 8px; padding: 22px 24px;">
+                        <h4 style="margin: 0 0 6px 0; font-size: 1.05rem; font-weight: 800; color: #1565c0; display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-brands fa-google" style="color:#4285F4;"></i> Google Apps Script 백엔드 재배포
+                        </h4>
+                        <p style="margin: 0 0 16px 0; font-size: 0.85rem; color: #444; line-height: 1.7;">
+                            코드를 업데이트할 때마다 아래 순서로 재배포해주세요. PDF 업로드·저장 등 새 기능이 정상 작동하려면 반드시 필요합니다.
+                        </p>
+
+                        <!-- 단계별 안내 -->
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px;">
+                            <div style="flex:1; min-width:160px; background:#fff; border-radius:6px; padding:12px 14px; border:1px solid #ddd; text-align:center;">
+                                <div style="font-size:1.3rem; color:#4285F4; margin-bottom:6px;"><i class="fa-solid fa-1"></i></div>
+                                <div style="font-size:0.8rem; font-weight:700; color:#333;">스크립트 복사</div>
+                                <div style="font-size:0.75rem; color:#777; margin-top:3px;">아래 버튼 클릭</div>
+                            </div>
+                            <div style="display:flex; align-items:center; color:#aaa; font-size:1.2rem;"><i class="fa-solid fa-arrow-right"></i></div>
+                            <div style="flex:1; min-width:160px; background:#fff; border-radius:6px; padding:12px 14px; border:1px solid #ddd; text-align:center;">
+                                <div style="font-size:1.3rem; color:#34a853; margin-bottom:6px;"><i class="fa-solid fa-2"></i></div>
+                                <div style="font-size:0.8rem; font-weight:700; color:#333;">GAS 편집기 열기</div>
+                                <div style="font-size:0.75rem; color:#777; margin-top:3px;">아래 버튼으로 이동</div>
+                            </div>
+                            <div style="display:flex; align-items:center; color:#aaa; font-size:1.2rem;"><i class="fa-solid fa-arrow-right"></i></div>
+                            <div style="flex:1; min-width:160px; background:#fff; border-radius:6px; padding:12px 14px; border:1px solid #ddd; text-align:center;">
+                                <div style="font-size:1.3rem; color:#fbbc04; margin-bottom:6px;"><i class="fa-solid fa-3"></i></div>
+                                <div style="font-size:0.8rem; font-weight:700; color:#333;">전체 내용 붙여넣기</div>
+                                <div style="font-size:0.75rem; color:#777; margin-top:3px;">Ctrl+A → Ctrl+V</div>
+                            </div>
+                            <div style="display:flex; align-items:center; color:#aaa; font-size:1.2rem;"><i class="fa-solid fa-arrow-right"></i></div>
+                            <div style="flex:1; min-width:160px; background:#fff; border-radius:6px; padding:12px 14px; border:1px solid #ddd; text-align:center;">
+                                <div style="font-size:1.3rem; color:#ea4335; margin-bottom:6px;"><i class="fa-solid fa-4"></i></div>
+                                <div style="font-size:0.8rem; font-weight:700; color:#333;">배포 → 새 배포</div>
+                                <div style="font-size:0.75rem; color:#777; margin-top:3px;">"웹 앱"으로 배포</div>
+                            </div>
+                        </div>
+
+                        <!-- 버튼 -->
+                        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                            <button id="btn-copy-gas" type="button" onclick="copyGasScript()"
+                                style="padding:10px 20px; font-size:0.88rem; font-weight:700;
+                                background:#fff; border:2px solid #4285F4; color:#4285F4;
+                                border-radius:6px; cursor:pointer; display:inline-flex; align-items:center; gap:8px;
+                                transition:all 0.2s;">
+                                <i class="fa-solid fa-copy"></i> 전체 스크립트 복사
+                            </button>
+                            <a href="https://script.google.com" target="_blank"
+                                style="padding:10px 20px; font-size:0.88rem; font-weight:700;
+                                background:#4285F4; border:2px solid #4285F4; color:#fff;
+                                border-radius:6px; cursor:pointer; display:inline-flex; align-items:center; gap:8px;
+                                text-decoration:none; transition:all 0.2s;">
+                                <i class="fa-brands fa-google"></i> Google Apps Script 열기
+                            </a>
+                        </div>
+                        <p style="margin:12px 0 0; font-size:0.78rem; color:#888;">
+                            <i class="fa-solid fa-circle-info"></i>
+                            배포 시 <strong>액세스: 모든 사용자</strong>로 설정하고 새 버전으로 배포해야 합니다.
+                        </p>
+                    </div>
+
                     <!-- Special Administrator Database Reset Panel (Visible only to Special Admins) -->
                     <div id="special-admin-reset-panel" style="display: none; margin-bottom: 30px; background-color: #fff0f0; border: 1.5px solid #ffcccc; border-radius: 6px; padding: 20px;">
                         <h4 style="margin: 0 0 10px 0; font-size: 1.1rem; font-weight: 800; color: #b03228; display: flex; align-items: center; gap: 8px;">
@@ -556,6 +615,31 @@
                     alert("초기화가 완료되었습니다.");
                     window.location.href = "login.html";
                 }
+            }
+        };
+
+        // ── GAS 스크립트 복사 ──
+        window.copyGasScript = async function() {
+            const btn = document.getElementById('btn-copy-gas');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 불러오는 중...';
+            btn.disabled = true;
+            try {
+                const res = await fetch('apps_script_backend.gs');
+                const text = await res.text();
+                await navigator.clipboard.writeText(text);
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> 복사 완료!';
+                btn.style.background = 'var(--color-green)';
+                btn.style.color = '#fff';
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="fa-solid fa-copy"></i> 전체 스크립트 복사';
+                    btn.style.background = '';
+                    btn.style.color = '';
+                    btn.disabled = false;
+                }, 3000);
+            } catch(e) {
+                btn.innerHTML = '<i class="fa-solid fa-xmark"></i> 복사 실패 — 직접 파일 열기';
+                btn.disabled = false;
+                alert('클립보드 복사 실패: ' + e.message + '\n\napps_script_backend.gs 파일을 직접 열어 내용을 복사해주세요.');
             }
         };
     </script>
