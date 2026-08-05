@@ -154,6 +154,33 @@ function handleWrite(body) {
         }
       }
 
+      // ── journals upsert: id가 이미 존재하면 append 대신 update ──
+      if (sheetKey === "journals" && data.id) {
+        const idColIdx = headers.indexOf("id") + 1;
+        if (idColIdx > 0) {
+          const lastRow = sheet.getLastRow();
+          if (lastRow > 1) {
+            const idValues = sheet.getRange(2, idColIdx, lastRow - 1, 1).getValues();
+            const existingRowIdx = idValues.findIndex(r => String(r[0]) === String(data.id));
+            if (existingRowIdx !== -1) {
+              // 이미 존재 → update
+              const actualRow = existingRowIdx + 2;
+              Object.keys(data).forEach(field => {
+                let colIdx = headers.indexOf(field) + 1;
+                if (colIdx === 0) {
+                  headers.push(field);
+                  colIdx = headers.length;
+                  sheet.getRange(1, colIdx).setValue(field);
+                }
+                let val = Array.isArray(data[field]) ? JSON.stringify(data[field]) : data[field];
+                sheet.getRange(actualRow, colIdx).setValue(val !== undefined ? val : "");
+              });
+              return makeResponse({ ok: true, message: "학회지 업데이트 완료 (upsert)" });
+            }
+          }
+        }
+      }
+
       data.created_at = new Date().toISOString();
       Object.keys(data).forEach(field => {
         if (headers.indexOf(field) === -1) {
