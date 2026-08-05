@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>한국음악학회 - 지난 세미나 기록</title>
+    <meta name="description" content="한국음악학회가 개최한 지난 세미나·연구모임의 기록을 아카이브합니다.">
+    <link rel="stylesheet" href="styles_v2.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ── 카드 ── */
+        .record-card {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 22px 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            transition: all 0.2s ease;
+            border-left: 4px solid var(--color-green);
+        }
+        .record-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.09); }
+        .record-card.cat-research { border-left-color: #7b1fa2; }
+        .record-card.cat-workshop { border-left-color: #e65100; }
+        .record-card.cat-lecture  { border-left-color: #c62828; }
+        .record-card.cat-etc      { border-left-color: #546e7a; }
+
+        .record-card-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; gap:10px; }
+        .record-title { font-size:1.05rem; font-weight:800; color:var(--text-dark); line-height:1.4; flex:1; }
+        .record-category-badge { font-size:0.72rem; font-weight:700; padding:3px 9px; border-radius:100px; color:white; white-space:nowrap; }
+        .cat-badge-seminar  { background: var(--color-green); }
+        .cat-badge-research { background: #7b1fa2; }
+        .cat-badge-workshop { background: #e65100; }
+        .cat-badge-lecture  { background: #c62828; }
+        .cat-badge-etc      { background: #546e7a; }
+
+        .record-meta { display:grid; grid-template-columns:70px 1fr; row-gap:7px; font-size:0.9rem; color:var(--text-dark); }
+        .record-meta-label { font-weight:700; color:var(--color-green); font-size:0.83rem; }
+        .record-meta-value { color:var(--text-muted); line-height:1.5; }
+        .record-theme { margin-top:12px; padding-top:12px; border-top:1px solid var(--border-color); font-size:0.9rem; color:var(--text-dark); line-height:1.6; }
+        .record-admin-btns { display:flex; gap:6px; margin-top:14px; justify-content:flex-end; }
+
+        .seminar-record-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%,420px),1fr)); gap:18px; }
+
+        .year-section { margin-bottom:40px; }
+        .year-heading { display:flex; align-items:center; gap:14px; margin-bottom:18px; padding-bottom:12px; border-bottom:2px solid var(--border-color); }
+        .year-heading .year-num { font-size:1.6rem; font-weight:900; color:var(--text-dark); }
+        .year-heading .year-count { font-size:0.85rem; background:var(--color-green); color:white; padding:3px 10px; border-radius:100px; font-weight:700; }
+
+        .stats-row { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:0; }
+        .stat-badge { display:flex; align-items:center; gap:8px; padding:7px 14px; border-radius:100px; font-size:0.83rem; font-weight:700; }
+        .stat-badge.total    { background:#e8f5e9; color:#2d7a3a; }
+        .stat-badge.seminar  { background:#e3f2fd; color:#1565c0; }
+        .stat-badge.research { background:#f3e5f5; color:#6a1b9a; }
+        .stat-badge.workshop { background:#fff8e1; color:#e65100; }
+
+        /* ── 모달 ── */
+        .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(3px); display:flex; justify-content:center; align-items:flex-start; z-index:2000; overflow-y:auto; padding:40px 16px; }
+        .modal-box { background:white; border-radius:10px; width:100%; max-width:560px; padding:32px; box-shadow:0 20px 60px rgba(0,0,0,0.2); border-top:4px solid var(--color-green); margin:auto; animation:modalIn 0.25s ease; }
+        @keyframes modalIn { from{transform:translateY(-16px);opacity:0} to{transform:translateY(0);opacity:1} }
+        .modal-header { display:flex; justify-content:space-between; align-items:center; padding-bottom:14px; border-bottom:1.5px solid var(--border-color); margin-bottom:22px; }
+        .modal-header h3 { font-size:1.2rem; font-weight:800; color:var(--text-dark); margin:0; }
+        .modal-close-btn { background:none; border:none; font-size:1.1rem; color:var(--text-muted); cursor:pointer; padding:4px 8px; border-radius:4px; transition:color 0.2s; }
+        .modal-close-btn:hover { color:var(--color-red); }
+        .form-group { margin-bottom:16px; display:flex; flex-direction:column; gap:6px; }
+        .form-group label { font-size:0.85rem; font-weight:700; color:var(--text-dark); }
+        .form-group input, .form-group select, .form-group textarea { padding:10px 12px; border:1.5px solid var(--border-color); border-radius:5px; font-size:0.9rem; font-family:inherit; background:var(--bg-offwhite); outline:none; transition:border-color 0.2s; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color:var(--color-green); background:white; }
+        .form-row-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+        .form-actions { display:flex; justify-content:flex-end; gap:10px; margin-top:24px; padding-top:16px; border-top:1px solid var(--border-color); }
+
+        .empty-state { text-align:center; padding:80px 20px; color:var(--text-muted); }
+        .empty-state i { font-size:3rem; margin-bottom:16px; opacity:0.3; display:block; }
+    </style>
+</head>
+
+<body>
+<div class="layout-wrapper">
+
+    <aside class="quick-sidebar">
+        <div class="sidebar-toggle"><i class="fa-solid fa-bars"></i><span>Quick Menu</span></div>
+        <nav class="sidebar-nav">
+            <a href="news.html" class="side-link"><i class="fa-solid fa-bullhorn"></i><span class="side-text">공지사항</span></a>
+            <a href="activities.html" class="side-link"><i class="fa-solid fa-calendar-days"></i><span class="side-text">학술대회 세미나</span></a>
+            <a href="past_seminars.html" class="side-link"><i class="fa-solid fa-clock-rotate-left"></i><span class="side-text">지난 세미나</span></a>
+            <a href="forms.html" class="side-link"><i class="fa-solid fa-folder-open"></i><span class="side-text">자료실</span></a>
+        </nav>
+    </aside>
+
+    <div class="top-util-bar">
+        <div class="container">
+            <div class="util-right">
+                <div class="util-links">
+                    <a href="login.html" class="util-link"><i class="fa-solid fa-right-to-bracket"></i> 로그인</a>
+                    <a href="#" class="util-link"><i class="fa-solid fa-user-plus"></i> 회원가입</a>
+                    <a href="#" class="util-link"><i class="fa-solid fa-sitemap"></i> 사이트맵</a>
+                </div>
+                <form action="search.html" method="GET" class="top-search">
+                    <input type="text" name="query" placeholder="검색..." required>
+                    <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <header class="main-header">
+        <div class="container header-container">
+            <a href="index.html" class="logo">
+                <img src="main_logo.png" alt="한국음악학회 로고 마크" class="logo-icon-img">
+                <div class="logo-text">
+                    <h1>한국음악학회</h1>
+                    <div class="logo-divider"></div>
+                    <span class="logo-en">the society for korean music &amp; culture studies</span>
+                </div>
+            </a>
+            <nav class="main-nav">
+                <ul>
+                    <li class="nav-item"><a href="index.html">Home</a><div class="hover-bar white"></div></li>
+                    <li class="nav-item">
+                        <a href="about.html">학회소개</a><div class="hover-bar red"></div><span class="sub-text">about us</span>
+                        <ul class="dropdown-menu">
+                            <li><a href="about.html">인사말</a></li><li><a href="organization.html">조직도/임원진</a></li>
+                            <li><a href="history.html">학회 연혁</a></li><li><a href="rules.html">학회 정관</a></li><li><a href="directions.html">오시는 길</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a href="news.html">학회소식</a><div class="hover-bar black"></div><span class="sub-text">news</span>
+                        <ul class="dropdown-menu"><li><a href="news.html?tab=notice">공지사항</a></li><li><a href="news.html?tab=freeboard">자유게시판</a></li></ul>
+                    </li>
+                    <li class="nav-item">
+                        <a href="issue.html">학회지</a><div class="hover-bar green"></div><span class="sub-text">journal</span>
+                        <ul class="dropdown-menu"><li><a href="issue.html">최신호</a></li><li><a href="archive.html">지난호 (아카이브)</a></li></ul>
+                    </li>
+                    <li class="nav-item">
+                        <a href="submission.html">논문투고</a><div class="hover-bar yellow"></div><span class="sub-text">submission</span>
+                        <ul class="dropdown-menu">
+                            <li><a href="submission.html">논문투고안내</a></li><li><a href="submission_rules.html">논문투고규정</a></li>
+                            <li><a href="submission_review.html">심사규정</a></li><li><a href="submission.html?tab=online">온라인 투고시스템</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a href="activities.html">학술활동</a><div class="hover-bar grey"></div><span class="sub-text">activities</span>
+                        <ul class="dropdown-menu">
+                            <li><a href="activities.html?tab=conference">학술대회 일정</a></li>
+                            <li><a href="activities.html?tab=seminar">연구모임/세미나</a></li>
+                            <li><a href="past_seminars.html">지난 세미나 기록</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a href="admission.html">회원서비스</a><div class="hover-bar blue"></div><span class="sub-text">member service</span>
+                        <ul class="dropdown-menu">
+                            <li><a href="admission.html">입회안내</a></li><li><a href="mypage.html">마이페이지</a></li>
+                            <li><a href="#">추천사이트</a></li><li><a href="forms.html">양식모음</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="sub-visual" style="background-image: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url('bg_activities.png');">
+        <div class="visual-text"><h2>지난 세미나 기록</h2></div>
+    </div>
+
+    <main class="content-area">
+        <div class="container subpage-area">
+
+            <div class="sub-util-row">
+                <div class="breadcrumb">
+                    <i class="fa-solid fa-house"></i>
+                    <a href="activities.html" style="color:inherit;text-decoration:none;"><span class="depth">학술활동</span></a>
+                    <i class="fa-solid fa-angle-right divider"></i>
+                    <span class="depth current">지난 세미나 기록</span>
+                </div>
+                <div class="page-utils">
+                    <a href="#" title="인쇄"><i class="fa-solid fa-print"></i></a>
+                    <a href="#" title="공유"><i class="fa-solid fa-share-nodes"></i></a>
+                </div>
+            </div>
+
+            <div style="margin-bottom:28px;">
+                <h3 style="font-size:1.5rem; font-weight:800; color:var(--text-dark); margin-bottom:10px; display:flex; align-items:center; gap:10px;">
+                    <i class="fa-solid fa-clock-rotate-left" style="color:var(--color-green);"></i> 세미나 아카이브
+                </h3>
+                <p style="color:var(--text-muted); font-size:1rem; line-height:1.7; max-width:700px;">
+                    한국음악학회가 개최한 과거 세미나·연구모임·워크숍의 기록입니다. 날짜·주제·발표자 등 세부 정보를 연도별로 확인하실 수 있습니다.
+                </p>
+            </div>
+
+            <!-- 검색/필터 -->
+            <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; align-items:center;">
+                <div style="position:relative; flex:1; min-width:200px;">
+                    <i class="fa-solid fa-magnifying-glass" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:0.85rem;"></i>
+                    <input type="text" id="ps-search" placeholder="세미나명, 주제, 발표자 검색..."
+                        style="width:100%; padding:10px 12px 10px 36px; border:1.5px solid var(--border-color); border-radius:6px; font-family:inherit; font-size:0.92rem; outline:none; box-sizing:border-box;">
+                </div>
+                <select id="ps-year-filter" style="padding:10px 14px; border:1.5px solid var(--border-color); border-radius:6px; font-family:inherit; font-size:0.92rem; background:white; outline:none; min-width:120px;">
+                    <option value="">전체 연도</option>
+                </select>
+                <select id="ps-cat-filter" style="padding:10px 14px; border:1.5px solid var(--border-color); border-radius:6px; font-family:inherit; font-size:0.92rem; background:white; outline:none; min-width:120px;">
+                    <option value="">전체 구분</option>
+                    <option value="세미나">세미나</option>
+                    <option value="연구모임">연구모임</option>
+                    <option value="워크숍">워크숍</option>
+                    <option value="특강">특강</option>
+                    <option value="기타">기타</option>
+                </select>
+            </div>
+
+            <!-- 통계 + 관리자 버튼 -->
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:24px;">
+                <div id="stats-row" class="stats-row"></div>
+                <div id="admin-panel" style="display:none;">
+                    <button id="btn-open-add-modal" class="btn-solid"
+                        style="background-color:var(--color-green); border-color:var(--color-green); padding:10px 20px; font-weight:700; font-size:0.9rem; display:inline-flex; align-items:center; gap:8px; cursor:pointer; border-radius:5px;">
+                        <i class="fa-solid fa-plus"></i> 세미나 기록 등록
+                    </button>
+                </div>
+            </div>
+
+            <div id="ps-list-container"></div>
+
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <div class="container footer-container">
+            <div class="footer-left">
+                <div class="footer-main-row" style="display:flex; align-items:center; gap:30px; margin-bottom:12px;">
+                    <a href="index.html" class="footer-logo-block" style="display:flex; align-items:flex-end; gap:0; text-decoration:none; color:inherit; flex-shrink:0;">
+                        <img src="main_logo_white.png" alt="한국음악학회 로고" style="height:65px; width:auto; object-fit:contain;">
+                        <div class="logo-text-footer" style="text-align:left; padding-bottom:2px;">
+                            <h4 style="font-size:1.15rem; font-weight:800; letter-spacing:0.05em; margin:0; color:white; font-family:'Pretendard',sans-serif; line-height:1.1;">한국음악학회</h4>
+                            <div class="logo-divider" style="margin:2px 0;"></div>
+                            <span class="logo-en" style="font-size:0.55rem; font-weight:500; text-transform:uppercase; color:rgba(255,255,255,0.6); display:block; font-family:'Poppins',sans-serif; letter-spacing:0.03em; margin-top:1px; line-height:1.1;">the society for korean music &amp; culture studies</span>
+                        </div>
+                    </a>
+                    <div style="width:1px; height:35px; background:rgba(255,255,255,0.15); flex-shrink:0;"></div>
+                    <div style="text-align:left; font-size:0.82rem; line-height:1.6; color:#bbb;">
+                        <p style="margin:0;">주소: (04620) 서울특별시 중구 필동로 1길 30 동국대학교 문화관 (한국음악과 내 학회사무국) &nbsp;&nbsp;|&nbsp;&nbsp; E-mail: skmcs@dgu.ac.kr</p>
+                        <p style="margin:2px 0 0; color:#777;">Copyright &copy; 2026 The Society for Korean Music &amp; Culture Studies. All Rights Reserved.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-right"><div class="designed-by"><span>Designed by</span><span class="designer-logo"><i class="fa-solid fa-fire" style="color:#e65100"></i> Woochang Choi</span></div></div>
+        </div>
+        <a href="#" class="btn-top"><i class="fa-solid fa-chevron-up"></i></a>
+    </footer>
+</div>
+
+<!-- 등록/수정 모달 -->
+<div id="add-modal" class="modal-overlay" style="display:none;">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3 id="modal-title-text"><i class="fa-solid fa-clock-rotate-left" style="color:var(--color-green); margin-right:7px;"></i>지난 세미나 기록 등록</h3>
+            <button class="modal-close-btn" id="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <form id="add-form" onsubmit="handleAddRecord(event)">
+            <div class="form-group">
+                <label for="r-title">세미나/연구모임명 <span style="color:var(--color-red);">*</span></label>
+                <input type="text" id="r-title" required placeholder="예: 2024년 식연 국악 학술 세미나">
+            </div>
+            <div class="form-row-2">
+                <div class="form-group">
+                    <label for="r-date">개최일 <span style="color:var(--color-red);">*</span></label>
+                    <input type="date" id="r-date" required>
+                </div>
+                <div class="form-group">
+                    <label for="r-category">구분 <span style="color:var(--color-red);">*</span></label>
+                    <select id="r-category" required>
+                        <option value="세미나">세미나</option>
+                        <option value="연구모임">연구모임</option>
+                        <option value="워크숍">워크숍</option>
+                        <option value="특강">특강</option>
+                        <option value="기타">기타</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="r-place">장소</label>
+                <input type="text" id="r-place" placeholder="예: 동국대학교 문화관 세미나실">
+            </div>
+            <div class="form-group">
+                <label for="r-presenter">발표자/주관</label>
+                <input type="text" id="r-presenter" placeholder="예: 홍길동 교수, 김영재 박사">
+            </div>
+            <div class="form-group">
+                <label for="r-theme">주제/내용 <span style="color:var(--color-red);">*</span></label>
+                <textarea id="r-theme" required rows="3" placeholder="세미나 주제 또는 주요 내용을 입력하세요."></textarea>
+            </div>
+            <div class="form-group">
+                <label for="r-notes">비고 (선택)</label>
+                <input type="text" id="r-notes" placeholder="예: 참가인원 약 35명, 자료집 배부 등">
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn-outline" id="btn-cancel-modal">취소</button>
+                <button type="submit" class="btn-solid" style="background:var(--color-green); border-color:var(--color-green); display:inline-flex; align-items:center; gap:7px;">
+                    <i class="fa-solid fa-floppy-disk"></i> 등록하기
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="share.js"></script>
+<script>
+    const STORAGE_KEY = "past_seminar_activities";
+    const DEFAULT_RECORDS = [
+        { id:"past_1", title:"한국 전통음악의 현대적 재해석 세미나", date:"2024-11-15", category:"세미나",
+          place:"동국대학교 문화관 세미나실", presenter:"김영재 교수, 박소연 박사",
+          theme:"판소리와 현대 대중음악의 접점: 음악적 어법의 계승과 변용 방식을 중심으로", notes:"참가인원 약 35명" },
+        { id:"past_2", title:"동아시아 음악 교류사 연구모임", date:"2024-09-21", category:"연구모임",
+          place:"국립국악원 세미나실", presenter:"윤소희 박사",
+          theme:"고려 아악의 중국 대성악 수용 과정과 독자적 변용 — 고려사 악지 재검토", notes:"" },
+        { id:"past_3", title:"국악관현악 편성법 워크숍", date:"2024-06-08", category:"워크숍",
+          place:"예술의전당 음악아카데미", presenter:"정지훈 작곡가",
+          theme:"B♭대금과 E♭대금의 조율 기법 및 오케스트레이션 실습", notes:"악보 자료 배부" },
+        { id:"past_4", title:"판소리 사설의 문학적 해석 특강", date:"2023-10-14", category:"특강",
+          place:"한국예술종합학교 강의실", presenter:"이상은 교수",
+          theme:"판소리 사설에 나타난 구비문학적 특성과 조선시대 시가 전통과의 관계 고찰", notes:"" },
+        { id:"past_5", title:"국악 디지털 아카이빙 연구모임", date:"2023-05-20", category:"연구모임",
+          place:"국립국악원 연구실", presenter:"박진우 박사",
+          theme:"전통 음악 음반의 디지털화 표준 및 메타데이터 구축 방안 논의", notes:"자료집 배부" }
+    ];
+
+    let isAdmin = false;
+    let editingId = null;
+
+    function initDB() { if (!localStorage.getItem(STORAGE_KEY)) localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_RECORDS)); }
+    function checkAdmin() {
+        try {
+            const u = JSON.parse(localStorage.getItem("logged_in_user") || "null");
+            if (!u) return;
+            isAdmin = ['admin','secretary','reviewer','editor','president'].includes(u.role);
+        } catch(e) {}
+    }
+    function getAll() { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
+    function escHtml(s) { return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+
+    const CAT_STYLES = {
+        "세미나":   { card:"", badge:"cat-badge-seminar" },
+        "연구모임": { card:"cat-research", badge:"cat-badge-research" },
+        "워크숍":   { card:"cat-workshop", badge:"cat-badge-workshop" },
+        "특강":     { card:"cat-lecture",  badge:"cat-badge-lecture" },
+        "기타":     { card:"cat-etc",      badge:"cat-badge-etc" },
+    };
+
+    function render() {
+        const q    = document.getElementById("ps-search").value.toLowerCase();
+        const year = document.getElementById("ps-year-filter").value;
+        const cat  = document.getElementById("ps-cat-filter").value;
+        const container = document.getElementById("ps-list-container");
+
+        let records = getAll();
+
+        // 연도 드롭다운
+        const yearSel = document.getElementById("ps-year-filter");
+        const curYear = yearSel.value;
+        const years = [...new Set(records.map(r=>(r.date||"").slice(0,4)).filter(Boolean))].sort((a,b)=>b-a);
+        yearSel.innerHTML = `<option value="">전체 연도</option>` + years.map(y=>`<option value="${y}" ${y===curYear?"selected":""}>${y}년</option>`).join("");
+
+        records.sort((a,b)=>new Date(b.date||0)-new Date(a.date||0));
+        if (q)    records = records.filter(r=>(r.title+r.theme+r.presenter).toLowerCase().includes(q));
+        if (year) records = records.filter(r=>(r.date||"").startsWith(year));
+        if (cat)  records = records.filter(r=>r.category===cat);
+
+        // 통계
+        const statsRow = document.getElementById("stats-row");
+        const total = records.length;
+        const sem   = records.filter(r=>r.category==="세미나").length;
+        const res   = records.filter(r=>r.category==="연구모임").length;
+        const wks   = records.filter(r=>r.category==="워크숍").length;
+        statsRow.innerHTML = `
+            <div class="stat-badge total"><i class="fa-solid fa-layer-group"></i> 전체 ${total}건</div>
+            ${sem ? `<div class="stat-badge seminar"><i class="fa-solid fa-comments"></i> 세미나 ${sem}</div>` : ""}
+            ${res ? `<div class="stat-badge research"><i class="fa-solid fa-users"></i> 연구모임 ${res}</div>` : ""}
+            ${wks ? `<div class="stat-badge workshop"><i class="fa-solid fa-chalkboard-user"></i> 워크숍 ${wks}</div>` : ""}
+        `;
+
+        container.innerHTML = "";
+        if (records.length === 0) {
+            container.innerHTML = `<div class="empty-state"><i class="fa-solid fa-clock-rotate-left"></i><p>검색 결과가 없습니다.</p></div>`;
+            return;
+        }
+
+        // 연도별 그룹
+        const groups = {};
+        records.forEach(r=>{ const y=(r.date||"").slice(0,4)||"미상"; if(!groups[y])groups[y]=[]; groups[y].push(r); });
+
+        Object.keys(groups).sort((a,b)=>b-a).forEach(y=>{
+            const sec = document.createElement("div"); sec.className="year-section";
+            const heading = document.createElement("div"); heading.className="year-heading";
+            heading.innerHTML = `<span class="year-num">${escHtml(y)}년</span><span class="year-count">${groups[y].length}건</span>`;
+            sec.appendChild(heading);
+
+            const grid = document.createElement("div"); grid.className="seminar-record-grid";
+
+            groups[y].forEach(r=>{
+                const style = CAT_STYLES[r.category]||CAT_STYLES["기타"];
+                const dateStr = r.date ? r.date.replace(/-/g,". ")+"." : "-";
+                const adminBtns = isAdmin ? `
+                    <div class="record-admin-btns">
+                        <button class="btn-outline" onclick="openEditModal('${escHtml(r.id)}')" style="padding:5px 12px; font-size:0.8rem; color:var(--color-green); border-color:var(--color-green); display:inline-flex; align-items:center; gap:5px;">
+                            <i class="fa-solid fa-pen"></i> 수정
+                        </button>
+                        <button class="btn-outline" onclick="deleteRecord('${escHtml(r.id)}')" style="padding:5px 12px; font-size:0.8rem; color:var(--color-red); border-color:var(--color-red); display:inline-flex; align-items:center; gap:5px;">
+                            <i class="fa-solid fa-trash-can"></i> 삭제
+                        </button>
+                    </div>` : "";
+
+                const card = document.createElement("div");
+                card.className = `record-card ${style.card}`;
+                card.innerHTML = `
+                    <div class="record-card-header">
+                        <div class="record-title">${escHtml(r.title)}</div>
+                        <span class="record-category-badge ${style.badge}">${escHtml(r.category)}</span>
+                    </div>
+                    <div class="record-meta">
+                        <span class="record-meta-label">날짜</span><span class="record-meta-value">${escHtml(dateStr)}</span>
+                        ${r.place?`<span class="record-meta-label">장소</span><span class="record-meta-value">${escHtml(r.place)}</span>`:""}
+                        ${r.presenter?`<span class="record-meta-label">발표자</span><span class="record-meta-value">${escHtml(r.presenter)}</span>`:""}
+                        ${r.notes?`<span class="record-meta-label">비고</span><span class="record-meta-value" style="color:var(--text-muted); font-size:0.88rem;">${escHtml(r.notes)}</span>`:""}
+                    </div>
+                    <div class="record-theme">${escHtml(r.theme)}</div>
+                    ${adminBtns}
+                `;
+                grid.appendChild(card);
+            });
+            sec.appendChild(grid);
+            container.appendChild(sec);
+        });
+    }
+
+    window.handleAddRecord = function(e) {
+        e.preventDefault();
+        if (!isAdmin) return;
+        const rec = {
+            id: editingId||("past_"+Date.now()),
+            title:     document.getElementById("r-title").value.trim(),
+            date:      document.getElementById("r-date").value,
+            category:  document.getElementById("r-category").value,
+            place:     document.getElementById("r-place").value.trim(),
+            presenter: document.getElementById("r-presenter").value.trim(),
+            theme:     document.getElementById("r-theme").value.trim(),
+            notes:     document.getElementById("r-notes").value.trim(),
+        };
+        if (!rec.title||!rec.date||!rec.theme) { alert("필수 항목을 모두 입력해 주세요."); return; }
+        let records = getAll();
+        if (editingId) { const idx=records.findIndex(r=>r.id===editingId); if(idx!==-1) records[idx]=rec; }
+        else { records.push(rec); }
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+        closeModal();
+        render();
+        alert(editingId?"✅ 수정되었습니다.":"✅ 등록되었습니다.");
+    };
+
+    window.deleteRecord = function(id) {
+        if (!isAdmin) return;
+        if (!confirm("이 세미나 기록을 삭제하시겠습니까?")) return;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(getAll().filter(r=>r.id!==id)));
+        render();
+    };
+
+    window.openEditModal = function(id) {
+        const rec = getAll().find(r=>r.id===id);
+        if (!rec) return;
+        editingId = id;
+        document.getElementById("r-title").value     = rec.title||"";
+        document.getElementById("r-date").value      = rec.date||"";
+        document.getElementById("r-category").value  = rec.category||"세미나";
+        document.getElementById("r-place").value     = rec.place||"";
+        document.getElementById("r-presenter").value = rec.presenter||"";
+        document.getElementById("r-theme").value     = rec.theme||"";
+        document.getElementById("r-notes").value     = rec.notes||"";
+        document.getElementById("modal-title-text").innerHTML = `<i class="fa-solid fa-pen" style="color:var(--color-green); margin-right:7px;"></i>세미나 기록 수정`;
+        document.getElementById("add-modal").style.display = "flex";
+    };
+
+    function closeModal() {
+        document.getElementById("add-modal").style.display = "none";
+        document.getElementById("add-form").reset();
+        editingId = null;
+        document.getElementById("modal-title-text").innerHTML = `<i class="fa-solid fa-clock-rotate-left" style="color:var(--color-green); margin-right:7px;"></i>지난 세미나 기록 등록`;
+    }
+
+    document.addEventListener("DOMContentLoaded", ()=>{
+        initDB();
+        checkAdmin();
+        if (isAdmin) document.getElementById("admin-panel").style.display = "flex";
+
+        document.getElementById("ps-search").addEventListener("input", render);
+        document.getElementById("ps-year-filter").addEventListener("change", render);
+        document.getElementById("ps-cat-filter").addEventListener("change", render);
+
+        document.getElementById("btn-open-add-modal").addEventListener("click", ()=>{
+            editingId = null;
+            document.getElementById("add-form").reset();
+            document.getElementById("add-modal").style.display = "flex";
+        });
+        document.getElementById("btn-close-modal").addEventListener("click", closeModal);
+        document.getElementById("btn-cancel-modal").addEventListener("click", closeModal);
+        document.getElementById("add-modal").addEventListener("click", e=>{ if(e.target===document.getElementById("add-modal")) closeModal(); });
+
+        render();
+    });
+</script>
+</body>
+</html>

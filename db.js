@@ -222,6 +222,16 @@ window.DB_updateSubmission = async function(id, data) {
     });
 };
 
+/**
+ * 수정논문 파일 업로드
+ * payload: { action:"uploadRevisedFiles", id, title_ko, memo,
+ *            file_revised_data:{base64,name,mimeType},
+ *            file_response_data:{base64,name,mimeType} (optional) }
+ */
+window.DB_uploadRevisedFiles = async function(payload) {
+    return await _dbPostDirect(payload);
+};
+
 window.DB_deleteSubmission = async function(id) {
     return await _dbPost({
         action: "delete", sheet: "submissions",

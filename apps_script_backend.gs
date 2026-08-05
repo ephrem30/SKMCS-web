@@ -16,6 +16,7 @@ const DRIVE_FOLDER = {
   members:     "한국음악학회_회원가입서류",
   submissions: "한국음악학회_논문투고파일",
   forms:       "한국음악학회_양식파일",
+  revised:     "한국음악학회_수정논문파일",
 };
 
 function makeResponse(data) {
@@ -76,6 +77,25 @@ function doGet(e) {
     }
     const action = e.parameter.action || "get";
     const sheetKey = e.parameter.sheet;
+
+    // ── 논문 파일 다운로드 URL 조회 ──
+    // 요청: ?action=getDownloadUrl&id=FILE_ID
+    // 응답: { ok: true, downloadUrl: "https://...", fileName: "..." }
+    if (action === "getDownloadUrl") {
+      const fileId = e.parameter.id;
+      if (!fileId) return makeResponse({ ok: false, error: "파일 ID가 없습니다." });
+      try {
+        const file = DriveApp.getFileById(fileId);
+        // 링크 공유 권한 확인 및 설정
+        file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+        // drive.usercontent.google.com 형식: Safari/Chrome/Firefox 모두에서 다운로드 가능
+        const downloadUrl = "https://drive.usercontent.google.com/download?id=" + fileId + "&export=download&confirm=t";
+        return makeResponse({ ok: true, downloadUrl: downloadUrl, fileName: file.getName() });
+      } catch(err) {
+        return makeResponse({ ok: false, error: "파일 접근 실패: " + err.message });
+      }
+    }
+
     if (action === "get") {
       const sheetName = SHEET_NAMES[sheetKey];
       if (!sheetName) return makeResponse({ ok: false, error: "unknown sheet: " + sheetKey });
@@ -106,6 +126,7 @@ function handleWrite(body) {
     if (action === "uploadSubmissionFiles") return handleFileUpload(body);
     if (action === "addFormFile")           return handleFormFileUpload(body);
     if (action === "uploadMemberDocument")  return handleMemberDocumentUpload(body);
+    if (action === "uploadRevisedFiles")    return handleRevisedFileUpload(body);
 
     const sheetName = SHEET_NAMES[sheetKey];
     if (!sheetName) return makeResponse({ ok: false, error: "unknown sheet: " + sheetKey });
@@ -301,13 +322,10 @@ function handleFormFileUpload(body) {
   const safeName = (formName).replace(/[<>:"\/\\|?*\x00-\x1F]/g,"_");
   const fileName = dateStr + "_" + safeName + "_" + (fileData.name || "파일");
 
-  let viewUrl = "", downloadUrl = "";
+  let downloadUrl = "";
   try {
-    viewUrl = saveFileToDrive(fileData, folder, fileName);
-    // 직접 다운로드 URL 생성 (drive.google.com/uc?export=download&id=FILE_ID)
-    const m = viewUrl.match(/\/d\/([-\w]{25,})\//);
-    const fileId = m ? m[1] : null;
-    downloadUrl = fileId ? "https://drive.google.com/uc?export=download&id=" + fileId : viewUrl;
+    // saveFileToDrive는 이제 download URL을 직접 반환함
+    downloadUrl = saveFileToDrive(fileData, folder, fileName);
   } catch(e) {
     return makeResponse({ ok: false, error: "파일 업로드 실패: " + e.message });
   }
@@ -316,9 +334,9 @@ function handleFormFileUpload(body) {
   const today    = new Date().toISOString().slice(0,10);
   const fileExt  = (fileData.name || "").split(".").pop().toUpperCase();
   const formsSheet = getOrCreateSheet(SHEET_NAMES.forms);
-  formsSheet.appendRow([newId, formName, category, today, viewUrl, downloadUrl, fileExt, new Date().toISOString()]);
+  formsSheet.appendRow([newId, formName, category, today, downloadUrl, downloadUrl, fileExt, new Date().toISOString()]);
 
-  return makeResponse({ ok: true, message: "양식 등록 완료", id: newId, viewUrl: viewUrl, downloadUrl: downloadUrl });
+  return makeResponse({ ok: true, message: "양식 등록 완료", id: newId, viewUrl: downloadUrl, downloadUrl: downloadUrl });
 }
 
 // ── 드라이브 헬퍼 ──
@@ -335,7 +353,9 @@ function saveFileToDrive(fileData, folder, fileName) {
   const blob = Utilities.newBlob(decoded, fileData.mimeType || "application/octet-stream", fileName);
   const file = folder.createFile(blob);
   file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-  return file.getUrl();
+  // drive.usercontent.google.com 형식: Safari/Chrome/Firefox 모두에서 올바른 다운로드 헤더를 반환
+  const fileId = file.getId();
+  return "https://drive.usercontent.google.com/download?id=" + fileId + "&export=download&confirm=t";
 }
 
 function uploadFileToDrive(fileData, userName) {
@@ -350,6 +370,70 @@ function uploadSubmissionFileToDrive(fileData, paperTitle, fileType) {
   const dateStr = new Date().toISOString().slice(0,10).replace(/-/g,"");
   const cleanTitle = (paperTitle||"논문").substring(0,15).replace(/[\s\x00-\x1F\x7F<>:"\/\\|?*]/g,"_");
   return saveFileToDrive(fileData, folder, dateStr+"_"+cleanTitle+"_"+(fileType||"파일")+"_"+(fileData.name||"파일"));
+}
+
+// ── 수정논문 파일 업로드 핸들러 ──
+function handleRevisedFileUpload(body) {
+  const submissionId  = body.id;
+  const paperTitle    = body.title_ko || "논문";
+  const revisedData   = body.file_revised_data;      // 수정본 원고 (필수)
+  const responseData  = body.file_response_data;     // 심사의견 답변서 (선택)
+  const memo          = body.memo || "";
+
+  if (!submissionId) return makeResponse({ ok: false, error: "투고 ID가 없습니다." });
+  if (!revisedData || !revisedData.base64) return makeResponse({ ok: false, error: "수정본 파일 데이터가 없습니다." });
+
+  const subSheet   = getOrCreateSheet(SHEET_NAMES.submissions);
+  const subHeaders = subSheet.getRange(1, 1, 1, subSheet.getLastColumn()).getValues()[0];
+  const idCol      = subHeaders.indexOf("id") + 1;
+  if (idCol === 0) return makeResponse({ ok: false, error: "id 컬럼 없음" });
+
+  const colValues = subSheet.getRange(2, idCol, Math.max(subSheet.getLastRow()-1,1), 1).getValues();
+  const rowIdx    = colValues.findIndex(r => String(r[0]) === String(submissionId));
+  if (rowIdx === -1) return makeResponse({ ok: false, error: "해당 투고 레코드 없음: " + submissionId });
+  const actualRow = rowIdx + 2;
+
+  const folder  = getDriveFolder(DRIVE_FOLDER.revised);
+  const dateStr = new Date().toISOString().slice(0,10).replace(/-/g,"");
+  const cleanTitle = (paperTitle).substring(0,15).replace(/[\s\x00-\x1F\x7F<>:"\/\\|?*]/g,"_");
+
+  const updateFields = {};
+  try {
+    updateFields.file_revised = saveFileToDrive(
+      revisedData, folder,
+      dateStr + "_" + cleanTitle + "_수정본_" + (revisedData.name || "파일")
+    );
+  } catch(e) {
+    return makeResponse({ ok: false, error: "수정본 업로드 실패: " + e.message });
+  }
+
+  if (responseData && responseData.base64) {
+    try {
+      updateFields.file_revised_response = saveFileToDrive(
+        responseData, folder,
+        dateStr + "_" + cleanTitle + "_답변서_" + (responseData.name || "파일")
+      );
+    } catch(e) {
+      Logger.log("답변서 업로드 실패: " + e.message);
+      updateFields.file_revised_response = "[업로드실패]";
+    }
+  }
+
+  updateFields.revised_date = new Date().toISOString().slice(0,10);
+  updateFields.revised_memo = memo;
+
+  // 컬럼이 없으면 자동으로 추가
+  Object.keys(updateFields).forEach(field => {
+    let colIdx = subHeaders.indexOf(field) + 1;
+    if (colIdx === 0) {
+      subHeaders.push(field);
+      colIdx = subHeaders.length;
+      subSheet.getRange(1, colIdx).setValue(field);
+    }
+    subSheet.getRange(actualRow, colIdx).setValue(updateFields[field]);
+  });
+
+  return makeResponse({ ok: true, message: "수정논문 업로드 완료", urls: updateFields });
 }
 
 // ── 드라이브 권한 테스트 (한 번만 실행 → 권한 승인) ──

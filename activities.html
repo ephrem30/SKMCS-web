@@ -178,9 +178,11 @@
             background: rgba(0, 0, 0, 0.5);
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;        /* 상단 정렬 → 위아래 스크롤 가능 */
             z-index: 1000;
             backdrop-filter: blur(2px);
+            overflow-y: auto;               /* 오버레이 자체 스크롤 허용 */
+            padding: 40px 0;                /* 위아래 여백 */
         }
 
         .seminar-modal-content {
@@ -192,6 +194,8 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
             border-top: 4px solid var(--color-red);
             animation: modalFadeIn 0.3s ease;
+            max-height: none;               /* 높이 제한 없음 - 오버레이가 스크롤 담당 */
+            margin: auto;                   /* 세로 중앙 유지 (짧은 모달) */
         }
 
         @keyframes modalFadeIn {
@@ -394,6 +398,7 @@
                             <ul class="dropdown-menu">
                                 <li><a href="activities.html?tab=conference">학술대회 일정</a></li>
                                 <li><a href="activities.html?tab=seminar">연구모임/세미나</a></li>
+                                <li><a href="past_seminars.html">지난 세미나 기록</a></li>
                             </ul>
                         </li>
                         <li class="nav-item">
@@ -441,6 +446,7 @@
                 <div class="sub-tabs">
                     <a href="?tab=conference" class="tab-item active" data-tab="conference">학술대회 일정</a>
                     <a href="?tab=seminar" class="tab-item" data-tab="seminar">연구모임/세미나</a>
+                    <a href="?tab=past-seminar" class="tab-item" data-tab="past-seminar">지난 세미나 기록</a>
                 </div>
 
                 <!-- Tab Contents -->
@@ -485,6 +491,40 @@
                         <div id="seminar-list-container">
                             <!-- Dynamically loaded seminar cards will be rendered here -->
                         </div>
+                    </div>
+                </div>
+
+                <!-- 3. Past Seminar Records Section -->
+                <div id="section-past-seminar" class="tab-section" style="display: none;">
+                    <div class="greeting-wrap" style="text-align: left;">
+                        <h3 style="margin-bottom: 8px; font-size: 1.5rem; color: var(--text-dark); display:flex; align-items:center; gap:8px;">
+                            <i class="fa-solid fa-clock-rotate-left" style="color:var(--color-green);"></i> 지난 세미나 기록
+                        </h3>
+                        <p style="margin-bottom: 25px; font-size: 1rem; color: var(--text-muted); line-height: 1.7;">
+                            한국음악학회가 개최한 과거 세미나·연구모임의 기록을 아카이브합니다.
+                            날짜·주제·발표자 등 세부 정보를 확인하실 수 있습니다.
+                        </p>
+
+                        <!-- Admin: 지난 세미나 등록 버튼 -->
+                        <div id="admin-past-seminar-controls" style="display: none; margin-bottom: 25px;">
+                            <button id="btn-add-past-seminar" class="btn-solid"
+                                style="background-color: var(--color-green); border-color: var(--color-green); padding: 10px 20px; font-weight: 700; font-size: 0.9rem; cursor: pointer; border-radius: 4px; display: inline-flex; align-items: center; gap: 8px;">
+                                <i class="fa-solid fa-plus"></i> 지난 세미나 등록
+                            </button>
+                        </div>
+
+                        <!-- 검색/필터 바 -->
+                        <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; align-items:center;">
+                            <input type="text" id="past-seminar-search" placeholder="세미나명, 주제, 발표자 검색..." 
+                                style="flex:1; min-width:200px; padding:9px 14px; border:1.5px solid var(--border-color); border-radius:4px; font-family:inherit; font-size:0.92rem;">
+                            <select id="past-seminar-year-filter" 
+                                style="padding:9px 12px; border:1.5px solid var(--border-color); border-radius:4px; font-family:inherit; font-size:0.92rem; background:white;">
+                                <option value="">전체 연도</option>
+                            </select>
+                        </div>
+
+                        <!-- 지난 세미나 목록 -->
+                        <div id="past-seminar-list-container"></div>
                     </div>
                 </div>
 
@@ -561,9 +601,9 @@
 
     <!-- Conference Add Modal -->
     <div id="conference-modal" class="seminar-modal-overlay" style="display: none;">
-        <div class="seminar-modal-content">
+        <div class="seminar-modal-content" style="max-width:560px;">
             <div class="seminar-modal-header">
-                <h3>새 학술대회 등록</h3>
+                <h3><i class="fa-solid fa-calendar-days" style="color:var(--color-red); margin-right:6px;"></i>학술대회 등록</h3>
                 <button class="seminar-modal-close" id="btn-close-conf-modal"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <form id="conference-form" onsubmit="handleAddConference(event)">
@@ -596,22 +636,116 @@
                     <label for="conf-program">프로그램/신청안내 <span style="color: var(--color-red);">*</span></label>
                     <textarea id="conf-program" required rows="3" placeholder="예: 발표 초록 접수 마감: 2026년 8월 31일 (월)까지 이메일 접수"></textarea>
                 </div>
-                <div class="modal-form-group">
-                    <label for="conf-progLink">프로그램북 링크 (선택)</label>
-                    <input type="text" id="conf-progLink" placeholder="예: # 또는 다운로드 URL">
+
+                <!-- 프로그램북 등록 영역 -->
+                <div style="border:1.5px dashed var(--color-green); border-radius:6px; padding:16px; margin-bottom:16px; background:#f7fbfa;">
+                    <label style="display:block; font-weight:700; font-size:0.9rem; color:var(--text-dark); margin-bottom:10px;">
+                        <i class="fa-solid fa-file-pdf" style="color:var(--color-red); margin-right:5px;"></i>
+                        프로그램북 등록 (선택)
+                    </label>
+                    <p style="font-size:0.82rem; color:var(--text-muted); margin:0 0 10px 0;">프로그램북 다운로드 URL을 입력하거나, 구글 드라이브에 올린 파일의 공유 링크를 입력하세요.</p>
+                    <div style="display:flex; gap:8px; align-items:center;">
+                        <input type="url" id="conf-progLink" placeholder="https://drive.google.com/... 또는 # (추후 등록)" style="flex:1; padding:9px 12px; border:1.5px solid var(--border-color); border-radius:4px; font-size:0.9rem; font-family:inherit; background:white;">
+                    </div>
                 </div>
-                <div class="modal-form-group">
-                    <label for="conf-formLink">신청 양식 링크 (선택)</label>
-                    <input type="text" id="conf-formLink" placeholder="예: # 또는 다운로드 URL">
+
+                <!-- 신청 양식 링크 -->
+                <div style="border:1px solid var(--border-color); border-radius:6px; padding:16px; margin-bottom:16px; background:#fafafa;">
+                    <label style="display:block; font-weight:700; font-size:0.9rem; color:var(--text-dark); margin-bottom:10px;">
+                        <i class="fa-solid fa-file-pen" style="color:var(--color-blue); margin-right:5px;"></i>
+                        학술발표 신청 양식 링크 (선택)
+                    </label>
+                    <input type="url" id="conf-formLink" placeholder="https://... 또는 # (접수 불가일 때)" style="width:100%; padding:9px 12px; border:1.5px solid var(--border-color); border-radius:4px; font-size:0.9rem; font-family:inherit; background:white;">
                 </div>
+
                 <div class="modal-form-actions">
                     <button type="button" class="btn-outline" id="btn-cancel-conf-modal">취소</button>
-                    <button type="submit" class="btn-solid" style="background-color: var(--color-green); border-color: var(--color-green);">등록하기</button>
+                    <button type="submit" class="btn-solid" style="background-color: var(--color-red); border-color: var(--color-red); display:inline-flex; align-items:center; gap:6px;">
+                        <i class="fa-solid fa-calendar-plus"></i> 학술대회 등록하기
+                    </button>
                 </div>
             </form>
         </div>
     </div>
+
+    <!-- 프로그램북 업데이트 미니 모달 -->
+    <div id="progbook-modal" class="seminar-modal-overlay" style="display: none;">
+        <div class="seminar-modal-content" style="max-width:480px; border-top-color: var(--color-red);">
+            <div class="seminar-modal-header">
+                <h3><i class="fa-solid fa-file-pdf" style="color:var(--color-red); margin-right:6px;"></i>프로그램북 등록/수정</h3>
+                <button class="seminar-modal-close" id="btn-close-progbook-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <input type="hidden" id="progbook-conf-id">
+            <div class="modal-form-group" style="margin-bottom:16px;">
+                <label style="font-size:0.9rem; font-weight:700; color:var(--text-dark); display:block; margin-bottom:6px;">프로그램북 다운로드 URL</label>
+                <p style="font-size:0.82rem; color:var(--text-muted); margin:0 0 8px 0;">Google Drive 공유 링크나 외부 URL을 입력하세요.</p>
+                <input type="url" id="progbook-url" placeholder="https://drive.google.com/file/d/..." style="width:100%; padding:10px; border:1.5px solid var(--border-color); border-radius:4px; font-size:0.9rem; font-family:inherit;">
+            </div>
+            <div class="modal-form-group" style="margin-bottom:16px;">
+                <label style="font-size:0.9rem; font-weight:700; color:var(--text-dark); display:block; margin-bottom:6px;">신청 양식 URL</label>
+                <input type="url" id="progbook-formlink" placeholder="https://... (없으면 비워두세요)" style="width:100%; padding:10px; border:1.5px solid var(--border-color); border-radius:4px; font-size:0.9rem; font-family:inherit;">
+            </div>
+            <div class="modal-form-actions">
+                <button type="button" class="btn-outline" id="btn-cancel-progbook-modal">취소</button>
+                <button type="button" class="btn-solid" id="btn-save-progbook" style="background-color:var(--color-red); border-color:var(--color-red); display:inline-flex; align-items:center; gap:6px;">
+                    <i class="fa-solid fa-floppy-disk"></i> 저장하기
+                </button>
+            </div>
+        </div>
+    </div>
     
+    <!-- Past Seminar Add Modal -->
+    <div id="past-seminar-modal" class="seminar-modal-overlay" style="display: none;">
+        <div class="seminar-modal-content" style="max-width:560px; border-top-color: var(--color-green);">
+            <div class="seminar-modal-header">
+                <h3><i class="fa-solid fa-clock-rotate-left" style="color:var(--color-green); margin-right:6px;"></i>지난 세미나 등록</h3>
+                <button class="seminar-modal-close" id="btn-close-past-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="past-seminar-form" onsubmit="handleAddPastSeminar(event)">
+                <div class="modal-form-group">
+                    <label for="past-title">세미나/연구모임명 <span style="color:var(--color-red);">*</span></label>
+                    <input type="text" id="past-title" required placeholder="예: 2024년 식연 국악 학술 세미나">
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                    <div class="modal-form-group">
+                        <label for="past-date">개종일 <span style="color:var(--color-red);">*</span></label>
+                        <input type="date" id="past-date" required>
+                    </div>
+                    <div class="modal-form-group">
+                        <label for="past-category">구분 <span style="color:var(--color-red);">*</span></label>
+                        <select id="past-category" required style="width:100%; padding:10px; border:1.5px solid var(--border-color); border-radius:4px; font-size:0.9rem; background:var(--bg-offwhite); outline:none; font-family:inherit;">
+                            <option value="세미나">세미나</option>
+                            <option value="연구모임">연구모임</option>
+                            <option value="워크숍">워크숍</option>
+                            <option value="특강">특강</option>
+                            <option value="기타">기타</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-form-group">
+                    <label for="past-place">장소</label>
+                    <input type="text" id="past-place" placeholder="예: 동국대학교 문화관 세미나실">
+                </div>
+                <div class="modal-form-group">
+                    <label for="past-presenter">발표자/주관</label>
+                    <input type="text" id="past-presenter" placeholder="예: 홍길동 교수, 김영재 박사">
+                </div>
+                <div class="modal-form-group">
+                    <label for="past-theme">주제/내용 <span style="color:var(--color-red);">*</span></label>
+                    <textarea id="past-theme" required rows="3" placeholder="세미나 주제 또는 주요 내용을 입력하세요."></textarea>
+                </div>
+                <div class="modal-form-group">
+                    <label for="past-notes">비고 (선택)</label>
+                    <input type="text" id="past-notes" placeholder="예: 인용 자료, 참가인원 등">
+                </div>
+                <div class="modal-form-actions">
+                    <button type="button" class="btn-outline" id="btn-cancel-past-modal">취소</button>
+                    <button type="submit" class="btn-solid" style="background-color:var(--color-green); border-color:var(--color-green);">등록하기</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script src="share.js"></script>
     <script>
         // Tab switching logic for activities page
@@ -628,7 +762,7 @@
             // Handle initial routing from URL parameters
             const urlParams = new URLSearchParams(window.location.search);
             let activeTab = urlParams.get('tab') || 'conference';
-            if (activeTab !== 'conference' && activeTab !== 'seminar') {
+            if (activeTab !== 'conference' && activeTab !== 'seminar' && activeTab !== 'past-seminar') {
                 activeTab = 'conference';
             }
             switchTab(activeTab, false);
@@ -636,11 +770,13 @@
             // --- Seminar & Conference Database & Access Control Init ---
             initializeSeminarDB();
             initializeConferenceDB();
+            initializePastSeminarDB();
             checkUserPermissions();
             renderSeminars();
             renderConferences();
             setupAdminControls();
             setupAdminConferenceControls();
+            setupAdminPastSeminarControls();
         });
 
         function switchTab(tabName, shouldPushState = true) {
@@ -678,6 +814,12 @@
             if (shouldPushState) {
                 const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + `?tab=${tabName}`;
                 window.history.pushState({ path: newUrl }, '', newUrl);
+            }
+
+            // 지난 세미나 탭 전환 시 렌더링
+            if (tabName === 'past-seminar') {
+                renderPastSeminars();
+                bindPastSeminarFilters();
             }
         }
 
@@ -941,6 +1083,9 @@
                 let deleteBtnHtml = "";
                 if (isAdmin) {
                     deleteBtnHtml = `
+                        <button onclick="openProgBookModal('${conf.id}')" title="프로그램북 및 신청양식 링크 등록/수정" class="btn-outline" style="padding: 4px 10px; font-size: 0.78rem; border-color: var(--color-red); color: var(--color-red); display: inline-flex; align-items: center; gap: 4px;">
+                            <i class="fa-solid fa-file-pdf"></i> 프로그램북 등록/수정
+                        </button>
                         <button class="btn-delete-seminar" onclick="deleteConference('${conf.id}')" title="학술대회 삭제">
                             <i class="fa-solid fa-trash-can"></i>
                         </button>
@@ -952,20 +1097,20 @@
                     let buttonsHtml = "";
                     if (conf.progLink) {
                         buttonsHtml += `
-                            <a href="${escapeHtml(conf.progLink)}" class="btn-outline" style="padding: 6px 12px; font-size: 0.8rem; font-weight: 600; text-decoration: none;"><i class="fa-solid fa-file-pdf"></i> 프로그램북 다운로드</a>
+                            <a href="${escapeHtml(conf.progLink)}" target="_blank" class="btn-outline" style="padding: 6px 12px; font-size: 0.8rem; font-weight: 600; text-decoration: none;"><i class="fa-solid fa-file-pdf"></i> 프로그램북 다운로드</a>
                         `;
                     }
                     if (conf.formLink) {
                         if (conf.badge === "접수중") {
                             buttonsHtml = `
-                                <a href="${escapeHtml(conf.formLink)}" class="btn-solid" style="padding: 6px 15px; font-size: 0.8rem; font-weight: 700; background-color: var(--color-red); border-color: var(--color-red); text-decoration: none; display: inline-flex; align-items: center; gap: 6px;"><i class="fa-solid fa-file-pen"></i> 학술발표 신청 안내</a>
-                                <a href="${escapeHtml(conf.formLink)}" class="btn-outline" style="padding: 6px 12px; font-size: 0.8rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;"><i class="fa-solid fa-download"></i> 신청 양식 다운로드</a>
+                                <a href="${escapeHtml(conf.formLink)}" target="_blank" class="btn-solid" style="padding: 6px 15px; font-size: 0.8rem; font-weight: 700; background-color: var(--color-red); border-color: var(--color-red); text-decoration: none; display: inline-flex; align-items: center; gap: 6px;"><i class="fa-solid fa-file-pen"></i> 학술발표 신청 안내</a>
+                                <a href="${escapeHtml(conf.formLink)}" target="_blank" class="btn-outline" style="padding: 6px 12px; font-size: 0.8rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;"><i class="fa-solid fa-download"></i> 신청 양식 다운로드</a>
                             ` + (conf.progLink ? `
-                                <a href="${escapeHtml(conf.progLink)}" class="btn-outline" style="padding: 6px 12px; font-size: 0.8rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;"><i class="fa-solid fa-file-pdf"></i> 프로그램북 다운로드</a>
+                                <a href="${escapeHtml(conf.progLink)}" target="_blank" class="btn-outline" style="padding: 6px 12px; font-size: 0.8rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;"><i class="fa-solid fa-file-pdf"></i> 프로그램북 다운로드</a>
                             ` : "");
                         } else {
                             buttonsHtml += `
-                                <a href="${escapeHtml(conf.formLink)}" class="btn-outline" style="padding: 6px 12px; font-size: 0.8rem; font-weight: 600; text-decoration: none;"><i class="fa-solid fa-download"></i> 신청 양식 다운로드</a>
+                                <a href="${escapeHtml(conf.formLink)}" target="_blank" class="btn-outline" style="padding: 6px 12px; font-size: 0.8rem; font-weight: 600; text-decoration: none;"><i class="fa-solid fa-download"></i> 신청 양식 다운로드</a>
                             `;
                         }
                     }
@@ -1069,8 +1214,51 @@
                         }
                     });
                 }
+
+                // 프로그램북 미니 모달 이벤트
+                const progModal = document.getElementById("progbook-modal");
+                const btnCloseProg = document.getElementById("btn-close-progbook-modal");
+                const btnCancelProg = document.getElementById("btn-cancel-progbook-modal");
+                const btnSaveProg = document.getElementById("btn-save-progbook");
+
+                const closeProgModal = () => { if (progModal) progModal.style.display = "none"; };
+                if (btnCloseProg) btnCloseProg.addEventListener("click", closeProgModal);
+                if (btnCancelProg) btnCancelProg.addEventListener("click", closeProgModal);
+                if (progModal) progModal.addEventListener("click", (e) => { if (e.target === progModal) closeProgModal(); });
+
+                if (btnSaveProg) {
+                    btnSaveProg.addEventListener("click", () => {
+                        const confId = document.getElementById("progbook-conf-id").value;
+                        const urlVal = document.getElementById("progbook-url").value.trim();
+                        const formUrlVal = document.getElementById("progbook-formlink").value.trim();
+
+                        let conferences = JSON.parse(localStorage.getItem("conference_activities") || "[]");
+                        const targetIndex = conferences.findIndex(c => c.id === confId);
+                        if (targetIndex !== -1) {
+                            conferences[targetIndex].progLink = urlVal;
+                            conferences[targetIndex].formLink = formUrlVal;
+                            localStorage.setItem("conference_activities", JSON.stringify(conferences));
+                            closeProgModal();
+                            renderConferences();
+                            alert("✅ 프로그램북/신청양식 링크가 저장되었습니다.");
+                        }
+                    });
+                }
             }
         }
+
+        window.openProgBookModal = function(confId) {
+            const conferences = JSON.parse(localStorage.getItem("conference_activities") || "[]");
+            const conf = conferences.find(c => c.id === confId);
+            if (!conf) return;
+
+            document.getElementById("progbook-conf-id").value = confId;
+            document.getElementById("progbook-url").value = conf.progLink || "";
+            document.getElementById("progbook-formlink").value = conf.formLink || "";
+
+            const progModal = document.getElementById("progbook-modal");
+            if (progModal) progModal.style.display = "flex";
+        };
 
         window.deleteConference = function(id) {
             if (!confirm("정말 이 학술대회 일정을 삭제하시겠습니까?")) return;
@@ -1117,6 +1305,218 @@
             document.getElementById("conference-modal").style.display = "none";
             renderConferences();
         };
+
+        // ============================================================
+        // 지난 세미나 기록 시스템
+        // ============================================================
+
+        const DEFAULT_PAST_SEMINARS = [
+            {
+                id: "past_1",
+                title: "한국 전통음악의 현대적 재해석 세미나",
+                date: "2024-11-15",
+                category: "세미나",
+                place: "동국대학교 문화관 세미나실",
+                presenter: "김영재 교수, 박소연 박사",
+                theme: "판소리와 현대 대중음악의 접점: 음악적 어법의 계승과 변용 방식을 중심으로",
+                notes: "참가인원 약 35명"
+            },
+            {
+                id: "past_2",
+                title: "동아시아 음악 교류사 연구모임",
+                date: "2024-09-21",
+                category: "연구모임",
+                place: "국립국악원 세미나실",
+                presenter: "윤소희 박사",
+                theme: "고려 아악의 중국 대성악 수용 과정과 독자적 변용 — 『고려사』 악지 재검토",
+                notes: ""
+            },
+            {
+                id: "past_3",
+                title: "국악관현악 편성법 워크숍",
+                date: "2024-06-08",
+                category: "워크숍",
+                place: "예술의전당 음악아카데미",
+                presenter: "정지훈 작곡가",
+                theme: "B♭대금과 E♭대금의 조율 기법 및 오케스트레이션 실습",
+                notes: "악보 자료 배부"
+            }
+        ];
+
+        function initializePastSeminarDB() {
+            if (!localStorage.getItem("past_seminar_activities")) {
+                localStorage.setItem("past_seminar_activities", JSON.stringify(DEFAULT_PAST_SEMINARS));
+            }
+        }
+
+        function setupAdminPastSeminarControls() {
+            if (isAdmin) {
+                const adminControls = document.getElementById("admin-past-seminar-controls");
+                if (adminControls) adminControls.style.display = "block";
+
+                const btnAdd = document.getElementById("btn-add-past-seminar");
+                const modal = document.getElementById("past-seminar-modal");
+                const btnClose = document.getElementById("btn-close-past-modal");
+                const btnCancel = document.getElementById("btn-cancel-past-modal");
+
+                const closeModal = () => { if (modal) modal.style.display = "none"; };
+
+                if (btnAdd && modal) {
+                    btnAdd.addEventListener("click", () => {
+                        document.getElementById("past-seminar-form").reset();
+                        modal.style.display = "flex";
+                    });
+                }
+                if (btnClose) btnClose.addEventListener("click", closeModal);
+                if (btnCancel) btnCancel.addEventListener("click", closeModal);
+                if (modal) modal.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
+            }
+        }
+
+        function renderPastSeminars(filterText = "", filterYear = "") {
+            const container = document.getElementById("past-seminar-list-container");
+            const yearSelect = document.getElementById("past-seminar-year-filter");
+            if (!container) return;
+
+            let pastSeminars = JSON.parse(localStorage.getItem("past_seminar_activities") || "[]");
+
+            // 연도 옵션 갱신 (중복 없이)
+            if (yearSelect) {
+                const years = [...new Set(pastSeminars.map(s => s.date ? s.date.substring(0, 4) : "").filter(Boolean))].sort((a, b) => b - a);
+                const currentVal = yearSelect.value;
+                yearSelect.innerHTML = "<option value=\"\">전체 연도</option>" + years.map(y => `<option value="${y}" ${y === currentVal ? 'selected' : ''}>${y}년</option>`).join("");
+            }
+
+            // 정렬: 최신순
+            pastSeminars.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+
+            // 필터 적용
+            if (filterText) {
+                const q = filterText.toLowerCase();
+                pastSeminars = pastSeminars.filter(s =>
+                    (s.title || "").toLowerCase().includes(q) ||
+                    (s.theme || "").toLowerCase().includes(q) ||
+                    (s.presenter || "").toLowerCase().includes(q)
+                );
+            }
+            if (filterYear) {
+                pastSeminars = pastSeminars.filter(s => s.date && s.date.startsWith(filterYear));
+            }
+
+            container.innerHTML = "";
+
+            if (pastSeminars.length === 0) {
+                container.innerHTML = `<p style="text-align:center; color:var(--text-muted); padding:40px 0; font-size:0.95rem;">검색 결과가 없습니다.</p>`;
+                return;
+            }
+
+            // 연도별 그룹핑
+            const groups = {};
+            pastSeminars.forEach(s => {
+                const year = s.date ? s.date.substring(0, 4) : "미상";
+                if (!groups[year]) groups[year] = [];
+                groups[year].push(s);
+            });
+
+            Object.keys(groups).sort((a, b) => b - a).forEach(year => {
+                // 연도 구분 헤더
+                const yearHeader = document.createElement("div");
+                yearHeader.style.cssText = "font-size:1.1rem; font-weight:800; color:var(--text-dark); border-left:4px solid var(--color-green); padding-left:12px; margin:20px 0 14px 0;";
+                yearHeader.textContent = year + "년";
+                container.appendChild(yearHeader);
+
+                // 해당 연도 카드 목록
+                const grid = document.createElement("div");
+                grid.style.cssText = "display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%,440px),1fr)); gap:16px; margin-bottom:10px;";
+
+                groups[year].forEach(s => {
+                    const dateStr = s.date ? s.date.replace(/-/g, ". ") + "." : "-";
+                    const categoryColors = { "세미나": "var(--color-green)", "연구모임": "var(--color-blue)", "워크숍": "var(--color-yellow)", "특강": "var(--color-red)" };
+                    const catColor = categoryColors[s.category] || "var(--color-green)";
+
+                    let adminBtns = "";
+                    if (isAdmin) {
+                        adminBtns = `<button class="btn-delete-seminar" onclick="deletePastSeminar('${s.id}')" title="삭제"><i class="fa-solid fa-trash-can"></i></button>`;
+                    }
+
+                    const card = document.createElement("div");
+                    card.className = "activity-card";
+                    card.innerHTML = `
+                        <div class="activity-header">
+                            <div class="activity-title" style="font-size:1.05rem;">
+                                <i class="fa-solid fa-clock-rotate-left" style="color:${catColor};"></i>
+                                ${escapeHtml(s.title)}
+                            </div>
+                            <div class="activity-header-right">
+                                <span class="activity-badge" style="background-color:${catColor};">${escapeHtml(s.category || "세미나")}</span>
+                                ${adminBtns}
+                            </div>
+                        </div>
+                        <div class="activity-details">
+                            <span class="detail-label">날짜</span>
+                            <span>${escapeHtml(dateStr)}</span>
+                            ${s.place ? `<span class="detail-label">장소</span><span>${escapeHtml(s.place)}</span>` : ""}
+                            ${s.presenter ? `<span class="detail-label">발표자</span><span>${escapeHtml(s.presenter)}</span>` : ""}
+                            <span class="detail-label">주제/내용</span>
+                            <span>${escapeHtml(s.theme)}</span>
+                            ${s.notes ? `<span class="detail-label">비고</span><span style="color:var(--text-muted); font-size:0.9rem;">${escapeHtml(s.notes)}</span>` : ""}
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+                container.appendChild(grid);
+            });
+        }
+
+        window.deletePastSeminar = function(id) {
+            if (!confirm("이 지난 세미나 기록을 삭제하시겠습니까?")) return;
+            let pastSeminars = JSON.parse(localStorage.getItem("past_seminar_activities") || "[]");
+            pastSeminars = pastSeminars.filter(s => s.id !== id);
+            localStorage.setItem("past_seminar_activities", JSON.stringify(pastSeminars));
+            renderPastSeminars(
+                document.getElementById("past-seminar-search")?.value || "",
+                document.getElementById("past-seminar-year-filter")?.value || ""
+            );
+        };
+
+        window.handleAddPastSeminar = function(e) {
+            e.preventDefault();
+            if (!isAdmin) return;
+
+            const title     = document.getElementById("past-title").value.trim();
+            const date      = document.getElementById("past-date").value.trim();
+            const category  = document.getElementById("past-category").value.trim();
+            const place     = document.getElementById("past-place").value.trim();
+            const presenter = document.getElementById("past-presenter").value.trim();
+            const theme     = document.getElementById("past-theme").value.trim();
+            const notes     = document.getElementById("past-notes").value.trim();
+
+            if (!title || !date || !category || !theme) {
+                alert("세미나명, 개최일, 구분, 주제/내용은 필수 항목입니다.");
+                return;
+            }
+
+            const newPast = { id: "past_" + Date.now(), title, date, category, place, presenter, theme, notes };
+            const pastSeminars = JSON.parse(localStorage.getItem("past_seminar_activities") || "[]");
+            pastSeminars.push(newPast);
+            localStorage.setItem("past_seminar_activities", JSON.stringify(pastSeminars));
+
+            document.getElementById("past-seminar-modal").style.display = "none";
+            renderPastSeminars();
+            alert("✅ 지난 세미나 기록이 등록되었습니다.");
+        };
+
+        // 검색/필터 이벤트 연결 (탭 전환 시 호출됨)
+        function bindPastSeminarFilters() {
+            const searchInput = document.getElementById("past-seminar-search");
+            const yearSelect  = document.getElementById("past-seminar-year-filter");
+            if (searchInput) {
+                searchInput.addEventListener("input", () => renderPastSeminars(searchInput.value, yearSelect?.value || ""));
+            }
+            if (yearSelect) {
+                yearSelect.addEventListener("change", () => renderPastSeminars(searchInput?.value || "", yearSelect.value));
+            }
+        }
     </script>
 </body>
 

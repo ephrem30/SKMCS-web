@@ -2,6 +2,70 @@ const ALL_AUTHORIZED_ROLES = ["admin", "secretary", "reviewer", "editor", "presi
 const ADMIN_ROLES = ["admin", "secretary", "editor", "president"];
 let loadedSubmissions = [];
 
+// ── 구글 드라이브 URL에서 파일 ID 추출 ──
+function getDriveFileId(url) {
+    if (!url || !url.startsWith("http")) return null;
+    // /file/d/ID/view 형태
+    let m = url.match(/\/d\/([-\w]{25,})/);
+    if (m) return m[1];
+    // uc?export=download&id=ID 또는 open?id=ID 형태
+    m = url.match(/[?&]id=([-\w]{25,})/);
+    if (m) return m[1];
+    return null;
+}
+
+// ── 구글 드라이브 URL을 다운로드 URL로 변환 ──
+// drive.usercontent.google.com 은 Chrome/Safari/Firefox 모두에서 가장 안정적인 다운로드 엔드포인트
+function getDriveDownloadUrl(url) {
+    const fileId = getDriveFileId(url);
+    if (fileId) return "https://drive.usercontent.google.com/download?id=" + fileId + "&export=download&confirm=t";
+    return url;
+}
+
+// ── 구글 드라이브 파일 다운로드 처리 (Safari/Chrome/Firefox 크로스 브라우저) ──
+// 핵심 규칙:
+//  1. setTimeout 금지 → Safari 팝업 차단기가 사용자 제스처 연결을 끊음
+//  2. window.open() 대신 숨곊진 anchor.click() → Safari에서 더 안정적
+//  3. drive.usercontent.google.com URL → 모든 브라우저에서 올바른 다운로드 헤더 반환
+//  4. confirm=t 파라미터 → 대용량 파일 바이러스 검사 경고 페이지 우회
+window.downloadDriveFile = function(url, displayName) {
+    const fileId = getDriveFileId(url);
+
+    // 다운로드 URL 결정 (drive.usercontent.google.com 방식)
+    const downloadUrl = fileId
+        ? "https://drive.usercontent.google.com/download?id=" + fileId + "&export=download&confirm=t"
+        : url;
+
+    // ─ 숨곊진 앙커 생성 후 즉시 클릭 (사용자 제스처 연결 유지) ─
+    // setTimeout 없이 동기적으로 실행해야 Safari가 팝업 차단 안 함
+    const a = document.createElement("a");
+    a.href = downloadUrl;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();                          // ← 즉시 클릭 (setTimeout 안에 넣으면 Safari 차단)
+    document.body.removeChild(a);
+
+    // 다운로드 피드백 토스트 (setTimeout은 UI 피드백용으로만 사용)
+    const toast = document.createElement("div");
+    toast.innerHTML = '<i class="fa-solid fa-circle-check" style="color:#2ecc71;"></i>&nbsp; 다운로드가 시작됩니다.';
+    toast.style.cssText = [
+        "position:fixed", "bottom:30px", "left:50%", "transform:translateX(-50%)",
+        "background:#2c3e50", "color:white", "padding:14px 26px", "border-radius:10px",
+        "font-size:0.93rem", "font-weight:600", "z-index:99999",
+        "box-shadow:0 6px 20px rgba(0,0,0,0.3)", "pointer-events:none",
+        "display:flex", "align-items:center", "gap:10px", "white-space:nowrap"
+    ].join(";");
+    document.body.appendChild(toast);
+    setTimeout(function() {
+        toast.style.opacity = "0";
+        toast.style.transition = "opacity 0.4s";
+        setTimeout(function() { toast.remove(); }, 400);
+    }, 3500);
+};
+
+
 function initRegisteredUsers() {
     const data = localStorage.getItem("registered_users");
     const mockUsers = [
@@ -153,7 +217,7 @@ document.addEventListener("DOMContentLoaded", () => {
     tabs.forEach(tab => {
         tab.addEventListener('click', (e) => {
             const tabName = tab.getAttribute('data-tab');
-            if (tabName === 'online' || tabName === 'history' || tabName === 'reviewer-space' || tabName === 'admin-space') {
+            if (tabName === 'online' || tabName === 'history' || tabName === 'reviewer-space' || tabName === 'admin-space' || tabName === 'revised') {
                 const loggedInUserStr = localStorage.getItem("logged_in_user");
                 if (!loggedInUserStr) {
                     e.preventDefault();
@@ -197,7 +261,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const urlParams = new URLSearchParams(window.location.search);
     let activeTab = urlParams.get('tab') || 'guidelines';
     
-    if (activeTab === 'online' || activeTab === 'history' || activeTab === 'reviewer-space' || activeTab === 'admin-space') {
+    if (activeTab === 'online' || activeTab === 'history' || activeTab === 'reviewer-space' || activeTab === 'admin-space' || activeTab === 'revised') {
         const loggedInUserStr = localStorage.getItem("logged_in_user");
         if (!loggedInUserStr) {
             alert("로그인이 필요한 서비스입니다. 로그인 페이지로 이동합니다.");
@@ -529,6 +593,10 @@ function switchTab(tabName, shouldPushState = true) {
     
     if (tabName === 'online') {
         initWizard();
+    }
+
+    if (tabName === 'revised') {
+        renderRevisedTab();
     }
 
     if (tabName === 'reviewer-space') {
@@ -1182,37 +1250,38 @@ function openDetailModal(id) {
     const authorsStr = sub.authors.map(a => `${escapeHtml(a.name)} (${escapeHtml(a.affiliation)}, ${escapeHtml(a.email)}) - [${a.role === 'Primary' ? '주저자' : (a.role === 'Co-Author' ? '공동저자' : '교신저자')}]`).join("<br>");
     document.getElementById("detail-authors").innerHTML = authorsStr;
     
-    // Download manuscript link simulation & real download for admins/reviewers
+    // 논문 파일 다운로드 링크 표시 (간사 이상 권한자 또는 본인만 다운로드 가능)
     const fileEl = document.getElementById("detail-file");
+    // 간사 이상: secretary, reviewer, editor, president, admin
+    const canDownload = isAuthorized || isOwner;
 
-    if (isAuthorized || isOwner) {
-        let fileLink = sub.file_manuscript;
-        let isDriveLink = (fileLink || "").startsWith("http");
-        
-        let linkHref = fileLink;
-        let downloadAttr = "";
-        let targetAttr = "";
-        
-        if (!isDriveLink) {
-            // Map mock filename to real PDF files in the workspace
-            let realFile = "통도사 새벽예불의 전승 양상과 현대적 의의 - 양영진.pdf";
-            if (sub.file_manuscript.toLowerCase().includes("daegeum")) {
-                realFile = "국악관현악에서 B♭대금과 E♭대금의 - 정지훈.pdf";
-            } else if (sub.file_manuscript.toLowerCase().includes("gayageum")) {
-                realFile = "신라의 범패 통도소리 의미와 가치 - 윤소희.pdf";
-            }
-            linkHref = encodeURI(realFile);
-            downloadAttr = `download="${escapeHtml(sub.file_manuscript.replace(/\.docx?$/i, ".pdf"))}"`;
+    if (canDownload) {
+        const fileLink = sub.file_manuscript || "";
+        const isDriveLink = fileLink.startsWith("http");
+        const displayName = isDriveLink
+            ? (sub.title_ko ? sub.title_ko.substring(0, 40) + "..." : "논문 파일")
+            : escapeHtml(fileLink);
+
+        if (isDriveLink) {
+            const safeUrl = fileLink.replace(/'/g, "\\'");
+            const safeName = (sub.title_ko || "논문").substring(0, 40).replace(/'/g, "\\'");
+            fileEl.innerHTML = `<i class="fa-solid fa-file-arrow-down" style="color: var(--color-green);"></i>
+                <a href="#" onclick="event.preventDefault(); downloadDriveFile('${safeUrl}', '${safeName}');" style="text-decoration: underline; color: var(--color-blue); font-weight: bold;">${displayName}</a>
+                <span style="font-size: 0.8rem; color: var(--color-green); font-weight: 600; margin-left: 6px;"><i class="fa-solid fa-download"></i> 다운로드 가능</span>`;
         } else {
-            targetAttr = 'target="_blank"';
+            // 로컬 파일명 매핑 (시드 데이터)
+            let realFile = "통도사 새벽예불의 전승 양상과 현대적 의의 - 양영진.pdf";
+            if (fileLink.toLowerCase().includes("daegeum")) realFile = "국악관현악에서 B♭대금과 E♭대금의 - 정지훈.pdf";
+            else if (fileLink.toLowerCase().includes("gayageum")) realFile = "신라의 범패 통도소리 의미와 가치 - 윤소희.pdf";
+            fileEl.innerHTML = `<i class="fa-solid fa-file-arrow-down" style="color: var(--color-green);"></i>
+                <a href="${encodeURI(realFile)}" download="${escapeHtml(fileLink.replace(/\.docx?$/i, ".pdf"))}" style="text-decoration: underline; color: var(--color-blue); font-weight: bold;">${displayName}</a>
+                <span style="font-size: 0.8rem; color: var(--color-green); font-weight: 600; margin-left: 6px;"><i class="fa-solid fa-download"></i> 다운로드 가능</span>`;
         }
-        
-        fileEl.innerHTML = `<i class="fa-solid fa-file-arrow-down"></i> <a href="${linkHref}" ${targetAttr} ${downloadAttr} style="text-decoration: underline; color: var(--color-blue); font-weight: bold;">${escapeHtml(sub.file_manuscript)} (${isDriveLink ? '구글 드라이브' : '다운로드 가능'})</a>`;
     } else {
-        fileEl.innerHTML = `<i class="fa-solid fa-file-arrow-down"></i> <a href="#" style="text-decoration: line-through; color: #999; cursor: not-allowed;">${escapeHtml(sub.file_manuscript)} (권한 없음)</a>`;
+        fileEl.innerHTML = `<i class="fa-solid fa-file-arrow-down"></i> <a href="#" style="text-decoration: line-through; color: #999; cursor: not-allowed;">${escapeHtml(sub.file_manuscript || "논문 파일")} (권한 없음)</a>`;
         fileEl.querySelector("a").addEventListener("click", (e) => {
             e.preventDefault();
-            alert("논문 다운로드 권한이 없습니다. (관리인 및 심사위원만 다운로드 가능합니다)");
+            alert("논문 다운로드 권한이 없습니다.\n간사 이상 등급의 회원만 다운로드할 수 있습니다.");
         });
     }
     
@@ -1222,9 +1291,49 @@ function openDetailModal(id) {
     if (sub.status === "심사중") badgeClass = "reviewing";
     else if (sub.status === "게재확정") badgeClass = "accepted";
     else if (sub.status === "반려") badgeClass = "rejected";
+    else if (sub.status === "수정후게재") badgeClass = "reviewing";
     statusEl.innerHTML = `<span class="status-badge ${badgeClass}">${escapeHtml(sub.status)}</span>`;
-    
-    // Show/hide review upload box for authorized staff
+
+    // 수정논문 파일 다운로드 (ADMIN_ROLES만 표시)
+    const showRevisedFiles = isAdmin;
+    const revisedFileEl     = document.getElementById("detail-revised-file");
+    const revisedResponseEl = document.getElementById("detail-revised-response");
+    const revisedDateEl     = document.getElementById("detail-revised-date");
+    const revisedLabelEl    = document.getElementById("detail-revised-label");
+    const revisedRespLabelEl= document.getElementById("detail-revised-response-label");
+    const revisedDateLabelEl= document.getElementById("detail-revised-date-label");
+
+    // 수정논문 파일 영역 사표 (수정본 없으면 표시 안 함)
+    const hasRevised = sub.file_revised && sub.file_revised.startsWith("http");
+    [revisedLabelEl, revisedFileEl, revisedRespLabelEl, revisedResponseEl, revisedDateLabelEl, revisedDateEl].forEach(el => {
+        if (el) el.style.display = (showRevisedFiles && hasRevised) ? "" : "none";
+    });
+
+    if (showRevisedFiles && hasRevised) {
+        // 수정본 파일
+        if (revisedFileEl) {
+            const safeUrl  = sub.file_revised.replace(/'/g, "\\'");
+            const safeName = (sub.title_ko || "논문").substring(0, 40).replace(/'/g, "\\'");
+            revisedFileEl.innerHTML = `<i class="fa-solid fa-file-pen" style="color:var(--color-green);"></i>
+                <a href="#" onclick="event.preventDefault(); downloadDriveFile('${safeUrl}', '${safeName}_수정본');" style="text-decoration:underline; color:var(--color-green); font-weight:bold;">수정본 다운로드</a>
+                <span style="font-size:0.8rem; color:var(--color-green); font-weight:600; margin-left:6px;"><i class="fa-solid fa-download"></i> 다운로드 가능</span>`;
+        }
+        // 답변서
+        if (revisedResponseEl) {
+            if (sub.file_revised_response && sub.file_revised_response.startsWith("http")) {
+                const safeUrlR  = sub.file_revised_response.replace(/'/g, "\\'");
+                revisedResponseEl.innerHTML = `<i class="fa-solid fa-file-lines" style="color:var(--color-green);"></i>
+                    <a href="#" onclick="event.preventDefault(); downloadDriveFile('${safeUrlR}', '답변서');" style="text-decoration:underline; color:var(--color-green); font-weight:bold;">답변서 다운로드</a>`;
+                revisedRespLabelEl && (revisedRespLabelEl.style.display = "");
+                revisedResponseEl.style.display = "";
+            } else {
+                if (revisedRespLabelEl) revisedRespLabelEl.style.display = "none";
+                revisedResponseEl.style.display = "none";
+            }
+        }
+        // 제출일
+        if (revisedDateEl) revisedDateEl.textContent = sub.revised_date ? formatDateTime(sub.revised_date) : "-";
+    }
     const uploadBox = document.getElementById("admin-upload-box");
     if (uploadBox) {
         uploadBox.style.display = isAuthorized ? 'block' : 'none';
@@ -1372,9 +1481,11 @@ function formatDateTime(dateStr) {
 function updateAdminTabVisibility() {
     const tabReviewer = document.getElementById("tab-reviewer-space");
     const tabAdmin = document.getElementById("tab-admin-space");
+    const tabRevised = document.getElementById("tab-revised");
     
     if (tabReviewer) tabReviewer.style.display = "none";
     if (tabAdmin) tabAdmin.style.display = "none";
+    if (tabRevised) tabRevised.style.display = "none";
     
     const loggedInUserStr = localStorage.getItem("logged_in_user");
     if (loggedInUserStr) {
@@ -1386,6 +1497,8 @@ function updateAdminTabVisibility() {
             if (ADMIN_ROLES.includes(user.role)) {
                 if (tabAdmin) tabAdmin.style.display = "inline-block";
             }
+            // 수정논문 제출 탭: 로그인된 모든 회원에게 표시
+            if (tabRevised) tabRevised.style.display = "inline-block";
         } catch (e) {}
     }
 }
@@ -1462,16 +1575,23 @@ window.renderAdminSpaceTable = function() {
             ? `<span style="color: var(--color-green); font-weight: 700;"><i class="fa-solid fa-file-circle-check"></i> 자료 ${fileCount}건</span>` 
             : `<span style="color: var(--text-muted); font-size: 0.85rem;"><i class="fa-solid fa-cloud-arrow-up"></i> 자료 등록</span>`;
             
-        // Map mock filename to real PDF files in the workspace
-        let realFile = "통도사 새벽예불의 전승 양상과 현대적 의의 - 양영진.pdf";
-        if (sub.file_manuscript.toLowerCase().includes("daegeum")) {
-            realFile = "국악관현악에서 B♭대금과 E♭대금의 - 정지훈.pdf";
-        } else if (sub.file_manuscript.toLowerCase().includes("gayageum")) {
-            realFile = "신라의 범패 통도소리 의미와 가치 - 윤소희.pdf";
+        // 다운로드 버튼 생성: 드라이브 URL이면 downloadDriveFile() 호출, 아니면 로컬 파일 사용
+        let downloadBtnHtml = "";
+        const isMsDriveLink = (sub.file_manuscript || "").startsWith("http");
+        if (isMsDriveLink) {
+            const safeUrl = sub.file_manuscript.replace(/'/g, "\\'");
+            const safeTitle = (sub.title_ko || "논문").substring(0, 40).replace(/'/g, "\\'");
+            downloadBtnHtml = `<button class="btn-outline" style="padding: 4px 10px; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; cursor: pointer;" onclick="event.stopPropagation(); downloadDriveFile('${safeUrl}', '${safeTitle}');"><i class="fa-solid fa-file-arrow-down"></i> 다운로드</button>`;
+        } else {
+            // 로컬 파일명 매핑 (시드 데이터용)
+            let realFile = "통도사 새벽예불의 전승 양상과 현대적 의의 - 양영진.pdf";
+            if ((sub.file_manuscript || "").toLowerCase().includes("daegeum")) {
+                realFile = "국악관현악에서 B♭대금과 E♭대금의 - 정지훈.pdf";
+            } else if ((sub.file_manuscript || "").toLowerCase().includes("gayageum")) {
+                realFile = "신라의 범패 통도소리 의미와 가치 - 윤소희.pdf";
+            }
+            downloadBtnHtml = `<a href="${encodeURI(realFile)}" download="${escapeHtml((sub.file_manuscript || "논문").replace(/\.docx?$/i, ".pdf"))}" target="_blank" class="btn-outline" style="padding: 4px 10px; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;" onclick="event.stopPropagation();"><i class="fa-solid fa-file-arrow-down"></i> 다운로드</a>`;
         }
-        
-        const downloadName = sub.file_manuscript.replace(/\.docx?$/i, ".pdf");
-        const downloadBtnHtml = `<a href="${encodeURI(realFile)}" download="${escapeHtml(downloadName)}" class="btn-outline" style="padding: 4px 10px; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;" onclick="event.stopPropagation();"><i class="fa-solid fa-file-arrow-down"></i> 다운로드</a>`;
 
         row.innerHTML = `
             <td class="col-num" style="font-family: 'Poppins', sans-serif; font-weight: 500;">${submissions.length - index}</td>
@@ -1556,14 +1676,19 @@ function renderReviewerSpaceTable() {
             ? `<span class="reviewer-upload-status done"><i class="fa-solid fa-file-circle-check"></i> 제출완료 (${fileCount}건)</span>`
             : `<span class="reviewer-upload-status pending"><i class="fa-solid fa-cloud-arrow-up"></i> 미제출</span>`;
 
-        // Download button
-        let realFile = "통도사 새벽예불의 전승 양상과 현대적 의의 - 양영진.pdf";
-        if (sub.file_manuscript.toLowerCase().includes("daegeum")) {
-            realFile = "국악관현악에서 B♭대금과 E♭대금의 - 정지훈.pdf";
-        } else if (sub.file_manuscript.toLowerCase().includes("gayageum")) {
-            realFile = "신라의 범패 통도소리 의미와 가치 - 윤소희.pdf";
+        // 다운로드 버튼 HTML 생성: 드라이브 URL이면 downloadDriveFile() 호출
+        let reviewerDlBtnHtml = "";
+        const isRevDriveLink = (sub.file_manuscript || "").startsWith("http");
+        if (isRevDriveLink) {
+            const safeRevUrl = sub.file_manuscript.replace(/'/g, "\\'");
+            const safeRevTitle = (sub.title_ko || "논문").substring(0, 40).replace(/'/g, "\\'");
+            reviewerDlBtnHtml = `<button class="btn-outline reviewer-dl-btn" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;" onclick="event.stopPropagation(); downloadDriveFile('${safeRevUrl}', '${safeRevTitle}');"><i class="fa-solid fa-file-arrow-down"></i> 논문 다운로드</button>`;
+        } else {
+            let realRevFile = "통도사 새벽예불의 전승 양상과 현대적 의의 - 양영진.pdf";
+            if ((sub.file_manuscript || "").toLowerCase().includes("daegeum")) realRevFile = "국악관현악에서 B♭대금과 E♭대금의 - 정지훈.pdf";
+            else if ((sub.file_manuscript || "").toLowerCase().includes("gayageum")) realRevFile = "신라의 범패 통도소리 의미와 가치 - 윤소희.pdf";
+            reviewerDlBtnHtml = `<a href="${encodeURI(realRevFile)}" download class="btn-outline reviewer-dl-btn" style="display:inline-flex;align-items:center;gap:6px;" onclick="event.stopPropagation();"><i class="fa-solid fa-file-arrow-down"></i> 논문 다운로드</a>`;
         }
-        const downloadName = sub.file_manuscript.replace(/\.docx?$/i, ".pdf");
 
         // Card
         const card = document.createElement("div");
@@ -1581,11 +1706,7 @@ function renderReviewerSpaceTable() {
                 <span><i class="fa-solid fa-calendar"></i> ${sub.date || ''}</span>
             </div>
             <div class="reviewer-card-actions">
-                <a href="${encodeURI(realFile)}" download="${escapeHtml(downloadName)}"
-                   class="btn-outline reviewer-dl-btn"
-                   onclick="event.stopPropagation();">
-                    <i class="fa-solid fa-file-arrow-down"></i> 논문 다운로드
-                </a>
+                ${reviewerDlBtnHtml}
                 ${uploadHtml}
             </div>
         `;
@@ -2010,4 +2131,215 @@ function handleMaterialUpload() {
     document.getElementById("upload-format-docx").checked = true;
     
     renderAdminUploadsTable();
+}
+
+// ============================================================
+// 수정논문 제출 시스템
+// ============================================================
+
+/**
+ * 수정논문 제출 탭 초기화 및 렌더링
+ * - 로그인 사용자의 "수정후게재" 상태 논문만 선택 가능
+ * - 파일 업로드 이벤트 핸들러 연결
+ */
+function renderRevisedTab() {
+    const loggedInUserStr = localStorage.getItem("logged_in_user");
+    if (!loggedInUserStr) return;
+    const user = JSON.parse(loggedInUserStr);
+
+    const submissions  = getSubmissions();
+    const isAdmin      = ADMIN_ROLES.includes(user.role);
+
+    // 관리자는 전체 수정후게재 논문을 볼 수 있고, 일반 회원은 본인 논문만
+    const revisable = submissions.filter(s => {
+        if (s.deleted) return false;
+        if (s.status !== "수정후게재") return false;
+        if (isAdmin) return true;
+        return s.author_email === user.email ||
+               (s.authors && s.authors.some(a => a.email === user.email));
+    });
+
+    const noEl      = document.getElementById("revised-no-papers");
+    const formEl    = document.getElementById("revised-form-container");
+    const selectEl  = document.getElementById("revised-paper-select");
+
+    if (!noEl || !formEl || !selectEl) return;
+
+    if (revisable.length === 0) {
+        noEl.style.display = "block";
+        formEl.style.display = "none";
+        return;
+    }
+
+    noEl.style.display = "none";
+    formEl.style.display = "block";
+
+    // 셀렉트 박스 채우기
+    selectEl.innerHTML = "<option value=\"\">-- 논문을 선택하십시오 --</option>";
+    revisable.forEach(sub => {
+        const opt = document.createElement("option");
+        opt.value = sub.id;
+        opt.textContent = `[${sub.id}] ${sub.title_ko ? sub.title_ko.substring(0, 50) : "(제목 없음)"}`;
+        selectEl.appendChild(opt);
+    });
+
+    // 파일 input 이벤트 (중복 등록 방지를 위해 교체)
+    const msInput = document.getElementById("revised-file-manuscript");
+    const msName  = document.getElementById("revised-manuscript-name");
+    const rsInput = document.getElementById("revised-file-response");
+    const rsName  = document.getElementById("revised-response-name");
+
+    if (msInput) {
+        const newMs = msInput.cloneNode(true);
+        msInput.parentNode.replaceChild(newMs, msInput);
+        newMs.addEventListener("change", (e) => {
+            if (e.target.files && e.target.files[0]) {
+                if (msName) msName.textContent = e.target.files[0].name + ` (${formatBytes(e.target.files[0].size)})`;
+            } else {
+                if (msName) msName.textContent = "선택된 파일 없음";
+            }
+        });
+    }
+
+    if (rsInput) {
+        const newRs = rsInput.cloneNode(true);
+        rsInput.parentNode.replaceChild(newRs, rsInput);
+        newRs.addEventListener("change", (e) => {
+            if (e.target.files && e.target.files[0]) {
+                if (rsName) rsName.textContent = e.target.files[0].name + ` (${formatBytes(e.target.files[0].size)})`;
+            } else {
+                if (rsName) rsName.textContent = "선택된 파일 없음";
+            }
+        });
+    }
+
+    // 제출 버튼 이벤트 연결
+    const btnSubmit = document.getElementById("btn-submit-revised");
+    if (btnSubmit) {
+        const newBtn = btnSubmit.cloneNode(true);
+        btnSubmit.parentNode.replaceChild(newBtn, btnSubmit);
+        newBtn.addEventListener("click", () => submitRevisedPaper());
+    }
+}
+
+/**
+ * 수정논문 제출 처리
+ * 1) 파일 Base64 변환
+ * 2) Google Drive 업로드 (GAS: uploadRevisedFiles)
+ * 3) 완료 후 UI 초기화
+ */
+async function submitRevisedPaper() {
+    const selectEl  = document.getElementById("revised-paper-select");
+    const memoEl    = document.getElementById("revised-memo");
+    const msInput   = document.getElementById("revised-file-manuscript");
+    const rsInput   = document.getElementById("revised-file-response");
+    const btnSubmit = document.getElementById("btn-submit-revised");
+
+    if (!selectEl || !selectEl.value) {
+        alert("수정 대상 논문을 선택해주세요.");
+        return;
+    }
+
+    const submissionId = selectEl.value;
+    const memo = memoEl ? memoEl.value.trim() : "";
+
+    const msFile = msInput && msInput.files && msInput.files[0] ? msInput.files[0] : null;
+    const rsFile = rsInput && rsInput.files && rsInput.files[0] ? rsInput.files[0] : null;
+
+    if (!msFile) {
+        alert("수정본 원고 파일을 선택해주세요. (필수)");
+        return;
+    }
+
+    // 파일 크기 제한: 20MB
+    if (msFile.size > 20 * 1024 * 1024) {
+        alert("수정본 파일 크기가 너무 큽니다. 20MB 이하의 파일만 업로드 가능합니다.");
+        return;
+    }
+
+    const sub = getSubmissions().find(s => s.id === submissionId);
+    const titleKo = sub ? (sub.title_ko || "논문") : "논문";
+
+    if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 파일 변환 중...';
+    }
+
+    let msBase64 = null;
+    let rsBase64 = null;
+
+    try {
+        msBase64 = await getBase64(msFile);
+        if (rsFile) rsBase64 = await getBase64(rsFile);
+    } catch (err) {
+        console.error("수정논문 파일 인코딩 실패:", err);
+        alert("파일 처리 중 오류가 발생했습니다: " + err.message);
+        if (btnSubmit) {
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML = '<i class="fa-solid fa-paper-plane"></i> 수정논문 제출하기';
+        }
+        return;
+    }
+
+    if (btnSubmit) {
+        btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Google Drive에 업로드 중...';
+    }
+
+    const payload = {
+        action: "uploadRevisedFiles",
+        id: submissionId,
+        title_ko: titleKo,
+        memo: memo,
+        file_revised_data: {
+            base64: msBase64,
+            name: msFile.name,
+            mimeType: msFile.type || "application/octet-stream"
+        }
+    };
+
+    if (rsBase64 && rsFile) {
+        payload.file_response_data = {
+            base64: rsBase64,
+            name: rsFile.name,
+            mimeType: rsFile.type || "application/octet-stream"
+        };
+    }
+
+    try {
+        const result = await window.DB_uploadRevisedFiles(payload);
+
+        if (!result.ok) {
+            alert("수정논문 업로드 실패: " + (result.error || "알 수 없는 오류"));
+            return;
+        }
+
+        // 성공: 메모리 캐시 갱신
+        loadedSubmissions = await window.DB_getSubmissions();
+
+        // UI 초기화
+        if (selectEl) selectEl.value = "";
+        if (memoEl) memoEl.value = "";
+        if (msInput) { msInput.value = ""; }
+        if (rsInput) { rsInput.value = ""; }
+        const msName = document.getElementById("revised-manuscript-name");
+        const rsName = document.getElementById("revised-response-name");
+        if (msName) msName.textContent = "선택된 파일 없음";
+        if (rsName) rsName.textContent = "선택된 파일 없음";
+
+        alert(
+            "✅ 수정논문이 성공적으로 제출되었습니다!\n\n" +
+            "논문 ID: " + submissionId + "\n" +
+            "파일이 구글 드라이브에 안전하게 저장되었습니다.\n" +
+            "편집위원회 검토 후 결과를 이메일로 안내해 드립니다."
+        );
+
+    } catch (err) {
+        console.error("수정논문 제출 오류:", err);
+        alert("서버 통신 오류로 제출에 실패했습니다.\n\n" + err.message);
+    } finally {
+        if (btnSubmit) {
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML = '<i class="fa-solid fa-paper-plane"></i> 수정논문 제출하기';
+        }
+    }
 }

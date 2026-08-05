@@ -283,18 +283,19 @@
                     <button id="upload-issue-close" style="background:none; border:none; color:#fff; font-size:1.6rem; cursor:pointer; line-height:1;">&times;</button>
                 </div>
                 <form id="upload-issue-form" style="padding: 24px; display: flex; flex-direction: column; gap: 16px;">
-                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: end;">
                         <div style="display: flex; flex-direction: column; gap: 6px;">
-                            <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-dark);">권 (Volume)</label>
-                            <input type="number" name="volume" required placeholder="예: 5" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.9rem;">
+                            <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-dark);">호 <span style="color:var(--color-red);">*</span></label>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <input type="number" name="ho" id="input-ho" required placeholder="예: 8" min="1"
+                                    style="flex:1; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.9rem;">
+                                <span style="font-size:1rem; font-weight:700; color:var(--text-dark); white-space:nowrap;">호</span>
+                            </div>
+                            <span style="font-size:0.78rem; color:var(--text-muted);">예: 8 → 제8호로 저장됩니다.</span>
                         </div>
                         <div style="display: flex; flex-direction: column; gap: 6px;">
-                            <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-dark);">호 (Issue No.)</label>
-                            <input type="number" name="number" required placeholder="예: 2" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.9rem;">
-                        </div>
-                        <div style="display: flex; flex-direction: column; gap: 6px;">
-                            <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-dark);">통권 (Whole No.)</label>
-                            <input type="number" name="tonggwon" required placeholder="예: 8" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.9rem;">
+                            <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-dark);">미리보기</label>
+                            <div id="ho-preview" style="padding: 8px 14px; background: #f0f7f2; border-radius: 4px; font-size: 0.9rem; font-weight: 700; color: var(--color-green); border: 1px solid #c8e6c9; min-height: 38px; display:flex; align-items:center;">호 번호를 입력하면 자동 표시됩니다</div>
                         </div>
                     </div>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
@@ -653,23 +654,34 @@
 
         btnAddArticleRow.addEventListener('click', addArticleInputRow);
 
+        // 호 번호 미리보기 실시간 업데이트
+        document.getElementById('input-ho').addEventListener('input', function() {
+            const val = this.value.trim();
+            const preview = document.getElementById('ho-preview');
+            if (val && !isNaN(val) && parseInt(val) > 0) {
+                preview.textContent = `제${parseInt(val)}호 · 한국음악문화 제${parseInt(val)}호`;
+                preview.style.color = 'var(--color-green)';
+            } else {
+                preview.textContent = '호 번호를 입력하면 자동 표시됩니다';
+                preview.style.color = 'var(--text-muted)';
+            }
+        });
+
         // Form Submit Handler
         uploadForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const formData = new FormData(this);
-            const vol = formData.get('volume');
-            const num = formData.get('number');
-            const tong = formData.get('tonggwon');
+            const ho = parseInt(formData.get('ho'));
             const date = formData.get('date');
             const pdf = formData.get('pdf') || '#';
             const desc = formData.get('desc');
             const cover = formData.get('cover') || 'cover.png';
             
-            const id = `v${vol}n${num}`;
-            const title = `제${tong}호`;
-            const fullTitle = `한국음악문화 제${tong}호`;
-            const label = `제${tong}호`;
+            const id = `ho${ho}`;
+            const title = `제${ho}호`;
+            const fullTitle = `한국음악문화 제${ho}호`;
+            const label = `제${ho}호`;
             
             // Robustly extract year and month (e.g. "2026. 06. 30" -> "2026. 06.")
             let bannerDate = date;
@@ -677,7 +689,7 @@
             if (dateParts.length >= 2) {
                 bannerDate = `${dateParts[0]}. ${dateParts[1]}.`;
             }
-            const bannerInfo = `제${tong}호 (${bannerDate})`;
+            const bannerInfo = `제${ho}호 (${bannerDate})`;
 
             // Extract articles from cards
             const articles = [];
@@ -705,9 +717,7 @@
 
             const newIssue = {
                 id: id,
-                volume: vol,
-                number: num,
-                tonggwon: tong,
+                ho: ho,
                 title: title,
                 fullTitle: fullTitle,
                 label: label,
