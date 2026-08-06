@@ -4866,3 +4866,602 @@ i.fa-angle-right:not(.divider) {
 }
 
 
+/* =========================================
+   Main Page – News Hub Section
+   ========================================= */
+.news-hub-section {
+    display: flex;
+    gap: 32px;
+    margin-top: 40px;
+    align-items: flex-start;
+}
+
+.news-board-wrap {
+    flex: 1;
+    min-width: 0;
+}
+
+.news-board-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--text-dark);
+    padding-bottom: 12px;
+    margin-bottom: 0;
+}
+
+.news-board-tabs {
+    display: flex;
+    gap: 0;
+}
+
+.news-tab {
+    font-family: 'Pretendard', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px 20px 8px 0;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    position: relative;
+    transition: color 0.2s;
+}
+
+.news-tab::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--color-red);
+    transform: scaleX(0);
+    transition: transform 0.25s ease;
+    border-radius: 2px 2px 0 0;
+}
+
+.news-tab.active {
+    color: var(--text-dark);
+}
+
+.news-tab.active::after {
+    transform: scaleX(1);
+}
+
+.news-tab:hover {
+    color: var(--color-red);
+}
+
+.news-board-more {
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: color 0.2s;
+}
+
+.news-board-more:hover {
+    color: var(--color-red);
+}
+
+/* Journal Cover Panel */
+.journal-cover-panel {
+    width: 200px;
+    flex-shrink: 0;
+    background: white;
+    border: 2px solid var(--text-dark);
+    box-shadow: 4px 4px 0 rgba(0,0,0,0.8);
+    border-radius: 4px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.journal-cover-label {
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    align-self: flex-start;
+}
+
+.journal-cover-link {
+    display: block;
+    width: 100%;
+    transition: transform 0.2s;
+}
+
+.journal-cover-link:hover {
+    transform: translateY(-2px);
+}
+
+.journal-cover-img {
+    width: 100%;
+    height: auto;
+    display: block;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+    border-radius: 2px;
+}
+
+.journal-cover-info {
+    width: 100%;
+    text-align: center;
+}
+
+.journal-cover-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 3px;
+}
+
+.journal-cover-date {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-family: 'Poppins', sans-serif;
+}
+
+.journal-cover-actions {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+}
+
+.jc-btn {
+    flex: 1;
+    text-align: center;
+    padding: 7px 0;
+    font-size: 0.8rem;
+    font-weight: 700;
+    border-radius: 3px;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+.jc-btn-primary {
+    background: var(--text-dark);
+    color: white;
+}
+
+.jc-btn-primary:hover {
+    background: var(--color-red);
+}
+
+.jc-btn-secondary {
+    background: white;
+    color: var(--text-dark);
+    border: 1.5px solid var(--text-dark);
+}
+
+.jc-btn-secondary:hover {
+    border-color: var(--color-red);
+    color: var(--color-red);
+}
+
+/* =========================================
+   Main Page – Generic Home Section
+   ========================================= */
+.home-section {
+    margin-top: 50px;
+}
+
+.home-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--text-dark);
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+}
+
+.home-section-title {
+    font-family: 'Pretendard', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+}
+
+.home-section-title i {
+    font-size: 1.1rem;
+    color: var(--color-red);
+}
+
+.home-section-en {
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--bg-slate);
+    letter-spacing: 0.5px;
+}
+
+.home-section-more {
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: color 0.2s;
+    text-decoration: none;
+}
+
+.home-section-more:hover {
+    color: var(--color-red);
+}
+
+/* =========================================
+   Main Page – Activity Cards
+   ========================================= */
+.activities-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.activity-card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    background: white;
+    border: 1.5px solid var(--border-color);
+    border-radius: 6px;
+    padding: 22px;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.activity-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--color-red);
+    transform: scaleY(0);
+    transition: transform 0.25s ease;
+    transform-origin: bottom;
+}
+
+.activity-card:hover {
+    border-color: var(--text-dark);
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.7);
+    transform: translateY(-2px);
+}
+
+.activity-card:hover::before {
+    transform: scaleY(1);
+}
+
+.activity-card-badge {
+    display: inline-block;
+    color: white;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 3px;
+    margin-bottom: 12px;
+    font-family: 'Pretendard', sans-serif;
+    letter-spacing: 0.02em;
+}
+
+.activity-card-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+
+.activity-card-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 12px;
+}
+
+.activity-card-meta span {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Poppins', 'Pretendard', sans-serif;
+}
+
+.activity-card-meta i {
+    color: var(--color-red);
+    width: 14px;
+}
+
+.activity-card-desc {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 14px;
+    word-break: keep-all;
+}
+
+.activity-card-more {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    font-family: 'Poppins', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: gap 0.2s;
+}
+
+.activity-card:hover .activity-card-more {
+    gap: 8px;
+    color: var(--color-red);
+}
+
+/* =========================================
+   Main Page – Latest Papers List
+   ========================================= */
+.papers-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.paper-item {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 18px 12px;
+    border-bottom: 1px solid var(--border-color);
+    transition: background 0.2s;
+    border-radius: 4px;
+    margin: 0 -12px;
+}
+
+.paper-item:hover {
+    background: white;
+}
+
+.paper-num {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--border-color);
+    min-width: 36px;
+    text-align: center;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.paper-item:hover .paper-num {
+    color: var(--text-dark);
+}
+
+.paper-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.paper-category {
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+}
+
+.paper-title {
+    font-size: 1.02rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 5px;
+    line-height: 1.45;
+    word-break: keep-all;
+}
+
+.paper-author {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.paper-en-title {
+    font-size: 0.78rem;
+    color: #999;
+    font-family: 'Poppins', sans-serif;
+    margin-top: 4px;
+    font-style: italic;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.paper-link {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--bg-offwhite);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.paper-item:hover .paper-link {
+    background: var(--text-dark);
+    color: white;
+    transform: translateX(3px);
+}
+
+/* =========================================
+   Main Page – Quick Service Cards
+   ========================================= */
+.quick-service-section {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-top: 50px;
+    margin-bottom: 60px;
+}
+
+.qs-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    background: white;
+    border: 1.5px solid var(--border-color);
+    border-radius: 6px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.qs-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(to right, var(--color-red), var(--color-green));
+    transform: scaleX(0);
+    transition: transform 0.25s ease;
+    transform-origin: left;
+}
+
+.qs-card:hover {
+    border-color: var(--text-dark);
+    box-shadow: 2px 2px 0 rgba(0,0,0,0.6);
+    transform: translateY(-2px);
+}
+
+.qs-card:hover::after {
+    transform: scaleX(1);
+}
+
+.qs-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--bg-offwhite);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    color: var(--color-red);
+    flex-shrink: 0;
+    transition: all 0.25s;
+}
+
+.qs-card:hover .qs-icon {
+    background: var(--color-red);
+    color: white;
+}
+
+.qs-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.qs-text strong {
+    display: block;
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 3px;
+    color: var(--text-dark);
+}
+
+.qs-text span {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+
+.qs-arrow {
+    color: var(--border-color);
+    font-size: 0.85rem;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.qs-card:hover .qs-arrow {
+    color: var(--color-red);
+    transform: translateX(3px);
+}
+
+/* Color accents per card */
+#qs-submission .qs-icon { color: var(--color-red); }
+#qs-submission:hover .qs-icon { background: var(--color-red); }
+#qs-admission .qs-icon { color: var(--color-green); }
+#qs-admission:hover .qs-icon { background: var(--color-green); }
+#qs-forms .qs-icon { color: var(--color-yellow); }
+#qs-forms:hover .qs-icon { background: var(--color-yellow); }
+#qs-journal .qs-icon { color: var(--color-blue); }
+#qs-journal:hover .qs-icon { background: var(--color-blue); }
+
+/* =========================================
+   Responsive – Main Page New Sections
+   ========================================= */
+@media (max-width: 1024px) {
+    .activities-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .quick-service-section {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .news-hub-section {
+        flex-direction: column;
+    }
+    .journal-cover-panel {
+        width: 100%;
+        flex-direction: row;
+        align-items: center;
+    }
+    .journal-cover-link {
+        width: 100px;
+        flex-shrink: 0;
+    }
+    .journal-cover-info, .journal-cover-actions {
+        flex: 1;
+    }
+    .activities-grid {
+        grid-template-columns: 1fr;
+    }
+    .quick-service-section {
+        grid-template-columns: 1fr;
+    }
+}
+

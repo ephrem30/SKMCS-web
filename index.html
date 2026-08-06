@@ -241,31 +241,116 @@
                     </div>
                 </div>
 
-                <!-- Notice & Banner Section -->
-                <div class="notice-banner-row">
-                    <!-- Notice Board -->
-                    <div class="notice-area">
-                        <div class="notice-header">
-                            <h3>학회소식 <span class="en-title">news & notice</span></h3>
-                            <a href="news.html" class="btn-more"><i class="fa-solid fa-plus"></i></a>
+                <!-- ======================================== -->
+                <!-- News Hub - Tabbed Board Section -->
+                <!-- ======================================== -->
+                <div class="news-hub-section">
+
+                    <!-- Left: Tabbed News Board -->
+                    <div class="news-board-wrap">
+                        <div class="news-board-header">
+                            <div class="news-board-tabs">
+                                <button class="news-tab active" id="tab-notice" onclick="switchNewsTab('notice')">
+                                    <i class="fa-solid fa-bullhorn"></i> 공지사항
+                                </button>
+                                <button class="news-tab" id="tab-freeboard" onclick="switchNewsTab('freeboard')">
+                                    <i class="fa-solid fa-comments"></i> 자유게시판
+                                </button>
+                            </div>
+                            <a href="news.html" class="news-board-more">더보기 <i class="fa-solid fa-arrow-right"></i></a>
                         </div>
                         <ul class="notice-list" id="main-notice-list">
                             <!-- Dynamically populated -->
                         </ul>
                     </div>
 
-                    <!-- Journal Cover Banner Area -->
-                    <div class="banner-cover-side">
-                        <a href="issue.html" style="display: block; text-decoration: none; color: inherit;">
-                            <div class="cover-wrapper">
-                                <img src="cover.png" alt="제7호 표지" id="bottom-cover-img">
-                                <div class="cover-meta">
-                                    <strong>최신호</strong>
-                                    <span id="bottom-cover-date">2025. 12. 31. 발행</span>
-                                </div>
-                            </div>
+                    <!-- Right: Latest Journal Cover -->
+                    <div class="journal-cover-panel">
+                        <div class="journal-cover-label">
+                            <i class="fa-solid fa-book-open"></i> 최신 학회지
+                        </div>
+                        <a href="issue.html" class="journal-cover-link">
+                            <img src="cover.png" alt="제7호 표지" id="bottom-cover-img" class="journal-cover-img">
                         </a>
+                        <div class="journal-cover-info">
+                            <div class="journal-cover-title" id="bottom-cover-title">한국음악문화 제7호</div>
+                            <div class="journal-cover-date" id="bottom-cover-date">2025. 12. 31. 발행</div>
+                        </div>
+                        <div class="journal-cover-actions">
+                            <a href="issue.html" class="jc-btn jc-btn-primary">목차보기</a>
+                            <a href="archive.html" class="jc-btn jc-btn-secondary">지난호</a>
+                        </div>
                     </div>
+                </div>
+
+                <!-- ======================================== -->
+                <!-- Academic Activities Section -->
+                <!-- ======================================== -->
+                <div class="home-section">
+                    <div class="home-section-header">
+                        <div class="home-section-title">
+                            <i class="fa-solid fa-calendar-days"></i>
+                            학술활동 <span class="home-section-en">academic activities</span>
+                        </div>
+                        <a href="activities.html" class="home-section-more">더보기 <i class="fa-solid fa-arrow-right"></i></a>
+                    </div>
+                    <div class="activities-grid" id="main-activities-grid">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+
+                <!-- ======================================== -->
+                <!-- Latest Papers Preview Section -->
+                <!-- ======================================== -->
+                <div class="home-section">
+                    <div class="home-section-header">
+                        <div class="home-section-title">
+                            <i class="fa-solid fa-book-open"></i>
+                            최신 논문 <span class="home-section-en">latest papers</span>
+                        </div>
+                        <a href="issue.html" class="home-section-more">학회지 보기 <i class="fa-solid fa-arrow-right"></i></a>
+                    </div>
+                    <div class="papers-list" id="main-papers-list">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+
+                <!-- ======================================== -->
+                <!-- Quick Access Service Cards -->
+                <!-- ======================================== -->
+                <div class="quick-service-section">
+                    <a href="submission.html" class="qs-card" id="qs-submission">
+                        <div class="qs-icon"><i class="fa-solid fa-file-arrow-up"></i></div>
+                        <div class="qs-text">
+                            <strong>논문 온라인 투고</strong>
+                            <span>온라인으로 간편하게 논문 제출</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right qs-arrow"></i>
+                    </a>
+                    <a href="admission.html" class="qs-card" id="qs-admission">
+                        <div class="qs-icon"><i class="fa-solid fa-user-plus"></i></div>
+                        <div class="qs-text">
+                            <strong>입회 안내</strong>
+                            <span>학회 회원으로 가입하기</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right qs-arrow"></i>
+                    </a>
+                    <a href="forms.html" class="qs-card" id="qs-forms">
+                        <div class="qs-icon"><i class="fa-solid fa-folder-open"></i></div>
+                        <div class="qs-text">
+                            <strong>자료실</strong>
+                            <span>각종 양식 및 자료 다운로드</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right qs-arrow"></i>
+                    </a>
+                    <a href="issue.html" class="qs-card" id="qs-journal">
+                        <div class="qs-icon"><i class="fa-solid fa-book"></i></div>
+                        <div class="qs-text">
+                            <strong>학회지 열람</strong>
+                            <span>한국음악문화 최신호 및 아카이브</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right qs-arrow"></i>
+                    </a>
                 </div>
 
             </div>
@@ -307,7 +392,7 @@
     <script>
         // Load latest issue from journalData
         const latestIssue = journalData[0];
-        
+
         // Update top-left banner text
         document.getElementById('banner-vol-issue').textContent = latestIssue.title;
         document.getElementById('banner-vol-title').innerHTML = `한국음악학회지 『한국음악문화』<br>${latestIssue.title} 발간`;
@@ -324,7 +409,7 @@
             bannerInfoDate.textContent = latestIssue.bannerInfo || latestIssue.title;
         }
 
-        // Update bottom-right cover & date
+        // Update journal cover panel
         const bottomCover = document.getElementById('bottom-cover-img');
         if (bottomCover) {
             bottomCover.src = latestIssue.cover;
@@ -334,23 +419,27 @@
         if (bottomCoverDate) {
             bottomCoverDate.textContent = `${latestIssue.date} 발행`;
         }
+        const bottomCoverTitle = document.getElementById('bottom-cover-title');
+        if (bottomCoverTitle) {
+            bottomCoverTitle.textContent = latestIssue.fullTitle || latestIssue.title;
+        }
 
-        // Search functionality
+        // Data
         const DEFAULT_NOTICES = [
-            { id: 5, type: "notice", category: "안내", title: "2026년 춘계 학술대회 일정 및 논문 발표 신청 안내", file: true, date: "2026. 03. 11", views: 152, content: "2026년 춘계 학술대회 일정 및 논문 발표 신청 안내입니다.\n\n대중음악콘텐츠학회지 연구윤리 검증절차에 의해 본 학회 학술지 「대중음악콘텐츠학... [중략]\n많은 관심과 투고 바랍니다.", author: "관리인", email: "admin@gugak.go.kr" },
-            { id: 4, type: "notice", category: "시스템", title: "학회 홈페이지 리뉴얼 및 온라인 투고 시스템 오픈 안내", file: false, date: "2026. 02. 20", views: 301, content: "학회 홈페이지 리뉴얼 및 온라인 투고 시스템 오픈 안내입니다.\n\n회원 여러분의 편리한 논문 투고를 돕기 위해 신규 온라인 논문투고 시스템이 도입되었습니다.\n앞으로 새로운 시스템을 이용하여 논문을 접수해 주시기 바랍니다.", author: "관리인", email: "admin@gugak.go.kr" },
-            { id: 3, type: "notice", category: "안내", title: "한국음악학회 제50권 2호 원문 서비스 오픈", file: false, date: "2026. 02. 15", views: 85, content: "안녕하십니까, 한국음악학회입니다.\n\n한국음악학회 학회지 제50권 2호의 원문 서비스가 홈페이지를 통해 개시되었습니다.\n원문은 회원 로그인 후 열람 및 다운로드 받으실 수 있습니다.", author: "관리인", email: "admin@gugak.go.kr" },
-            { id: 2, type: "notice", category: "일반", title: "2026년도 신임 임원진 선출 결과 공고", file: true, date: "2026. 01. 30", views: 120, content: "2026년도 신임 임원진 선출 결과 공고입니다.\n\n자세한 임원진 구성표는 첨부된 PDF 파일을 참조해 주시기 바랍니다.\n올해 학회를 이끌어 주실 분들께 큰 응원 부탁드립니다.", author: "관리인", email: "admin@gugak.go.kr" },
-            { id: 1, type: "notice", category: "안내", title: "학회 연회비 납부 계좌 변경 안내", file: false, date: "2026. 01. 20", views: 214, content: "학회 연회비 납부 계좌가 다음과 같이 변경되었습니다.\n\n- 은행: 신한은행\n- 계좌번호: 140-015-967840\n- 예금주: 한국음악학회 박범훈\n\n회원 여러분께서는 연회비 송금 시 착오 없으시길 바랍니다.", author: "관리인", email: "admin@gugak.go.kr" }
+            { id: 5, type: "notice", category: "안내", title: "2026년 춘계 학술대회 일정 및 논문 발표 신청 안내", file: true, date: "2026. 03. 11", views: 152, content: "2026년 춘계 학술대회 일정 및 논문 발표 신청 안내입니다.\n\n많은 관심과 투고 바랍니다.", author: "관리인", email: "admin@gugak.go.kr" },
+            { id: 4, type: "notice", category: "시스템", title: "학회 홈페이지 리뉴얼 및 온라인 투고 시스템 오픈 안내", file: false, date: "2026. 02. 20", views: 301, content: "학회 홈페이지 리뉴얼 및 온라인 투고 시스템 오픈 안내입니다.", author: "관리인", email: "admin@gugak.go.kr" },
+            { id: 3, type: "notice", category: "안내", title: "한국음악학회 제50권 2호 원문 서비스 오픈", file: false, date: "2026. 02. 15", views: 85, content: "한국음악학회 학회지 제50권 2호의 원문 서비스가 홈페이지를 통해 개시되었습니다.", author: "관리인", email: "admin@gugak.go.kr" },
+            { id: 2, type: "notice", category: "일반", title: "2026년도 신임 임원진 선출 결과 공고", file: true, date: "2026. 01. 30", views: 120, content: "2026년도 신임 임원진 선출 결과 공고입니다.", author: "관리인", email: "admin@gugak.go.kr" },
+            { id: 1, type: "notice", category: "안내", title: "학회 연회비 납부 계좌 변경 안내", file: false, date: "2026. 01. 20", views: 214, content: "학회 연회비 납부 계좌가 변경되었습니다. 신한은행 140-015-967840 예금주: 한국음악학회 박범훈", author: "관리인", email: "admin@gugak.go.kr" }
         ];
 
         const DEFAULT_FREEBOARD = [
-            { id: 3, type: "freeboard", category: "자유", title: "안녕하세요. 신임 회원 인사드립니다.", date: "2026. 05. 28", views: 12, content: "이번에 학회에 가입하게 된 김민우입니다. 국악관현악 연구에 관심이 많습니다. 앞으로 많은 지도 편달 부탁드립니다.", author: "김민우", email: "minwoo@gmail.com" },
-            { id: 2, type: "freeboard", category: "질문", title: "2026년 춘계 학술대회 발표 자료 양식 관련 질문", date: "2026. 05. 27", views: 24, content: "춘계 학술대회 구두 발표 PPT 템플릿이나 양식이 따로 제공되는지 궁금합니다. 아니면 자유 양식으로 준비해도 되나요? 아시는 분 답변 부탁드립니다.", author: "이영희", email: "younghee@gmail.com" },
-            { id: 1, type: "freeboard", category: "정보", title: "국악 학술 정보 사이트 공유합니다.", date: "2026. 05. 20", views: 45, content: "한국음악 연구에 유용한 자료들이 모여있는 국립국악원 국악학술정보시스템 링크를 공유합니다. 연구에 참고하시기 바랍니다.\n링크: http://gugak.go.kr", author: "박철수", email: "chulsoo@gmail.com" }
+            { id: 3, type: "freeboard", category: "자유", title: "안녕하세요. 신임 회원 인사드립니다.", date: "2026. 05. 28", views: 12, content: "이번에 학회에 가입하게 된 김민우입니다. 국악관현악 연구에 관심이 많습니다.", author: "김민우", email: "minwoo@gmail.com" },
+            { id: 2, type: "freeboard", category: "질문", title: "2026년 춘계 학술대회 발표 자료 양식 관련 질문", date: "2026. 05. 27", views: 24, content: "춘계 학술대회 구두 발표 PPT 템플릿이나 양식이 따로 제공되는지 궁금합니다.", author: "이영희", email: "younghee@gmail.com" },
+            { id: 1, type: "freeboard", category: "정보", title: "국악 학술 정보 사이트 공유합니다.", date: "2026. 05. 20", views: 45, content: "국립국악원 국악학술정보시스템 링크를 공유합니다.", author: "박철수", email: "chulsoo@gmail.com" }
         ];
 
-        // Init local storage if not initialized yet
+        // Init local storage
         if (!localStorage.getItem("notice_posts")) {
             localStorage.setItem("notice_posts", JSON.stringify(DEFAULT_NOTICES));
         }
@@ -358,9 +447,11 @@
             localStorage.setItem("freeboard_posts", JSON.stringify(DEFAULT_FREEBOARD));
         }
 
-        // Render Academy News
         renderMainNotices();
+        // renderMainActivities and renderMainPapers are called at the end after definitions
 
+
+        // Search
         const mainSearchInput = document.getElementById('main-search-input');
         const btnSearchMain = document.getElementById('btn-search-main');
         const searchResultsSection = document.getElementById('search-results-section');
@@ -374,43 +465,24 @@
 
         function performSearch() {
             const query = mainSearchInput.value.trim().toLowerCase();
-            if (!query) {
-                alert("검색어를 입력해 주세요.");
-                return;
-            }
+            if (!query) { alert("검색어를 입력해 주세요."); return; }
 
-            // 1. Search Papers (journalData)
             const matchedPapers = [];
             journalData.forEach(issue => {
                 issue.articles.forEach(article => {
-                    if (
-                        article.title.toLowerCase().includes(query) ||
+                    if (article.title.toLowerCase().includes(query) ||
                         (article.enTitle && article.enTitle.toLowerCase().includes(query)) ||
                         article.author.toLowerCase().includes(query) ||
-                        article.category.toLowerCase().includes(query)
-                    ) {
-                        matchedPapers.push({
-                            issueId: issue.id,
-                            issueTitle: issue.title,
-                            article: article
-                        });
+                        article.category.toLowerCase().includes(query)) {
+                        matchedPapers.push({ issueId: issue.id, issueTitle: issue.title, article });
                     }
                 });
             });
 
-            // 2. Search Boards (Notices & Free Board from LocalStorage)
             const notices = JSON.parse(localStorage.getItem("notice_posts") || "[]");
             const freeboard = JSON.parse(localStorage.getItem("freeboard_posts") || "[]");
-            
             const matchedBoard = [];
-            
-            notices.forEach(post => {
-                if (post.title.toLowerCase().includes(query) || post.content.toLowerCase().includes(query) || post.category.toLowerCase().includes(query)) {
-                    matchedBoard.push(post);
-                }
-            });
-            
-            freeboard.forEach(post => {
+            [...notices, ...freeboard].forEach(post => {
                 if (post.title.toLowerCase().includes(query) || post.content.toLowerCase().includes(query) || post.category.toLowerCase().includes(query)) {
                     matchedBoard.push(post);
                 }
@@ -419,67 +491,50 @@
             const total = matchedPapers.length + matchedBoard.length;
             resultsCount.textContent = total;
 
-            // Render Papers
             if (matchedPapers.length > 0) {
                 resultsGroupPapers.style.display = "block";
                 resultsListPapers.innerHTML = matchedPapers.map(item => `
-                    <li style="padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-offwhite); display: flex; justify-content: space-between; align-items: center; transition: all 0.2s;">
+                    <li style="padding:12px 16px;border:1px solid var(--border-color);border-radius:6px;background:var(--bg-offwhite);display:flex;justify-content:space-between;align-items:center;">
                         <div>
-                            <span class="badge" style="background-color: var(--color-green); color: white; font-size: 0.75rem; padding: 2px 6px; border-radius: 3px; font-weight: 700; margin-right: 8px;">${item.article.category}</span>
-                            <a href="issue.html?id=${item.issueId}" style="font-weight: 600; color: var(--text-dark); text-decoration: none; font-size: 0.95rem;">${item.article.title}</a>
-                            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">저자: ${item.article.author} | 학회지: ${item.issueTitle}</div>
+                            <span style="background:var(--color-green);color:white;font-size:.75rem;padding:2px 6px;border-radius:3px;font-weight:700;margin-right:8px;">${item.article.category}</span>
+                            <a href="issue.html?id=${item.issueId}" style="font-weight:600;color:var(--text-dark);text-decoration:none;">${item.article.title}</a>
+                            <div style="font-size:.8rem;color:var(--text-muted);margin-top:4px;">저자: ${item.article.author} | ${item.issueTitle}</div>
                         </div>
-                        <a href="issue.html?id=${item.issueId}" style="color: var(--color-green); text-decoration: none; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 4px;">상세보기 <i class="fa-solid fa-chevron-right"></i></a>
-                    </li>
-                `).join('');
+                        <a href="issue.html?id=${item.issueId}" style="color:var(--color-green);font-size:.85rem;font-weight:600;">상세보기 <i class="fa-solid fa-chevron-right"></i></a>
+                    </li>`).join('');
             } else {
                 resultsGroupPapers.style.display = "none";
                 resultsListPapers.innerHTML = "";
             }
 
-            // Render Board
             if (matchedBoard.length > 0) {
                 resultsGroupBoard.style.display = "block";
                 resultsListBoard.innerHTML = matchedBoard.map(post => {
                     const isNotice = post.type === "notice";
                     const badgeColor = isNotice ? "var(--color-red)" : "var(--color-blue)";
                     const tabParam = isNotice ? "notice" : "freeboard";
-                    
                     return `
-                        <li style="padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-offwhite); display: flex; justify-content: space-between; align-items: center; transition: all 0.2s;">
+                        <li style="padding:12px 16px;border:1px solid var(--border-color);border-radius:6px;background:var(--bg-offwhite);display:flex;justify-content:space-between;align-items:center;">
                             <div>
-                                <span class="badge" style="background-color: ${badgeColor}; color: white; font-size: 0.75rem; padding: 2px 6px; border-radius: 3px; font-weight: 700; margin-right: 8px;">${post.category}</span>
-                                <a href="news.html?tab=${tabParam}&id=${post.id}" style="font-weight: 600; color: var(--text-dark); text-decoration: none; font-size: 0.95rem;">${post.title}</a>
-                                <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">작성자: ${post.author} | 작성일: ${post.date}</div>
+                                <span style="background:${badgeColor};color:white;font-size:.75rem;padding:2px 6px;border-radius:3px;font-weight:700;margin-right:8px;">${post.category}</span>
+                                <a href="news.html?tab=${tabParam}&id=${post.id}" style="font-weight:600;color:var(--text-dark);">${post.title}</a>
+                                <div style="font-size:.8rem;color:var(--text-muted);margin-top:4px;">${post.author} | ${post.date}</div>
                             </div>
-                            <a href="news.html?tab=${tabParam}&id=${post.id}" style="color: ${badgeColor}; text-decoration: none; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 4px;">상세보기 <i class="fa-solid fa-chevron-right"></i></a>
-                        </li>
-                    `;
+                            <a href="news.html?tab=${tabParam}&id=${post.id}" style="color:${badgeColor};font-size:.85rem;font-weight:600;">상세보기 <i class="fa-solid fa-chevron-right"></i></a>
+                        </li>`;
                 }).join('');
             } else {
                 resultsGroupBoard.style.display = "none";
                 resultsListBoard.innerHTML = "";
             }
 
-            if (total === 0) {
-                searchNoResults.style.display = "block";
-            } else {
-                searchNoResults.style.display = "none";
-            }
-
+            searchNoResults.style.display = total === 0 ? "block" : "none";
             searchResultsSection.style.display = "block";
-            
-            // Scroll to results smoothly
             searchResultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         btnSearchMain.addEventListener('click', performSearch);
-        mainSearchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                performSearch();
-            }
-        });
-
+        mainSearchInput.addEventListener('keypress', e => { if (e.key === 'Enter') performSearch(); });
         btnCloseResults.addEventListener('click', () => {
             searchResultsSection.style.display = "none";
             mainSearchInput.value = "";
@@ -488,82 +543,128 @@
         // Helpers
         function escapeHtml(text) {
             if (typeof text !== "string") return text;
-            return text
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        // Tab switching
+        var currentTab = 'notice';
+        function switchNewsTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.news-tab').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('tab-' + tab).classList.add('active');
+            tab === 'notice' ? renderMainNotices() : renderMainFreeboard();
         }
 
         function renderMainNotices() {
             const notices = JSON.parse(localStorage.getItem("notice_posts") || "[]");
-            const mainNoticeList = document.getElementById('main-notice-list');
-            if (!mainNoticeList) return;
-            
-            // Sort notices by id descending to guarantee latest is first
+            const list = document.getElementById('main-notice-list');
+            if (!list) return;
             notices.sort((a, b) => b.id - a.id);
-            
-            // Get latest 3 notices
-            const latestNotices = notices.slice(0, 3);
-            
-            if (latestNotices.length === 0) {
-                mainNoticeList.innerHTML = `<li style="justify-content: center; padding: 30px; color: var(--text-muted);">등록된 소식이 없습니다.</li>`;
+            const latest = notices.slice(0, 5);
+            if (latest.length === 0) {
+                list.innerHTML = '<li style="justify-content:center;padding:30px;color:var(--text-muted);">등록된 소식이 없습니다.</li>';
                 return;
             }
-            
-            mainNoticeList.innerHTML = latestNotices.map(post => {
-                // Parse date
-                const dateStr = post.date || "2026. 01. 01";
-                const dateParts = dateStr.split(/[\s.-]+/);
-                const year = dateParts[0] || "2026";
-                const month = dateParts[1] || "01";
-                const day = dateParts[2] || "01";
+            list.innerHTML = latest.map(post => {
+                const parts = (post.date || "2026. 01. 01").split(/[\s.-]+/);
+                const year = parts[0] || "2026", month = parts[1] || "01", day = parts[2] || "01";
                 const md = `${month}-${day}`;
-                
-                // Map category to dot class
-                let dotClass = "green-dot";
-                let catLabel = post.category || "일반";
-                if (post.category === "시스템") {
-                    dotClass = "red-dot";
-                    catLabel = "시스템";
-                } else if (post.category === "안내") {
-                    dotClass = "yellow-dot";
-                    catLabel = "안내";
-                } else if (post.category === "일반") {
-                    dotClass = "green-dot";
-                    catLabel = "일반";
-                }
-                
-                // Extract brief content snippet
-                let snippet = post.content || "";
-                if (snippet.length > 60) {
-                    snippet = snippet.substring(0, 60) + "...";
-                }
-                
-                return `
-                    <li onclick="location.href='news.html?tab=notice&id=${post.id}'">
-                        <div class="notice-date">
-                            <span class="year">${year}</span>
-                            <span class="md">${md}</span>
-                        </div>
-                        <div class="notice-text">
-                            <h4><a href="news.html?tab=notice&id=${post.id}" onclick="event.stopPropagation();">${escapeHtml(post.title)}</a></h4>
-                            <p>${escapeHtml(snippet)}</p>
-                        </div>
-                        <div class="card-category">
-                            <span class="cat-dot ${dotClass}"></span> ${catLabel}
-                        </div>
-                    </li>
-                `;
+                const dotClass = post.category === "시스템" ? "red-dot" : post.category === "안내" ? "yellow-dot" : "green-dot";
+                let snippet = (post.content || "").substring(0, 60);
+                if ((post.content||"").length > 60) snippet += "...";
+                return `<li onclick="location.href='news.html?tab=notice&id=${post.id}'">
+                    <div class="notice-date"><span class="year">${year}</span><span class="md">${md}</span></div>
+                    <div class="notice-text">
+                        <h4><a href="news.html?tab=notice&id=${post.id}" onclick="event.stopPropagation();">${escapeHtml(post.title)}</a></h4>
+                        <p>${escapeHtml(snippet)}</p>
+                    </div>
+                    <div class="card-category"><span class="cat-dot ${dotClass}"></span> ${post.category || "일반"}</div>
+                </li>`;
             }).join('');
         }
 
-        // Listen for storage changes from other tabs/modals to update main notices in real time
-        window.addEventListener('storage', (e) => {
-            if (e.key === 'notice_posts') {
-                renderMainNotices();
+        function renderMainFreeboard() {
+            const freeboard = JSON.parse(localStorage.getItem("freeboard_posts") || "[]");
+            const list = document.getElementById('main-notice-list');
+            if (!list) return;
+            freeboard.sort((a, b) => b.id - a.id);
+            const latest = freeboard.slice(0, 5);
+            if (latest.length === 0) {
+                list.innerHTML = '<li style="justify-content:center;padding:30px;color:var(--text-muted);">등록된 게시글이 없습니다.</li>';
+                return;
             }
+            const catColors = { "자유": "green-dot", "질문": "yellow-dot", "정보": "red-dot" };
+            list.innerHTML = latest.map(post => {
+                const parts = (post.date || "2026. 01. 01").split(/[\s.-]+/);
+                const year = parts[0] || "2026", month = parts[1] || "01", day = parts[2] || "01";
+                const md = `${month}-${day}`;
+                const dotClass = catColors[post.category] || "green-dot";
+                let snippet = (post.content || "").substring(0, 60);
+                if ((post.content||"").length > 60) snippet += "...";
+                return `<li onclick="location.href='news.html?tab=freeboard&id=${post.id}'">
+                    <div class="notice-date"><span class="year">${year}</span><span class="md">${md}</span></div>
+                    <div class="notice-text">
+                        <h4><a href="news.html?tab=freeboard&id=${post.id}" onclick="event.stopPropagation();">${escapeHtml(post.title)}</a></h4>
+                        <p>${escapeHtml(snippet)}</p>
+                    </div>
+                    <div class="card-category"><span class="cat-dot ${dotClass}"></span> ${post.category || "자유"}</div>
+                </li>`;
+            }).join('');
+        }
+
+        // Activities
+        const MOCK_ACTIVITIES = [
+            { badge: "학술대회", badgeColor: "var(--color-red)", title: "2026년 춘계 학술대회", date: "2026. 05. 15 (토)", location: "동국대학교 충무로영상센터", desc: "한국 전통음악의 현대적 계승과 새로운 방향 모색을 주제로 개최됩니다.", link: "activities.html?tab=conference" },
+            { badge: "연구모임", badgeColor: "var(--color-blue)", title: "정기 연구모임 – 6월", date: "2026. 06. 21 (토)", location: "동국대학교 문화관 세미나실", desc: "범패와 불교음악의 지역별 비교연구를 주제로 발표 및 토론을 진행합니다.", link: "activities.html?tab=seminar" },
+            { badge: "추계학술대회", badgeColor: "var(--color-green)", title: "2026년 추계 학술대회 (예정)", date: "2026. 11. 07 (토)", location: "서울시립대학교 (예정)", desc: "민속음악, 궁중음악, 창작국악 분야 연구자의 발표 신청을 받습니다.", link: "activities.html?tab=conference" }
+        ];
+
+        function renderMainActivities() {
+            const grid = document.getElementById('main-activities-grid');
+            if (!grid) return;
+            grid.innerHTML = MOCK_ACTIVITIES.map(act => `
+                <a href="${act.link}" class="activity-card">
+                    <div class="activity-card-badge" style="background:${act.badgeColor};">${act.badge}</div>
+                    <div class="activity-card-title">${act.title}</div>
+                    <div class="activity-card-meta">
+                        <span><i class="fa-solid fa-calendar"></i> ${act.date}</span>
+                        <span><i class="fa-solid fa-location-dot"></i> ${act.location}</span>
+                    </div>
+                    <div class="activity-card-desc">${act.desc}</div>
+                    <div class="activity-card-more">자세히 보기 <i class="fa-solid fa-arrow-right"></i></div>
+                </a>`).join('');
+        }
+
+        // Latest Papers
+        function renderMainPapers() {
+            const papersList = document.getElementById('main-papers-list');
+            if (!papersList || !journalData || journalData.length === 0) return;
+            const issue = journalData[0];
+            const articles = issue.articles || [];
+            const colors = { "전통음악": "var(--color-green)", "민속음악": "var(--color-yellow)", "불교음악": "var(--color-red)" };
+            papersList.innerHTML = articles.map((a, idx) => {
+                const color = colors[a.category] || "var(--bg-charcoal)";
+                return `<div class="paper-item">
+                    <div class="paper-num">${String(a.num).padStart(2, '0')}</div>
+                    <div class="paper-body">
+                        <div class="paper-category" style="color:${color};">${escapeHtml(a.category)}</div>
+                        <div class="paper-title">${escapeHtml(a.title)}</div>
+                        <div class="paper-author"><i class="fa-solid fa-user-pen"></i> ${escapeHtml(a.author)} | ${issue.title}</div>
+                        ${a.enTitle ? `<div class="paper-en-title">${escapeHtml(a.enTitle)}</div>` : ''}
+                    </div>
+                    <a href="issue.html?id=${issue.id}" class="paper-link"><i class="fa-solid fa-arrow-right"></i></a>
+                </div>`;
+            }).join('');
+        }
+
+        // Deferred calls (after all functions and constants are defined)
+        renderMainActivities();
+        renderMainPapers();
+
+        // Storage listener
+        window.addEventListener('storage', e => {
+            if (e.key === 'notice_posts' && currentTab === 'notice') renderMainNotices();
+            if (e.key === 'freeboard_posts' && currentTab === 'freeboard') renderMainFreeboard();
         });
     </script>
     <script src="share.js"></script>
