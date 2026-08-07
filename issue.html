@@ -367,7 +367,7 @@
             document.getElementById('breadcrumb-current').textContent = selectedIssue.title;
 
             const coverImg = document.getElementById('issue-cover-img');
-            coverImg.src = selectedIssue.cover;
+            coverImg.src = getViewableCoverUrl(selectedIssue.cover);
             coverImg.alt = `${selectedIssue.title} 표지`;
 
             document.getElementById('issue-vol-label').textContent = selectedIssue.label;
@@ -473,6 +473,16 @@
             }
             return url;
         }
+
+        function getViewableCoverUrl(url) {
+            if (!url || url === 'cover.png' || url === '#') return 'cover.png';
+            const m1 = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+            if (m1) return 'https://drive.google.com/thumbnail?id=' + m1[1] + '&sz=w400';
+            const m2 = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+            if (m2) return 'https://drive.google.com/thumbnail?id=' + m2[1] + '&sz=w400';
+            return url;
+        }
+
 
         function bindPdfButtons() {
             document.querySelectorAll('.pdf-view-btn').forEach(btn => {

@@ -540,7 +540,7 @@
 
             // Populate issue summary box
             const coverImg = document.getElementById('issue-cover-img');
-            coverImg.src = selectedIssue.cover;
+            coverImg.src = getViewableCoverUrl(selectedIssue.cover);
             coverImg.alt = `${selectedIssue.title} 표지`;
 
             document.getElementById('issue-vol-label').textContent = selectedIssue.label;
@@ -664,6 +664,28 @@
             // 로컈 PDF 파일명 그대로 반환
             return url;
         }
+
+        /**
+         * Drive URL → <img> 태그에서 바로 표시 가능한 썸네일 URL로 변환
+         *   다운로드 URL: https://drive.usercontent.google.com/download?id=FILE_ID&...
+         *   이미지 URL:   https://drive.google.com/thumbnail?id=FILE_ID&sz=w400
+         */
+        function getViewableCoverUrl(url) {
+            if (!url || url === 'cover.png' || url === '#') return 'cover.png';
+            // drive.usercontent.google.com/download?id=XXX 형식
+            const m1 = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+            if (m1) {
+                return 'https://drive.google.com/thumbnail?id=' + m1[1] + '&sz=w400';
+            }
+            // drive.google.com/file/d/ID/ 형식
+            const m2 = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+            if (m2) {
+                return 'https://drive.google.com/thumbnail?id=' + m2[1] + '&sz=w400';
+            }
+            // 일반 URL (로컬 파일 또는 외부 이미지)
+            return url;
+        }
+
 
         function bindPdfButtons() {
             document.querySelectorAll('.pdf-view-btn').forEach(btn => {
