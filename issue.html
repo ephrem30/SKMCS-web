@@ -386,9 +386,29 @@
             const tbody = document.getElementById('article-list-tbody');
             tbody.innerHTML = '';
 
+            // 관리자 여부 확인
+            let isAdminUser = false;
+            try {
+                const luStr = localStorage.getItem("logged_in_user");
+                if (luStr) {
+                    const lu = JSON.parse(luStr);
+                    isAdminUser = ["admin","secretary","editor","president"].includes(lu.role);
+                }
+            } catch(e){}
+
             if (selectedIssue.articles && selectedIssue.articles.length > 0) {
-                selectedIssue.articles.forEach(article => {
+                selectedIssue.articles.forEach((article, artIdx) => {
                     const tr = document.createElement('tr');
+                    tr.dataset.artIdx = artIdx;
+                    tr.dataset.issueId = selectedIssue.id;
+                    const pdfIcon = article.pdf && article.pdf !== '#'
+                        ? `<a href="#" class="icon-monitor pdf-view-btn" data-pdf="${article.pdf}" data-title="${article.title}"><i class="fa-regular fa-file-pdf"></i></a>`
+                        : `<span style="color:#ccc;font-size:0.82rem;">미등록</span>`;
+                    const adminBtn = isAdminUser
+                        ? `<button type="button" class="btn-inline-edit-art" data-art-idx="${artIdx}" data-issue-id="${selectedIssue.id}"
+                            title="논문 정보 편집" style="margin-left:6px;background:none;border:1px solid #ccc;border-radius:3px;padding:2px 6px;font-size:0.78rem;cursor:pointer;color:var(--color-green);vertical-align:middle;">
+                            <i class="fa-solid fa-pen"></i>
+                           </button>` : '';
                     tr.innerHTML = `
                         <td class="col-num">${article.num}</td>
                         <td class="col-cat">${article.category}</td>
@@ -396,14 +416,8 @@
                             <a href="#">${article.title}</a>
                             <p class="article-en-title">${article.enTitle || ''}</p>
                         </td>
-                        <td class="col-year">${article.author}</td>
-                        <td class="col-view">
-                            <a href="#" class="icon-monitor pdf-view-btn"
-                               data-pdf="${article.pdf}"
-                               data-title="${article.title}">
-                                <i class="fa-regular fa-file-pdf"></i>
-                            </a>
-                        </td>
+                        <td class="col-year">${article.author}${adminBtn}</td>
+                        <td class="col-view">${pdfIcon}</td>
                     `;
                     tbody.appendChild(tr);
                 });
@@ -466,18 +480,22 @@
                     e.preventDefault();
                     const pdfPath = this.getAttribute('data-pdf');
                     const viewUrl = getViewableUrl(pdfPath);
-                    if (viewUrl) {
+                    if (!viewUrl) {
+                        alert('본 논문은 원문(PDF) 준비 중입니다.');
+                        return;
+                    }
+                    // Google Drive URL이면 모달 iframe, 아니면 새 탭
+                    if (viewUrl.includes('drive.google.com') || viewUrl.includes('docs.google.com')) {
                         iframe.src = viewUrl;
                         modalTitle.textContent = this.getAttribute('data-title');
                         modal.style.display = 'flex';
                         document.body.style.overflow = 'hidden';
                     } else {
-                        alert('본 논문은 원문(PDF) 준비 중입니다.');
+                        window.open(viewUrl, '_blank');
                     }
                 });
             });
         }
-
 
         function closePdfModal() {
             modal.style.display = 'none';
@@ -488,7 +506,203 @@
         closeBtn.addEventListener('click', closePdfModal);
         modal.addEventListener('click', e => { if (e.target === modal) closePdfModal(); });
         document.addEventListener('keydown', e => { if (e.key === 'Escape') closePdfModal(); });
+
+        // ── 논문 인라인 편집 모달 (관리자 전용) ──────────────────────
+        let artEditModal = null;
+
+        function createArtEditModal() {
+            const div = document.createElement('div');
+            div.id = 'art-edit-modal';
+            div.style.cssText = 'display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:10000;align-items:center;justify-content:center;padding:20px;';
+            div.innerHTML = `
+                <div style="background:#fff;width:95%;max-width:560px;border-radius:12px;overflow:hidden;box-shadow:0 15px 35px rgba(0,0,0,0.3);display:flex;flex-direction:column;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 22px;background:var(--color-green);color:#fff;flex-shrink:0;">
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <i class="fa-solid fa-pen-to-square" style="font-size:1.1rem;"></i>
+                            <span style="font-size:1.05rem;font-weight:700;">논문 정보 편집</span>
+                        </div>
+                        <button id="art-edit-close" style="background:none;border:none;color:#fff;font-size:1.5rem;cursor:pointer;line-height:1;">&times;</button>
+                    </div>
+                    <form id="art-edit-form" style="padding:24px;display:flex;flex-direction:column;gap:14px;">
+                        <input type="hidden" id="art-edit-issue-id">
+                        <input type="hidden" id="art-edit-art-idx">
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                            <div style="display:flex;flex-direction:column;gap:4px;">
+                                <label style="font-size:0.82rem;font-weight:700;color:var(--text-dark);">논문 번호</label>
+                                <input type="number" id="art-edit-num" min="1" style="padding:8px 10px;border:1px solid var(--border-color);border-radius:4px;font-size:0.88rem;">
+                            </div>
+                            <div style="display:flex;flex-direction:column;gap:4px;">
+                                <label style="font-size:0.82rem;font-weight:700;color:var(--text-dark);">분야 <span style="color:var(--color-red);">*</span></label>
+                                <input type="text" id="art-edit-cat" placeholder="예: 불교음악" required style="padding:8px 10px;border:1px solid var(--border-color);border-radius:4px;font-size:0.88rem;">
+                            </div>
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:4px;">
+                            <label style="font-size:0.82rem;font-weight:700;color:var(--text-dark);">논문명 (국문) <span style="color:var(--color-red);">*</span></label>
+                            <input type="text" id="art-edit-title" required style="padding:8px 10px;border:1px solid var(--border-color);border-radius:4px;font-size:0.88rem;">
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:4px;">
+                            <label style="font-size:0.82rem;font-weight:700;color:var(--text-dark);">영문 논문명</label>
+                            <input type="text" id="art-edit-en-title" style="padding:8px 10px;border:1px solid var(--border-color);border-radius:4px;font-size:0.88rem;">
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:4px;">
+                            <label style="font-size:0.82rem;font-weight:700;color:var(--text-dark);">저자 <span style="color:var(--color-red);">*</span></label>
+                            <input type="text" id="art-edit-author" required style="padding:8px 10px;border:1px solid var(--border-color);border-radius:4px;font-size:0.88rem;">
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:6px;">
+                            <label style="font-size:0.82rem;font-weight:700;color:var(--text-dark);">원문 PDF</label>
+                            <div style="display:flex;flex-direction:column;gap:6px;background:#f8f9fa;border:1px solid var(--border-color);border-radius:6px;padding:12px;">
+                                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                                    <input type="file" id="art-edit-pdf-file" accept=".pdf" style="display:none;">
+                                    <button type="button" id="art-edit-pdf-btn"
+                                        style="padding:6px 12px;border:1px solid var(--color-green);background:#f0f9f7;color:var(--color-green);border-radius:4px;font-size:0.82rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap;">
+                                        <i class="fa-solid fa-file-arrow-up"></i> PDF 파일 업로드
+                                    </button>
+                                    <span id="art-edit-pdf-name" style="font-size:0.82rem;color:#888;">또는 아래에 URL 직접 입력</span>
+                                </div>
+                                <input type="text" id="art-edit-pdf-url" placeholder="Google Drive 공유 URL 또는 파일명"
+                                    style="padding:8px 10px;border:1px solid var(--border-color);border-radius:4px;font-size:0.85rem;">
+                                <span style="font-size:0.75rem;color:var(--text-muted);">파일 업로드 시 Drive에 자동 저장 후 URL이 채워집니다.</span>
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:10px;justify-content:flex-end;padding-top:8px;border-top:1px solid var(--border-color);">
+                            <button type="button" id="art-edit-cancel"
+                                style="padding:9px 18px;border:1px solid var(--border-color);background:#fff;border-radius:4px;font-size:0.88rem;font-weight:600;cursor:pointer;">취소</button>
+                            <button type="submit" id="art-edit-save"
+                                style="padding:9px 20px;background:var(--color-green);border:none;color:#fff;border-radius:4px;font-size:0.9rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px;">
+                                <i class="fa-solid fa-floppy-disk"></i> 저장
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            document.body.appendChild(div);
+
+            const pdfFileInput = div.querySelector('#art-edit-pdf-file');
+            const pdfBtn       = div.querySelector('#art-edit-pdf-btn');
+            const pdfNameEl    = div.querySelector('#art-edit-pdf-name');
+            const pdfUrlInput  = div.querySelector('#art-edit-pdf-url');
+
+            pdfBtn.addEventListener('click', () => pdfFileInput.click());
+            pdfFileInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    pdfNameEl.textContent = this.files[0].name;
+                    pdfNameEl.style.color = 'var(--color-green)';
+                    pdfNameEl.style.fontWeight = '700';
+                }
+            });
+
+            const closeArtEdit = () => {
+                div.style.display = 'none';
+                document.body.style.overflow = '';
+                pdfFileInput.value = '';
+                pdfNameEl.textContent = '또는 아래에 URL 직접 입력';
+                pdfNameEl.style.color = '#888';
+                pdfNameEl.style.fontWeight = '';
+            };
+            div.querySelector('#art-edit-close').addEventListener('click', closeArtEdit);
+            div.querySelector('#art-edit-cancel').addEventListener('click', closeArtEdit);
+            div.addEventListener('click', e => { if (e.target === div) closeArtEdit(); });
+
+            div.querySelector('#art-edit-form').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const issueId = document.getElementById('art-edit-issue-id').value;
+                const artIdx  = parseInt(document.getElementById('art-edit-art-idx').value);
+                const saveBtn = document.getElementById('art-edit-save');
+                const origHtml = saveBtn.innerHTML;
+
+                const updatedArt = {
+                    num:      parseInt(document.getElementById('art-edit-num').value) || artIdx + 1,
+                    category: document.getElementById('art-edit-cat').value.trim(),
+                    title:    document.getElementById('art-edit-title').value.trim(),
+                    enTitle:  document.getElementById('art-edit-en-title').value.trim(),
+                    author:   document.getElementById('art-edit-author').value.trim(),
+                    pdf:      document.getElementById('art-edit-pdf-url').value.trim() || '#'
+                };
+
+                if (!updatedArt.category || !updatedArt.title || !updatedArt.author) {
+                    alert('분야, 논문명, 저자는 필수입니다.'); return;
+                }
+
+                saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 저장 중...';
+                saveBtn.disabled = true;
+
+                const pdfFile = pdfFileInput.files && pdfFileInput.files[0];
+                if (pdfFile) {
+                    try {
+                        saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> PDF 업로드 중...';
+                        const b64 = await new Promise((res, rej) => {
+                            const fr = new FileReader();
+                            fr.onload = () => res(fr.result.split(',')[1]);
+                            fr.onerror = rej;
+                            fr.readAsDataURL(pdfFile);
+                        });
+                        const upRes = await window.DB_uploadJournalPdf(
+                            issueId,
+                            `논문_${updatedArt.title.substring(0, 20)}`,
+                            { base64: b64, name: pdfFile.name, mimeType: pdfFile.type || 'application/pdf' }
+                        );
+                        if (upRes && upRes.ok) {
+                            updatedArt.pdf = upRes.pdfUrl;
+                            pdfUrlInput.value = upRes.pdfUrl;
+                        } else {
+                            alert('PDF 업로드 실패: ' + (upRes && upRes.error || '알 수 없는 오류'));
+                        }
+                    } catch(err) {
+                        alert('PDF 업로드 오류: ' + err.message);
+                    }
+                }
+
+                saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 저장 중...';
+
+                let local = JSON.parse(localStorage.getItem('journal_db') || '[]');
+                const issueLocalIdx = local.findIndex(j => j.id === issueId);
+                if (issueLocalIdx !== -1 && local[issueLocalIdx].articles) {
+                    local[issueLocalIdx].articles[artIdx] = updatedArt;
+                    localStorage.setItem('journal_db', JSON.stringify(local));
+                    journalData = local.sort((a,b) => parseInt(b.tonggwon||0) - parseInt(a.tonggwon||0));
+                    try { await window.DB_addJournal(local[issueLocalIdx]); } catch(dbErr) { console.warn('DB 저장 실패:', dbErr); }
+                    alert('논문 정보가 저장되었습니다.');
+                    closeArtEdit();
+                    await initIssuePage();
+                } else {
+                    alert('저장 실패: 발행호 데이터를 찾을 수 없습니다.');
+                }
+
+                saveBtn.innerHTML = origHtml;
+                saveBtn.disabled = false;
+            });
+
+            return div;
+        }
+
+        function openArtEditModal(issueId, artIdx) {
+            if (!artEditModal) artEditModal = createArtEditModal();
+            const issue = journalData.find(j => j.id === issueId);
+            if (!issue || !issue.articles || !issue.articles[artIdx]) {
+                alert('논문 데이터를 찾을 수 없습니다.'); return;
+            }
+            const art = issue.articles[artIdx];
+            document.getElementById('art-edit-issue-id').value = issueId;
+            document.getElementById('art-edit-art-idx').value  = artIdx;
+            document.getElementById('art-edit-num').value      = art.num || artIdx + 1;
+            document.getElementById('art-edit-cat').value      = art.category || '';
+            document.getElementById('art-edit-title').value    = art.title || '';
+            document.getElementById('art-edit-en-title').value = art.enTitle || '';
+            document.getElementById('art-edit-author').value   = art.author || '';
+            document.getElementById('art-edit-pdf-url').value  = (art.pdf && art.pdf !== '#') ? art.pdf : '';
+            artEditModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        // 논문 편집 버튼 이벤트 위임
+        document.getElementById('article-list-tbody').addEventListener('click', function(e) {
+            const editBtn = e.target.closest('.btn-inline-edit-art');
+            if (!editBtn) return;
+            e.preventDefault();
+            openArtEditModal(editBtn.getAttribute('data-issue-id'), parseInt(editBtn.getAttribute('data-art-idx')));
+        });
     </script>
+
 </body>
 </html>
 
