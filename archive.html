@@ -571,7 +571,9 @@
             } catch(e){}
 
             if (selectedIssue.articles && selectedIssue.articles.length > 0) {
-                selectedIssue.articles.forEach((article, artIdx) => {
+                // num 기준 오름차순 정렬
+                const sortedArticles = [...selectedIssue.articles].sort((a, b) => (parseInt(a.num)||0) - (parseInt(b.num)||0));
+                sortedArticles.forEach((article, artIdx) => {
                     const tr = document.createElement('tr');
                     tr.dataset.artIdx = artIdx;
                     tr.dataset.issueId = selectedIssue.id;
@@ -1274,7 +1276,7 @@
                         if (upRes && upRes.ok) artPdfUrl = upRes.pdfUrl;
                     } catch(e) { console.warn('논문 PDF 업로드 실패:', e); }
                 }
-                newArticles.push({ num: artCards.length - i, category: artCat, title: artTitle, enTitle: artEnTitle, author: artAuthor, pdf: artPdfUrl });
+                newArticles.push({ num: i + 1, category: artCat, title: artTitle, enTitle: artEnTitle, author: artAuthor, pdf: artPdfUrl });
             }
             updatedIssue.articles = newArticles;
 
@@ -1553,7 +1555,7 @@
                 const pdfInput = card.querySelector('.art-pdf-input');
                 const pdfFileObj = pdfInput && pdfInput.files && pdfInput.files[0] ? pdfInput.files[0] : null;
                 articles.push({
-                    num: articleCards.length - index,
+                    num: index + 1,
                     category: catInput,
                     title: titleInput,
                     enTitle: enTitle,
@@ -1676,7 +1678,7 @@
                         });
                         const artRes = await window.DB_uploadJournalPdf(
                             String(ho),
-                            `${fullTitle}_논문${articles.length - i}`,
+                            `${fullTitle}_논문${i + 1}`,
                             { base64: b64, name: art._pdfFile.name, mimeType: art._pdfFile.type || 'application/pdf' }
                         );
                         art.pdf = (artRes && artRes.ok) ? artRes.pdfUrl : '#';

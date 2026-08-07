@@ -397,7 +397,9 @@
             } catch(e){}
 
             if (selectedIssue.articles && selectedIssue.articles.length > 0) {
-                selectedIssue.articles.forEach((article, artIdx) => {
+                const sortedArticles = [...selectedIssue.articles].sort((a, b) => (parseInt(a.num)||0) - (parseInt(b.num)||0));
+                sortedArticles.forEach((article, artIdx) => {
+
                     const tr = document.createElement('tr');
                     tr.dataset.artIdx = artIdx;
                     tr.dataset.issueId = selectedIssue.id;
