@@ -571,8 +571,14 @@
             } catch(e){}
 
             if (selectedIssue.articles && selectedIssue.articles.length > 0) {
-                // num 기준 오름차순 정렬
-                const sortedArticles = [...selectedIssue.articles].sort((a, b) => (parseInt(a.num)||0) - (parseInt(b.num)||0));
+                // 정렬 우선순위: ① num 필드 ② 제목 앞 숫자(예: "1. ", "10. ") ③ 원래 순서
+                function extractSortNum(art) {
+                    if (art.num && parseInt(art.num) > 0) return parseInt(art.num);
+                    const m = (art.title || '').match(/^\s*(\d+)[.\s]/);
+                    if (m) return parseInt(m[1]);
+                    return 9999;
+                }
+                const sortedArticles = [...selectedIssue.articles].sort((a, b) => extractSortNum(a) - extractSortNum(b));
                 sortedArticles.forEach((article, artIdx) => {
                     const tr = document.createElement('tr');
                     tr.dataset.artIdx = artIdx;
