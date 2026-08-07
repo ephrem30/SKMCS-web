@@ -612,25 +612,103 @@
             }).join('');
         }
 
-        // Activities
-        const MOCK_ACTIVITIES = [
-            { badge: "학술대회", badgeColor: "var(--color-red)", title: "2026년 춘계 학술대회", date: "2026. 05. 15 (토)", location: "동국대학교 충무로영상센터", desc: "한국 전통음악의 현대적 계승과 새로운 방향 모색을 주제로 개최됩니다.", link: "activities.html?tab=conference" },
-            { badge: "연구모임", badgeColor: "var(--color-blue)", title: "정기 연구모임 – 6월", date: "2026. 06. 21 (토)", location: "동국대학교 문화관 세미나실", desc: "범패와 불교음악의 지역별 비교연구를 주제로 발표 및 토론을 진행합니다.", link: "activities.html?tab=seminar" },
-            { badge: "추계학술대회", badgeColor: "var(--color-green)", title: "2026년 추계 학술대회 (예정)", date: "2026. 11. 07 (토)", location: "서울시립대학교 (예정)", desc: "민속음악, 궁중음악, 창작국악 분야 연구자의 발표 신청을 받습니다.", link: "activities.html?tab=conference" }
+        // Activities – 실제 데이터 (activities.html과 공유하는 localStorage + 기본값)
+        const DEFAULT_CONFERENCES_MAIN = [
+            {
+                id: "conf_1",
+                badge: "종료",
+                badgeColor: "var(--bg-charcoal)",
+                title: "2026년 한국음악학회 춘계 학술대회",
+                date: "2026. 04. 25 (토) 13:00–18:00",
+                location: "동국대학교 문화관 학술회의실",
+                desc: "국악의 현대적 변용과 디지털 아카이빙을 주제로 기조 강연 및 5편의 연구 논문 발표가 진행되었습니다.",
+                link: "activities.html?tab=conference"
+            },
+            {
+                id: "conf_2",
+                badge: "접수중",
+                badgeColor: "var(--color-green)",
+                title: "2026년 한국음악학회 추계 전국학술대회",
+                date: "2026. 10. 24 (토) 10:00–18:00",
+                location: "국립국악원 우면당 및 세미나실",
+                desc: "동아시아 음악 교류사 속의 한국음악을 주제로 개최됩니다. 발표 초록 접수 마감: 2026년 8월 31일.",
+                link: "activities.html?tab=conference"
+            }
         ];
+
+        const DEFAULT_SEMINARS_MAIN = [
+            {
+                id: "default_1",
+                badge: "매월 운영",
+                badgeColor: "var(--color-blue)",
+                title: "국악 문헌 사료 강독 연구회",
+                date: "매월 둘째 주 금요일 18:30",
+                location: "비대면 Zoom 진행",
+                desc: "『악학궤범』, 『고려사』 악지 등 조선·고려 고문헌 사료의 번역 강독 및 현대적 해석 연구를 진행합니다.",
+                link: "activities.html?tab=seminar"
+            }
+        ];
+
+        function getBadgeColor(badge) {
+            if (badge === "접수중") return "var(--color-green)";
+            if (badge === "종료") return "var(--bg-charcoal)";
+            if (badge === "예정" || badge === "모집중") return "var(--color-yellow)";
+            if (badge === "매월 운영" || badge === "격월 운영") return "var(--color-blue)";
+            return "var(--color-red)";
+        }
 
         function renderMainActivities() {
             const grid = document.getElementById('main-activities-grid');
             if (!grid) return;
-            grid.innerHTML = MOCK_ACTIVITIES.map(act => `
+
+            // localStorage에서 실제 데이터 읽기 (activities.html과 공유)
+            let conferences = [];
+            let seminars = [];
+            try {
+                conferences = JSON.parse(localStorage.getItem("conference_activities") || "null") || DEFAULT_CONFERENCES_MAIN;
+                seminars = JSON.parse(localStorage.getItem("seminar_activities") || "null") || DEFAULT_SEMINARS_MAIN;
+            } catch(e) {
+                conferences = DEFAULT_CONFERENCES_MAIN;
+                seminars = DEFAULT_SEMINARS_MAIN;
+            }
+
+            // 학술대회 최신 2개 + 연구모임 1개 (총 3개 표시)
+            const confCards = conferences.slice(0, 2).map(c => ({
+                badge: c.badge || "학술대회",
+                badgeColor: getBadgeColor(c.badge),
+                title: c.title,
+                date: c.date || "",
+                location: c.place || c.location || "",
+                desc: c.theme ? `주제: ${c.theme}` : (c.desc || c.program || ""),
+                link: "activities.html?tab=conference"
+            }));
+
+            const seminarCards = seminars.slice(0, 1).map(s => ({
+                badge: s.badge || "연구모임",
+                badgeColor: getBadgeColor(s.badge),
+                title: s.title,
+                date: s.schedule || s.date || "",
+                location: s.organizer ? `담당: ${s.organizer.split('(')[0].trim()}` : (s.location || ""),
+                desc: s.purpose || s.desc || "",
+                link: "activities.html?tab=seminar"
+            }));
+
+            const allCards = [...confCards, ...seminarCards];
+
+            if (allCards.length === 0) {
+                grid.innerHTML = '<p style="color:var(--text-muted);padding:20px 0;">등록된 학술활동이 없습니다.</p>';
+                return;
+            }
+
+            grid.innerHTML = allCards.map(act => `
                 <a href="${act.link}" class="activity-card">
-                    <div class="activity-card-badge" style="background:${act.badgeColor};">${act.badge}</div>
-                    <div class="activity-card-title">${act.title}</div>
+                    <div class="activity-card-badge" style="background:${act.badgeColor};">${escapeHtml(act.badge)}</div>
+                    <div class="activity-card-title">${escapeHtml(act.title)}</div>
                     <div class="activity-card-meta">
-                        <span><i class="fa-solid fa-calendar"></i> ${act.date}</span>
-                        <span><i class="fa-solid fa-location-dot"></i> ${act.location}</span>
+                        ${act.date ? `<span><i class="fa-solid fa-calendar"></i> ${escapeHtml(act.date)}</span>` : ''}
+                        ${act.location ? `<span><i class="fa-solid fa-location-dot"></i> ${escapeHtml(act.location)}</span>` : ''}
                     </div>
-                    <div class="activity-card-desc">${act.desc}</div>
+                    <div class="activity-card-desc">${escapeHtml(act.desc)}</div>
                     <div class="activity-card-more">자세히 보기 <i class="fa-solid fa-arrow-right"></i></div>
                 </a>`).join('');
         }
