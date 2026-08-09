@@ -4874,6 +4874,7 @@ i.fa-angle-right:not(.divider) {
     gap: 32px;
     margin-top: 40px;
     align-items: flex-start;
+    max-width: 66.67%;
 }
 
 .news-board-wrap {
