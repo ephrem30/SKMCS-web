@@ -5204,6 +5204,12 @@ i.fa-angle-right:not(.divider) {
     margin-top: 50px;
 }
 
+/* Latest papers – aligned to the right side */
+.home-section--right {
+    margin-left: auto;
+    width: 66.67%;
+}
+
 .home-section-header {
     display: flex;
     justify-content: space-between;
@@ -5583,6 +5589,10 @@ i.fa-angle-right:not(.divider) {
     }
     .quick-service-section {
         grid-template-columns: repeat(2, 1fr);
+    }
+    .home-section--right {
+        width: 100%;
+        margin-left: 0;
     }
 }
 
