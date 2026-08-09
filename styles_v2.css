@@ -258,8 +258,8 @@ a {
 
 .sub-text {
     position: absolute;
-    bottom: -10px; /* Brought closer to Korean menu text */
-    font-size: 0.75rem; /* Increased readability */
+    top: 4px; /* Just below the hover-bar at the top */
+    font-size: 0.75rem;
     color: var(--bg-slate);
     font-family: 'Poppins', sans-serif;
     font-weight: 500;
