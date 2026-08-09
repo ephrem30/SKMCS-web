@@ -5018,7 +5018,6 @@ i.fa-angle-right:not(.divider) {
     gap: 32px;
     margin-top: 40px;
     align-items: flex-start;
-    max-width: 66.67%;
 }
 
 .news-board-wrap {
@@ -5204,9 +5203,8 @@ i.fa-angle-right:not(.divider) {
     margin-top: 50px;
 }
 
-/* Latest papers – aligned to the right side */
+/* Latest papers – left-aligned, constrained width */
 .home-section--right {
-    margin-left: auto;
     width: 66.67%;
 }
 
