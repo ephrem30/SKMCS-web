@@ -156,34 +156,54 @@
                 <div class="banner-bg"></div>
 
                 <div class="container banner-inner">
-                    <div class="banner-content">
-                        <!-- Left text box -->
-                        <div class="banner-text-box input-bg">
-                            <span class="vol-issue" id="banner-vol-issue">제7호</span>
-                            <h2 id="banner-vol-title">한국음악학회지 『한국음악문화』<br>제7호 발간</h2>
-                            <p class="banner-desc" id="banner-vol-desc">새로운 시대의 한국 음악 연구,<br>전통과 현대를 아우르는 다양한 학술적 논의를 담았습니다.</p>                            <!-- Action Buttons -->
-                            <div class="banner-actions">
-                                <a href="issue.html" class="btn-primary"><span>최신호 목차보기</span> <i
-                                        class="fa-solid fa-arrow-right"></i></a>
+                    <div class="banner-split-layout">
+
+                        <!-- Left 2/3: Banner Content -->
+                        <div class="banner-main-area">
+                            <div class="banner-content">
+                                <!-- Left text box -->
+                                <div class="banner-text-box input-bg">
+                                    <span class="vol-issue" id="banner-vol-issue">제7호</span>
+                                    <h2 id="banner-vol-title">한국음악학회지 『한국음악문화』<br>제7호 발간</h2>
+                                    <p class="banner-desc" id="banner-vol-desc">새로운 시대의 한국 음악 연구,<br>전통과 현대를 아우르는 다양한 학술적 논의를 담았습니다.</p>
+                                    <div class="banner-actions">
+                                        <a href="issue.html" class="btn-primary"><span>최신호 목차보기</span> <i class="fa-solid fa-arrow-right"></i></a>
+                                    </div>
+                                </div>
+
+                                <!-- Right Cover Image -->
+                                <div class="banner-cover-box hidden-mobile">
+                                    <div class="banner-area">
+                                        <div class="banner-card cover-banner">
+                                            <img src="cover.png" alt="한국음악학회지 최신호 표지" class="cover-image" id="banner-cover-img">
+                                        </div>
+                                        <div class="banner-info">
+                                            <strong>최신호</strong>
+                                            <span class="date" id="banner-info-date">제7호 (2025. 12.)</span>
+                                        </div>
+                                        <div class="banner-actions">
+                                            <a href="issue.html" class="btn-solid">목차보기</a>
+                                            <a href="submission.html" class="btn-outline">학회지 보기</a>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Right Cover Image Placeholder -->
-                        <div class="banner-cover-box hidden-mobile">
-                            <div class="banner-area">
-                                <div class="banner-card cover-banner">
-                                    <img src="cover.png" alt="한국음악학회지 최신호 표지" class="cover-image" id="banner-cover-img">
+                        <!-- Right 1/3: Latest News Panel -->
+                        <div class="banner-news-panel hidden-mobile">
+                            <div class="bnp-header">
+                                <div class="bnp-tabs">
+                                    <button class="bnp-tab active" onclick="switchBnpTab('notice', this)"><i class="fa-solid fa-bullhorn"></i> 공지사항</button>
+                                    <button class="bnp-tab" onclick="switchBnpTab('freeboard', this)"><i class="fa-solid fa-comments"></i> 자유게시판</button>
                                 </div>
-                                <div class="banner-info">
-                                    <strong>최신호</strong>
-                                    <span class="date" id="banner-info-date">제7호 (2025. 12.)</span>
-                                </div>
-                                <div class="banner-actions">
-                                    <a href="issue.html" class="btn-solid">목차보기</a>
-                                    <a href="submission.html" class="btn-outline">학회지 보기</a>
-                                </div>
+                                <a href="news.html" class="bnp-more">더보기 <i class="fa-solid fa-arrow-right"></i></a>
                             </div>
+                            <ul class="bnp-list" id="bnp-list">
+                                <li class="bnp-loading"><i class="fa-solid fa-spinner fa-spin"></i> 로딩 중...</li>
+                            </ul>
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -448,6 +468,7 @@
         }
 
         renderMainNotices();
+        renderBnpNotices();
         // renderMainActivities and renderMainPapers are called at the end after definitions
 
 
@@ -544,6 +565,55 @@
         function escapeHtml(text) {
             if (typeof text !== "string") return text;
             return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        // Banner News Panel Tab switching
+        var currentBnpTab = 'notice';
+        function switchBnpTab(tab, btn) {
+            currentBnpTab = tab;
+            document.querySelectorAll('.bnp-tab').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            tab === 'notice' ? renderBnpNotices() : renderBnpFreeboard();
+        }
+
+        function renderBnpNotices() {
+            const notices = JSON.parse(localStorage.getItem("notice_posts") || "[]");
+            const list = document.getElementById('bnp-list');
+            if (!list) return;
+            notices.sort((a, b) => b.id - a.id);
+            const latest = notices.slice(0, 6);
+            if (latest.length === 0) {
+                list.innerHTML = '<li class="bnp-empty">등록된 공지사항이 없습니다.</li>';
+                return;
+            }
+            list.innerHTML = latest.map(post => {
+                const parts = (post.date || "2026. 01. 01").split(/[\s.-]+/);
+                const month = parts[1] || "01", day = parts[2] || "01";
+                return `<li onclick="location.href='news.html?tab=notice&id=${post.id}'">
+                    <span class="bnp-date">${month}/${day}</span>
+                    <span class="bnp-title">${escapeHtml(post.title)}</span>
+                </li>`;
+            }).join('');
+        }
+
+        function renderBnpFreeboard() {
+            const freeboard = JSON.parse(localStorage.getItem("freeboard_posts") || "[]");
+            const list = document.getElementById('bnp-list');
+            if (!list) return;
+            freeboard.sort((a, b) => b.id - a.id);
+            const latest = freeboard.slice(0, 6);
+            if (latest.length === 0) {
+                list.innerHTML = '<li class="bnp-empty">등록된 게시글이 없습니다.</li>';
+                return;
+            }
+            list.innerHTML = latest.map(post => {
+                const parts = (post.date || "2026. 01. 01").split(/[\s.-]+/);
+                const month = parts[1] || "01", day = parts[2] || "01";
+                return `<li onclick="location.href='news.html?tab=freeboard&id=${post.id}'">
+                    <span class="bnp-date">${month}/${day}</span>
+                    <span class="bnp-title">${escapeHtml(post.title)}</span>
+                </li>`;
+            }).join('');
         }
 
         // Tab switching
