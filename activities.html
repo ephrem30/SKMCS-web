@@ -8,7 +8,7 @@
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>한국음악학회 - 학술활동</title>
-    <link rel="stylesheet" href="styles_v2.css?v=20260810215734">
+    <link rel="stylesheet" href="styles_v2.css?v=20260810231053">
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -125,26 +125,58 @@
             font-size: 0.9rem;
             color: var(--text-muted);
             font-weight: 500;
+            text-align: center;
+            padding: 8px 0;
+        }
+
+        .btn-locked-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 14px;
         }
 
         .btn-locked-login {
-            margin-top: 12px;
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 6px 16px;
-            font-size: 0.8rem;
+            padding: 9px 20px;
+            font-size: 0.82rem;
             font-weight: 700;
+            background-color: var(--color-green);
+            color: white;
             border: 1px solid var(--color-green);
-            color: var(--color-green);
-            background: white;
             border-radius: 4px;
             text-decoration: none;
-            transition: all 0.2s ease;
+            transition: background-color 0.2s;
+            letter-spacing: 0.01em;
         }
 
         .btn-locked-login:hover {
-            background: var(--color-green);
+            background-color: #216d63;
+            border-color: #216d63;
+            color: white;
+        }
+
+        .btn-locked-register {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 20px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            background-color: white;
+            color: var(--color-red);
+            border: 1px solid var(--color-red);
+            border-radius: 4px;
+            text-decoration: none;
+            transition: background-color 0.2s, color 0.2s;
+            letter-spacing: 0.01em;
+        }
+
+        .btn-locked-register:hover {
+            background-color: var(--color-red);
             color: white;
         }
 
@@ -784,7 +816,7 @@
         </div>
     </div>
 
-    <script src="share.js?v=20260810215734"></script>
+    <script src="share.js?v=20260810231053"></script>
     <script>
         // ============================================================
         // 구버전 localStorage 데이터 정리 (GAS 전환 마이그레이션)
@@ -1034,10 +1066,15 @@
                         <div class="activity-details-locked">
                             <div class="locked-message">
                                 <i class="fa-solid fa-lock" style="color: var(--color-green); margin-bottom: 8px; font-size: 1.2rem;"></i>
-                                <span>정회원 이상 상세 내용을 열람하실 수 있습니다. 로그인 후 확인해 주세요.</span>
-                                <a href="login.html" class="btn-locked-login">
-                                    <i class="fa-solid fa-right-to-bracket"></i> 로그인하기
-                                </a>
+                                <span>정회원 이상 상세 내용을 열람하실 수 있습니다.</span>
+                                <div class="btn-locked-actions">
+                                    <a href="login.html" class="btn-locked-login">
+                                        <i class="fa-solid fa-right-to-bracket"></i> 로그인
+                                    </a>
+                                    <a href="register.html" class="btn-locked-register">
+                                        <i class="fa-solid fa-user-plus"></i> 회원가입
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -1276,10 +1313,15 @@
                         <div class="activity-details-locked">
                             <div class="locked-message">
                                 <i class="fa-solid fa-lock" style="color: var(--color-red); margin-bottom: 8px; font-size: 1.2rem;"></i>
-                                <span>정회원 이상 상세 내용을 열람하실 수 있습니다. 로그인 후 확인해 주세요.</span>
-                                <a href="login.html" class="btn-locked-login">
-                                    <i class="fa-solid fa-right-to-bracket"></i> 로그인하기
-                                </a>
+                                <span>정회원 이상 상세 내용을 열람하실 수 있습니다.</span>
+                                <div class="btn-locked-actions">
+                                    <a href="login.html" class="btn-locked-login">
+                                        <i class="fa-solid fa-right-to-bracket"></i> 로그인
+                                    </a>
+                                    <a href="register.html" class="btn-locked-register">
+                                        <i class="fa-solid fa-user-plus"></i> 회원가입
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     `;
