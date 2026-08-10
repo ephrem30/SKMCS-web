@@ -794,13 +794,11 @@
 <script src="db.js?v=20260810173258"></script>
 <script src="share.js?v=20260810173258"></script>
 <script>
-// ── 데이터 ──────────────────────────────────────────────────
-const SA_KEY = "seminar_archive_db";
-const SAMPLE = [
-    { id:"sa_1", title:"제12회 정기세미나 — 판소리 사설의 구비문학적 특성", seminar_type:"정기세미나", date:"2025-11-08", location:"동국대학교 문화관 3층 세미나실", presenter:"이상은 교수 (한국예술종합학교)", moderator:"김영재 교수 (동국대학교)", summary:"본 세미나는 판소리 사설에 나타난 구비문학적 특성을 다각도로 분석하였다. 발제자는 조선후기 판소리 여섯 마당의 사설 구조를 통시적으로 검토하고, 민담·설화와의 상호텍스트성을 규명하였다. 참석자들은 판소리의 현대적 재해석과 공연 예술로서의 가능성에 대해 심도 있는 토론을 이어갔다.", attachment_file:"#", photos:[], year:2025 },
-    { id:"sa_2", title:"특별세미나: 국악 디지털 아카이빙의 현황과 과제", seminar_type:"특별세미나", date:"2025-06-14", location:"국립국악원 풍류사랑방", presenter:"박진우 박사 (국립국악원)", moderator:"윤소희 박사 (서울대학교)", summary:"디지털 기술의 급격한 발전이 전통음악 기록 및 보존 방식에 가져온 변화를 집중 조명하였다. 음향 아카이빙 표준화 문제, 메타데이터 구축 방안, 그리고 AI 기반 분류 시스템 도입 가능성에 대해 발표가 이루어졌으며, 현장 종사자들과 학자들 간의 활발한 토론이 진행되었다.", attachment_file:"#", photos:[], year:2025 },
-    { id:"sa_3", title:"기획세미나: 동아시아 음악 교류의 역사적 맥락", seminar_type:"기획세미나", date:"2024-09-28", location:"예술의전당 음악아카데미 강의실", presenter:"정지훈 교수 (한양대학교), 야마모토 켄지 교수 (도쿄대학)", moderator:"박소연 박사", summary:"한·중·일 세 나라의 전통 음악 간 교류 양상을 비교 연구한 결과를 발표하였다. 특히 고려 아악의 대성악 수용 과정과 일본 아악의 전래 경로를 비교하며, 동아시아 음악 문화권의 공통성과 차별성을 논의하였다.", attachment_file:"", photos:[], year:2024 }
-];
+// ── 세미나 아카이브 — GAS 완전 연동 ─────────────────────────
+// 테스트 샘플 데이터 없음. 관리자가 GAS 시트에 직접 등록.
+
+// 구버전 localStorage 완전 삭제
+localStorage.removeItem('seminar_archive_db');
 
 const ADMIN_ROLES_SA = ['admin', 'secretary', 'editor', 'president'];
 function getAdminStatus() {
@@ -811,10 +809,8 @@ function getAdminStatus() {
 }
 let isAdmin = getAdminStatus();
 let editingId = null;
+let _cachedRecords = []; // GAS에서 로드한 데이터 캐시
 
-function initDB() { if (!localStorage.getItem(SA_KEY)) localStorage.setItem(SA_KEY, JSON.stringify(SAMPLE)); }
-function getAll() { return JSON.parse(localStorage.getItem(SA_KEY) || "[]"); }
-function save(records) { localStorage.setItem(SA_KEY, JSON.stringify(records)); }
 function escHtml(s) { return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 
 const TYPE_MAP = {
@@ -824,6 +820,19 @@ const TYPE_MAP = {
     "기타":       { badgeCls:"badge-other",    topCls:"type-other",    label:"기타" },
 };
 
+// ── GAS 로드 및 렌더 ─────────────────────────────────────────
+async function loadAndRender() {
+    const list = document.getElementById("sa-list");
+    if (list) list.innerHTML = `<div class="empty-state"><i class="fa-solid fa-spinner fa-spin" style="font-size:2rem;"></i><p>불러오는 중...</p></div>`;
+    try {
+        _cachedRecords = await window.DB_getSeminarArchive();
+    } catch(e) {
+        if (list) list.innerHTML = `<div class="empty-state"><p>데이터를 불러오지 못했습니다.<br><small>${e.message}</small></p><p style="margin-top:8px;font-size:.8rem;color:var(--text-muted)">GAS가 재배포되지 않았거나 네트워크 오류입니다.</p></div>`;
+        return;
+    }
+    render();
+}
+
 // ── 렌더 ────────────────────────────────────────────────────
 function render() {
     const q    = document.getElementById("f-search").value.toLowerCase();
@@ -831,7 +840,7 @@ function render() {
     const type = document.getElementById("f-type").value;
     const list = document.getElementById("sa-list");
 
-    let records = getAll().sort((a,b) => new Date(b.date) - new Date(a.date));
+    let records = [..._cachedRecords].sort((a,b) => new Date(b.date) - new Date(a.date));
 
     // 연도 드롭다운 채우기
     const yearSel = document.getElementById("f-year");
@@ -1009,10 +1018,12 @@ function setProgress(show, label, pct) {
 }
 
 // ── CRUD ─────────────────────────────────────────────────────
-window.deleteSA = function(id) {
+window.deleteSA = async function(id) {
     if (!isAdmin || !confirm('이 세미나 기록을 삭제하시겠습니까?')) return;
-    save(getAll().filter(r => r.id !== id));
-    render();
+    try {
+        await window.DB_deleteSeminarArchive(id);
+        await loadAndRender();
+    } catch(e) { alert('삭제 실패: ' + e.message); }
 };
 
 // ── 학회소식 공유 ─────────────────────────────────────────────
@@ -1064,7 +1075,7 @@ window.shareArchiveToNews = function(id) {
 };
 
 window.openEdit = function(id) {
-    const r = getAll().find(r => r.id === id);
+    const r = _cachedRecords.find(r => r.id === id);
     if (!r) return;
     editingId = id;
     document.getElementById('f-title').value        = r.title || '';
@@ -1160,7 +1171,7 @@ window.handleSubmit = async function(e) {
         }
     }
 
-    // ── localStorage 저장 ──
+    // ── GAS 저장 ──
     const rec = {
         id:              editingId || ('sa_' + Date.now()),
         title,
@@ -1175,14 +1186,21 @@ window.handleSubmit = async function(e) {
         photos:          finalPhotoUrls,
     };
 
-    let records = getAll();
-    if (editingId) {
-        const i = records.findIndex(r => r.id === editingId);
-        if (i !== -1) records[i] = rec;
-    } else {
-        records.unshift(rec);
+    try {
+        setProgress(true, 'GAS에 저장 중...', 90);
+        if (editingId) {
+            await window.DB_updateSeminarArchive(editingId, rec);
+        } else {
+            await window.DB_addSeminarArchive(rec);
+        }
+    } catch(err) {
+        setProgress(false);
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<i data-lucide="save" style="width:14px;height:14px;"></i> 저장하기';
+        lucide.createIcons();
+        alert('저장 실패: ' + err.message);
+        return;
     }
-    save(records);
 
     setProgress(false);
     saveBtn.disabled = false;
@@ -1190,7 +1208,7 @@ window.handleSubmit = async function(e) {
     lucide.createIcons();
 
     closeModal();
-    render();
+    await loadAndRender();
     alert(editingId ? '✅ 수정되었습니다.' : '✅ 등록되었습니다.');
 };
 
@@ -1209,7 +1227,8 @@ function closeModal() {
 
 // ── 이벤트 바인딩 ─────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-    initDB();
+    // initDB() 제거 — GAS에서 로드
+    localStorage.removeItem('seminar_archive_db');
     setupPhotoDropzone();
     setupPdfInput();
     // 관리자만 admin-bar 표시
@@ -1237,7 +1256,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.target === document.getElementById('sa-modal')) closeModal();
     });
 
-    render();
+    loadAndRender();
     lucide.createIcons();
 });
 </script>
