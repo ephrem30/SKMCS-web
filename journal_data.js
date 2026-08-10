@@ -59,10 +59,10 @@ const defaultMockJournals = [
 
 // Initialize in localStorage if not exists
 // ★ 버전을 올리면 기존 localStorage 데이터를 강제 초기화합니다.
-const JOURNAL_DB_VERSION = "2";  // 제5권→제7호 변경 시 버전업
+const JOURNAL_DB_VERSION = "3";  // 6호 오류 캐시 강제 삭제
 
 const storedVersion = localStorage.getItem("journal_db_version");
-if (!localStorage.getItem("journal_db") || storedVersion !== JOURNAL_DB_VERSION) {
+if (!localStorage.getItem("journal_db") || (storedVersion !== JOURNAL_DB_VERSION && storedVersion !== "sheets")) {
     localStorage.setItem("journal_db", JSON.stringify(defaultMockJournals));
     localStorage.setItem("journal_db_version", JOURNAL_DB_VERSION);
 }

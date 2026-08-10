@@ -8,7 +8,7 @@
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>한국음악학회 - SKMCS</title>
-    <link rel="stylesheet" href="styles_v2.css?v=20260810231054">
+    <link rel="stylesheet" href="styles_v2.css?v=20260810233309">
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
@@ -419,42 +419,64 @@
             </div>
         </footer>
     </div>
-    <script src="db.js?v=20260810231054"></script>
-    <script src="journal_data.js?v=20260810231054"></script>
+    <script src="db.js?v=20260810233309"></script>
+    <script src="journal_data.js?v=20260810233309"></script>
     <script>
-        // Load latest issue from journalData
-        const latestIssue = journalData[0];
+        // ── 최신호 배너 업데이트 함수 ──
+        function updateLatestIssueBanner(issue) {
+            if (!issue) return;
+            document.getElementById('banner-vol-issue').textContent = issue.title;
+            document.getElementById('banner-vol-title').innerHTML = `한국음악학회지 『한국음악문화』<br>${issue.title} 발간`;
+            document.getElementById('banner-vol-desc').textContent = issue.desc;
 
-        // Update top-left banner text
-        document.getElementById('banner-vol-issue').textContent = latestIssue.title;
-        document.getElementById('banner-vol-title').innerHTML = `한국음악학회지 『한국음악문화』<br>${latestIssue.title} 발간`;
-        document.getElementById('banner-vol-desc').textContent = latestIssue.desc;
+            const topCover = document.getElementById('banner-cover-img');
+            if (topCover) {
+                topCover.src = issue.cover;
+                topCover.alt = `한국음악학회지 ${issue.title} 표지`;
+            }
+            const bannerInfoDate = document.getElementById('banner-info-date');
+            if (bannerInfoDate) {
+                bannerInfoDate.textContent = issue.bannerInfo || issue.title;
+            }
 
-        // Update top-right card cover & info
-        const topCover = document.getElementById('banner-cover-img');
-        if (topCover) {
-            topCover.src = latestIssue.cover;
-            topCover.alt = `한국음악학회지 ${latestIssue.title} 표지`;
-        }
-        const bannerInfoDate = document.getElementById('banner-info-date');
-        if (bannerInfoDate) {
-            bannerInfoDate.textContent = latestIssue.bannerInfo || latestIssue.title;
+            const bottomCover = document.getElementById('bottom-cover-img');
+            if (bottomCover) {
+                bottomCover.src = issue.cover;
+                bottomCover.alt = `${issue.title} 표지`;
+            }
+            const bottomCoverDate = document.getElementById('bottom-cover-date');
+            if (bottomCoverDate) {
+                bottomCoverDate.textContent = `${issue.date} 발행`;
+            }
+            const bottomCoverTitle = document.getElementById('bottom-cover-title');
+            if (bottomCoverTitle) {
+                bottomCoverTitle.textContent = issue.fullTitle || issue.title;
+            }
         }
 
-        // Update journal cover panel
-        const bottomCover = document.getElementById('bottom-cover-img');
-        if (bottomCover) {
-            bottomCover.src = latestIssue.cover;
-            bottomCover.alt = `${latestIssue.title} 표지`;
-        }
-        const bottomCoverDate = document.getElementById('bottom-cover-date');
-        if (bottomCoverDate) {
-            bottomCoverDate.textContent = `${latestIssue.date} 발행`;
-        }
-        const bottomCoverTitle = document.getElementById('bottom-cover-title');
-        if (bottomCoverTitle) {
-            bottomCoverTitle.textContent = latestIssue.fullTitle || latestIssue.title;
-        }
+        // 1단계: localStorage 기본값으로 즉시 렌더
+        updateLatestIssueBanner(journalData[0]);
+
+        // 2단계: GAS에서 최신 데이터 비동기 로드 후 배너 업데이트 (최신호 정확히 반영)
+        (async function loadLatestFromGAS() {
+            try {
+                const dbData = await window.DB_getJournals();
+                if (dbData && dbData.length > 0) {
+                    // tonggwon 기준 내림차순 정렬 (DB_getJournals가 이미 정렬하지만 확실히)
+                    dbData.sort((a, b) => parseInt(b.tonggwon || 0) - parseInt(a.tonggwon || 0));
+                    // localStorage 업데이트
+                    localStorage.setItem("journal_db", JSON.stringify(dbData));
+                    localStorage.setItem("journal_db_version", "sheets");
+                    // journalData 전역 배열도 갱신
+                    journalData.length = 0;
+                    dbData.forEach(d => journalData.push(d));
+                    // 배너 최신호로 업데이트
+                    updateLatestIssueBanner(dbData[0]);
+                }
+            } catch(e) {
+                console.warn('GAS 최신호 로드 실패, 로컬 데이터 유지:', e.message);
+            }
+        })();
 
         // localStorage 구버전 샘플 데이터 완전 제거
         // (notice_posts, freeboard_posts는 매번 삭제 — GAS로 전환)
@@ -829,7 +851,7 @@
 
         // Storage listener 제거 (localStorage 미사용)
     </script>
-    <script src="share.js?v=20260810231054"></script>
+    <script src="share.js?v=20260810233309"></script>
 </body>
 
 </html>

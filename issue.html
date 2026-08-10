@@ -8,7 +8,7 @@
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>한국음악학회 - 최신호</title>
-    <link rel="stylesheet" href="styles_v2.css?v=20260810231054">
+    <link rel="stylesheet" href="styles_v2.css?v=20260810233309">
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
@@ -345,15 +345,17 @@
         </footer>
     </div>
 
-    <script src="share.js?v=20260810231054"></script>
-    <script src="db.js?v=20260810231054"></script>
-    <script src="journal_data.js?v=20260810231054"></script>
+    <script src="share.js?v=20260810233309"></script>
+    <script src="db.js?v=20260810233309"></script>
+    <script src="journal_data.js?v=20260810233309"></script>
     <script>
                    async function initIssuePage() {
             // Sheets에서 데이터 로드
             try {
                 const dbData = await window.DB_getJournals();
                 if (dbData && dbData.length > 0) {
+                    // 통권호 내림차순 정렬 → [0]이 항상 최신호
+                    dbData.sort((a, b) => parseInt(b.tonggwon || 0) - parseInt(a.tonggwon || 0));
                     journalData = dbData;
                     localStorage.setItem("journal_db", JSON.stringify(dbData));
                     localStorage.setItem("journal_db_version", "sheets");
