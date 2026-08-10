@@ -11,8 +11,11 @@
 // 2. Global Helpers for Special Admin & Database Reset
 window.isSpecialAdmin = function(user) {
     if (!user) return false;
-    return user.email.toLowerCase() === 'admin@gmail.com' || user.name === '최우창';
+    // 특별 관리자: 이메일 또는 실명으로 판별
+    const SPECIAL_NAMES = ['최우창', '박세라', '윤소희'];
+    return user.email.toLowerCase() === 'admin@gmail.com' || SPECIAL_NAMES.includes(user.name);
 };
+
 
 window.resetSystemDatabase = function() {
     const defaultMockUsers = [
@@ -175,9 +178,13 @@ document.addEventListener("DOMContentLoaded", () => {
             // Dynamic Admin/Reviewer Menu Injection
             const ALL_AUTHORIZED_ROLES = ["admin", "secretary", "reviewer", "editor", "president"];
             const ADMIN_ROLES = ["admin", "secretary", "editor", "president"];
+            // 이름 기반 특별 권한 (박세라, 최우창: 간사 / 윤소희: 편집위원장)
+            const NAMED_WRITE_USERS = ['박세라', '최우창', '윤소희'];
+            const isNamedAdmin = user && NAMED_WRITE_USERS.includes(user.name);
             
-            if (user && ALL_AUTHORIZED_ROLES.includes(user.role)) {
-                const isAdmin = ADMIN_ROLES.includes(user.role);
+            if (user && (ALL_AUTHORIZED_ROLES.includes(user.role) || isNamedAdmin)) {
+                const isAdmin = ADMIN_ROLES.includes(user.role) || isNamedAdmin;
+
                 const mainNavUl = document.querySelector(".main-nav > ul");
                 
                 // 1. Top Navigation Bar: append appropriate menu
