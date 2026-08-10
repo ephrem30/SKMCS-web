@@ -45,9 +45,6 @@
 */
 
 document.addEventListener("DOMContentLoaded", () => {
-    // Initialize State & Storage
-    initStorage();
-
     // Tab Router & UI Initialization
     initRouter();
 
@@ -530,7 +527,6 @@ async function renderSeminarNews() {
     const start     = (seminarNewsPage - 1) * SN_ITEMS_PER_PAGE;
     const paginated = sorted.slice(start, start + SN_ITEMS_PER_PAGE);
 
-    const grid = document.getElementById("seminar-news-grid");
     if (!grid) return;
 
     if (paginated.length === 0) {
