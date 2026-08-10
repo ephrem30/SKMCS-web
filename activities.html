@@ -791,7 +791,7 @@
         // 어떤 브라우저에서도 한 번만 실행 → 테스트 데이터 완전 삭제
         // ============================================================
         (function() {
-            const MIGRATION_KEY = 'skmcs_activities_migration_v3';
+            const MIGRATION_KEY = 'skmcs_activities_migration_v4';
             if (localStorage.getItem(MIGRATION_KEY)) return;
             [
                 'seminar_activities',
@@ -799,8 +799,10 @@
                 'past_seminar_activities',
                 'seminar_archive_db',
             ].forEach(k => localStorage.removeItem(k));
+            // 이전 마이그레이션 키도 정리
+            ['skmcs_activities_migration_v3', 'skmcs_activities_migration_v2'].forEach(k => localStorage.removeItem(k));
             localStorage.setItem(MIGRATION_KEY, '1');
-            console.log('[Migration v3] activities localStorage 데이터 정리 완료');
+            console.log('[Migration v4] activities localStorage 데이터 정리 완료');
         })();
         // Tab switching logic for activities page
         document.addEventListener("DOMContentLoaded", async () => {
@@ -1555,11 +1557,7 @@
         //  세미나 아카이브 (Archive Tab) JS
         // ═══════════════════════════════════════════════
         const SA_KEY = "seminar_archive_db";
-        const SA_SAMPLE = [
-            { id:"sa_1", title:"제12회 정기세미나 — 판소리 사설의 구비문학적 특성", seminar_type:"정기세미나", date:"2025-11-08", location:"동국대학교 문화관 3층 세미나실", presenter:"이상은 교수 (한국예술종합학교)", moderator:"김영재 교수 (동국대학교)", summary:"판소리 사설에 나타난 구비문학적 특성을 다각도로 분석하였다. 조선후기 판소리 여섯 마당의 사설 구조를 통시적으로 검토하고, 민담·설화와의 상호텍스트성을 규명하였다.", attachment_file:"#", photos:[], year:2025 },
-            { id:"sa_2", title:"특별세미나: 국악 디지털 아카이빙의 현황과 과제", seminar_type:"특별세미나", date:"2025-06-14", location:"국립국악원 풍류사랑방", presenter:"박진우 박사 (국립국악원)", moderator:"윤소희 박사 (서울대학교)", summary:"디지털 기술의 발전이 전통음악 기록 및 보존 방식에 가져온 변화를 집중 조명하였다. 음향 아카이빙 표준화 문제, 메타데이터 구축 방안에 대해 발표가 이루어졌다.", attachment_file:"", photos:[], year:2025 },
-            { id:"sa_3", title:"기획세미나: 동아시아 음악 교류의 역사적 맥락", seminar_type:"기획세미나", date:"2024-09-28", location:"예술의전당 음악아카데미 강의실", presenter:"정지훈 교수 (한양대학교), 야마모토 켄지 교수 (도쿄대학)", moderator:"박소연 박사", summary:"한·중·일 세 나라의 전통 음악 간 교류 양상을 비교 연구한 결과를 발표하였다. 고려 아악의 대성악 수용 과정과 일본 아악의 전래 경로를 비교하며, 동아시아 음악 문화권의 공통성과 차별성을 논의하였다.", attachment_file:"", photos:[], year:2024 }
-        ];
+        // 테스트 샘플 데이터 제거 — 관리자가 직접 등록
 
         const SA_TYPE_MAP = {
             "정기세미나": { top:"", badge:"sa-badge-regular" },
@@ -1571,38 +1569,8 @@
         let archiveEditingId = null;
 
         function initArchiveDB() {
-            // 기존 seminar_archive_db가 없으면 샘플로 초기화
-            if (!localStorage.getItem(SA_KEY)) {
-                localStorage.setItem(SA_KEY, JSON.stringify(SA_SAMPLE));
-            }
-            // past_seminar_activities 데이터 자동 마이그레이션
-            const pastRaw = localStorage.getItem("past_seminar_activities");
-            if (pastRaw) {
-                try {
-                    const pastData = JSON.parse(pastRaw);
-                    const current = getAllArchive();
-                    const currentIds = new Set(current.map(r => r.id));
-                    const migrated = pastData
-                        .filter(p => !currentIds.has(p.id))
-                        .map(p => ({
-                            id: p.id,
-                            title: p.title || "",
-                            seminar_type: p.category === "연구모임" ? "기타" : p.category === "워크숍" ? "기획세미나" : "정기세미나",
-                            date: p.date || "",
-                            year: parseInt((p.date||"").slice(0,4)) || 2024,
-                            location: p.place || "",
-                            presenter: p.presenter || "",
-                            moderator: "",
-                            summary: [p.theme, p.notes].filter(Boolean).join("\n\n") || "",
-                            attachment_file: "",
-                            photos: [],
-                        }));
-                    if (migrated.length > 0) {
-                        saveArchive([...current, ...migrated]);
-                        localStorage.removeItem("past_seminar_activities");
-                    }
-                } catch(e) { console.warn("마이그레이션 실패:", e); }
-            }
+            // 기본 데이터 없음 — localStorage가 비어있어도 빈 상태로 시작
+            // (SA_SAMPLE 자동 주입 완전 제거)
         }
 
         function getAllArchive() { return JSON.parse(localStorage.getItem(SA_KEY) || "[]"); }
