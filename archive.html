@@ -8,7 +8,7 @@
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>한국음악학회 - 지난호</title>
-    <link rel="stylesheet" href="styles_v2.css?v=20260810233310">
+    <link rel="stylesheet" href="styles_v2.css?v=20260810234933">
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -523,9 +523,9 @@
         </footer>
     </div>
 
-    <script src="share.js?v=20260810233310"></script>
-    <script src="db.js?v=20260810233310"></script>
-    <script src="journal_data.js?v=20260810233310"></script>
+    <script src="share.js?v=20260810234933"></script>
+    <script src="db.js?v=20260810234933"></script>
+    <script src="journal_data.js?v=20260810234933"></script>
     <script>
         const selectEl = document.getElementById('archive-select');
         
@@ -996,20 +996,15 @@
 
             try {
                 const dbData = await window.DB_getJournals();
-                if (dbData && dbData.length > 0) {
-                    // Sheets 데이터를 localStorage에 캐시로 저장 (버전 업보)
-                    localStorage.setItem("journal_db", JSON.stringify(dbData));
-                    localStorage.setItem("journal_db_version", "sheets");
-                    journalData = dbData;
-                } else {
-                    // Sheets가 비어있으면 localStorage fallback
-                    journalData = JSON.parse(localStorage.getItem("journal_db") || "[]");
-                    if (!journalData.length) journalData = defaultMockJournals;
-                }
+                // GAS 데이터와 로컬 기본 데이터 병합 → 7호 누락 방지
+                const merged = window.mergeJournals(dbData || []);
+                localStorage.setItem("journal_db", JSON.stringify(merged));
+                localStorage.setItem("journal_db_version", "sheets");
+                journalData = merged;
             } catch (err) {
                 console.warn("Sheets 로드 실패, localStorage fallback:", err);
-                journalData = JSON.parse(localStorage.getItem("journal_db") || "[]");
-                if (!journalData.length) journalData = defaultMockJournals;
+                // fallback도 mergeJournals로 7호 보장
+                journalData = window.mergeJournals(journalData);
             }
 
             populateDropdown();

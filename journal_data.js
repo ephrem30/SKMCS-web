@@ -57,40 +57,64 @@ const defaultMockJournals = [
     }
 ];
 
-// Initialize in localStorage if not exists
-// ★ 버전을 올리면 기존 localStorage 데이터를 강제 초기화합니다.
-const JOURNAL_DB_VERSION = "3";  // 6호 오류 캐시 강제 삭제
+// ============================================================
+// 버전 관리 & localStorage 초기화
+// ★ 버전을 올리면 기존 localStorage 캐시를 강제 삭제합니다.
+const JOURNAL_DB_VERSION = "4";  // 병합 로직 도입, 6호 캐시 완전 삭제
 
 const storedVersion = localStorage.getItem("journal_db_version");
-if (!localStorage.getItem("journal_db") || (storedVersion !== JOURNAL_DB_VERSION && storedVersion !== "sheets")) {
+if (!localStorage.getItem("journal_db") || storedVersion !== JOURNAL_DB_VERSION) {
+    // 버전이 다르면 무조건 초기화 (sheets 캐시 포함)
     localStorage.setItem("journal_db", JSON.stringify(defaultMockJournals));
     localStorage.setItem("journal_db_version", JOURNAL_DB_VERSION);
 }
 
-// Load from localStorage and sort
+// ============================================================
+// GAS 데이터 병합 유틸 — 모든 페이지에서 이 함수를 사용해야 합니다.
+//
+// 역할: GAS에서 받은 데이터와 defaultMockJournals를 id 기준으로 병합.
+//   - GAS에 있는 id   → GAS 데이터 우선 (최신 편집 반영)
+//   - GAS에 없는 id   → 로컬(defaultMockJournals) 데이터 보존
+//   → GAS 시트에 7호가 누락되어도 로컬 7호가 항상 포함됨
+// ============================================================
+window.mergeJournals = function(gasData) {
+    const merged = {};
+    // 1) GAS 데이터를 먼저 등록
+    if (Array.isArray(gasData)) {
+        gasData.forEach(j => {
+            if (typeof j.articles === 'string') {
+                try { j.articles = JSON.parse(j.articles); } catch(e) { j.articles = []; }
+            }
+            if (!Array.isArray(j.articles)) j.articles = [];
+            merged[j.id] = j;
+        });
+    }
+    // 2) 로컬 기본 데이터 중 GAS에 없는 항목 추가 (누락 보완)
+    defaultMockJournals.forEach(localJ => {
+        if (!merged[localJ.id]) {
+            merged[localJ.id] = localJ;
+        }
+    });
+    // 3) tonggwon 내림차순 정렬 → [0]이 항상 최신호
+    return Object.values(merged).sort(
+        (a, b) => parseInt(b.tonggwon || 0) - parseInt(a.tonggwon || 0)
+    );
+};
+
+// ============================================================
+// 초기 journalData 로드 (localStorage → defaultMockJournals 순 fallback)
 let journalData = [];
 try {
     const rawData = localStorage.getItem("journal_db");
-    if (rawData) {
-        journalData = JSON.parse(rawData);
-    } else {
-        journalData = defaultMockJournals;
-    }
+    journalData = rawData ? JSON.parse(rawData) : defaultMockJournals.slice();
 } catch (e) {
-    journalData = defaultMockJournals;
+    journalData = defaultMockJournals.slice();
 }
 
-// Sort journalData by Volume and Number descending
-journalData.sort((a, b) => {
-    const volA = parseInt(a.volume) || 0;
-    const volB = parseInt(b.volume) || 0;
-    if (volB !== volA) return volB - volA;
-    const numA = parseInt(a.number) || 0;
-    const numB = parseInt(b.number) || 0;
-    return numB - numA;
-});
+// 항상 mergeJournals로 정규화 (로컬 캐시에서도 7호 보장)
+journalData = window.mergeJournals(journalData);
 
 // Export if used in Node environment
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = journalData;
+    module.exports = { journalData, defaultMockJournals, mergeJournals: window.mergeJournals };
 }
