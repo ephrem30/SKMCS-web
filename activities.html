@@ -989,25 +989,45 @@
             if (loggedInUserStr) {
                 try {
                     const user = JSON.parse(loggedInUserStr);
-                    // 학회 간사 이상만 등록/수정/삭제 가능 (reviewer 제외)
-                    const ADMIN_ROLES = ['admin', 'secretary', 'editor', 'president'];
-                    const MEMBER_ROLES = ['admin', 'secretary', 'reviewer', 'editor', 'president', 'member', 'research', 'lifetime', 'group', 'special'];
+
+                    // 📋 디버그: 콘솔에서 로그인 사용자 정보 확인
+                    console.log('[권한체크] 로그인 사용자:', { name: user.name, role: user.role, email: user.email });
+
+                    // 학회 간사 이상만 등록/수정/삭제 가능
+                    // 영문 role 값 + 한글 role 값 모두 포함 (GAS 시트 저장 방식에 따라 다를 수 있음)
+                    const ADMIN_ROLES = [
+                        'admin', 'secretary', 'editor', 'president',
+                        '관리자', '간사', '편집위원장', '회장', '이사장'
+                    ];
+                    const MEMBER_ROLES = [
+                        'admin', 'secretary', 'reviewer', 'editor', 'president', 'member',
+                        'research', 'lifetime', 'group', 'special',
+                        '관리자', '간사', '편집위원장', '회장', '이사장', '심사위원',
+                        '정회원', '일반회원', '연구원', '평생회원', '단체회원', '특별회원'
+                    ];
 
                     // 역할(role) 기반 권한
-                    isAdmin = ADMIN_ROLES.includes(user.role);
-                    isMember = MEMBER_ROLES.includes(user.role);
+                    const userRole = (user.role || '').trim();
+                    isAdmin = ADMIN_ROLES.includes(userRole);
+                    isMember = MEMBER_ROLES.includes(userRole) || isAdmin;
 
                     // 이름 기반 권한 부여 (특정 실명 지정 — 간사/편집위원장)
                     const NAMED_WRITE_USERS = ['박세라', '최우창', '윤소희'];
-                    if (NAMED_WRITE_USERS.includes(user.name)) {
-                        isAdmin = true;   // 글 등록/수정/삭제 권한
-                        isMember = true;  // 콘텐츠 열람 권한
+                    if (NAMED_WRITE_USERS.includes((user.name || '').trim())) {
+                        isAdmin = true;
+                        isMember = true;
                     }
+
+                    console.log('[권한체크] isAdmin:', isAdmin, '/ isMember:', isMember);
+
                 } catch (err) {
                     console.error("Error parsing logged_in_user:", err);
                 }
+            } else {
+                console.log('[권한체크] 로그인 정보 없음');
             }
         }
+
 
         async function renderSeminars() {
             const container = document.getElementById("seminar-list-container");
