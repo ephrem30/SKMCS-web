@@ -11,9 +11,38 @@
 // 2. Global Helpers for Special Admin & Database Reset
 window.isSpecialAdmin = function(user) {
     if (!user) return false;
-    // 특별 관리자: 이메일 또는 실명으로 판별
     const SPECIAL_NAMES = ['최우창', '박세라', '윤소희'];
-    return user.email.toLowerCase() === 'admin@gmail.com' || SPECIAL_NAMES.includes(user.name);
+    const SPECIAL_EMAILS = ['admin@gmail.com', 'skmcs@dgu.ac.kr'];
+    return SPECIAL_EMAILS.includes((user.email || '').toLowerCase()) ||
+           SPECIAL_NAMES.includes((user.name || '').trim());
+};
+
+/**
+ * window.isWriteAdmin(user)
+ * 등록/수정/삭제 권한 여부를 역할·이름·이메일 세 가지로 통합 판단.
+ * 허용 역할: admin, secretary, editor, president
+ * 허용 이름: 박세라, 최우창, 윤소희
+ */
+window.isWriteAdmin = function(user) {
+    if (!user) return false;
+    const ADMIN_ROLES = ['admin', 'secretary', 'editor', 'president'];
+    const role = (user.role || '').trim().toLowerCase();
+    if (ADMIN_ROLES.includes(role)) return true;
+    return window.isSpecialAdmin(user);
+};
+
+/**
+ * window.isMemberUser(user)
+ * 정회원 이상 열람 권한 여부를 통합 판단.
+ */
+window.isMemberUser = function(user) {
+    if (!user) return false;
+    const MEMBER_ROLES = [
+        'admin', 'secretary', 'reviewer', 'editor', 'president',
+        'member', 'research', 'lifetime', 'group', 'special'
+    ];
+    const role = (user.role || '').trim().toLowerCase();
+    return MEMBER_ROLES.includes(role) || window.isWriteAdmin(user);
 };
 
 
