@@ -8,7 +8,7 @@
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>한국음악학회 - 학술활동</title>
-    <link rel="stylesheet" href="styles_v2.css?v=20260810201547">
+    <link rel="stylesheet" href="styles_v2.css?v=20260810213806">
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -634,7 +634,7 @@
                 </div>
                 <div class="modal-form-actions">
                     <button type="button" class="btn-outline" id="btn-cancel-modal">취소</button>
-                    <button type="submit" class="btn-solid" style="background-color: var(--color-green); border-color: var(--color-green);">등록하기</button>
+                    <button type="submit" id="btn-submit-seminar" class="btn-solid" style="background-color: var(--color-green); border-color: var(--color-green);">등록하기</button>
                 </div>
             </form>
         </div>
@@ -701,7 +701,7 @@
 
                 <div class="modal-form-actions">
                     <button type="button" class="btn-outline" id="btn-cancel-conf-modal">취소</button>
-                    <button type="submit" class="btn-solid" style="background-color: var(--color-red); border-color: var(--color-red); display:inline-flex; align-items:center; gap:6px;">
+                    <button type="submit" id="btn-submit-conference" class="btn-solid" style="background-color: var(--color-red); border-color: var(--color-red); display:inline-flex; align-items:center; gap:6px;">
                         <i class="fa-solid fa-calendar-plus"></i> 학술대회 등록하기
                     </button>
                 </div>
@@ -778,13 +778,13 @@
                 </div>
                 <div class="modal-form-actions">
                     <button type="button" class="btn-outline" id="btn-cancel-past-modal">취소</button>
-                    <button type="submit" class="btn-solid" style="background-color:var(--color-green); border-color:var(--color-green);">등록하기</button>
+                    <button type="submit" id="btn-submit-past-seminar" class="btn-solid" style="background-color:var(--color-green); border-color:var(--color-green);">등록하기</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <script src="share.js?v=20260810201547"></script>
+    <script src="share.js?v=20260810213806"></script>
     <script>
         // ============================================================
         // 구버전 localStorage 데이터 정리 (GAS 전환 마이그레이션)
@@ -839,6 +839,46 @@
             setupAdminConferenceControls();
             setupAdminPastSeminarControls();
         });
+
+        // ── 연구모임/세미나 등록 버튼 & 모달 이벤트 ──
+        function setupAdminControls() {
+            if (!isAdmin) return;
+            const adminControls = document.getElementById("admin-controls");
+            if (adminControls) adminControls.style.display = "block";
+
+            const btnAdd  = document.getElementById("btn-add-seminar");
+            const modal   = document.getElementById("seminar-modal");
+            const btnClose   = document.getElementById("btn-close-modal");
+            const btnCancel  = document.getElementById("btn-cancel-modal");
+
+            const resetSeminarModal = () => {
+                _editingSeminarId = null;
+                document.getElementById("seminar-form").reset();
+                document.querySelector('#seminar-modal .seminar-modal-header h3').textContent = '새 세미나/연구모임 등록';
+                const submitBtn = document.getElementById("btn-submit-seminar");
+                if (submitBtn) submitBtn.textContent = '등록하기';
+            };
+
+            if (btnAdd && modal) {
+                btnAdd.addEventListener("click", () => {
+                    resetSeminarModal();
+                    modal.style.display = "flex";
+                });
+            }
+
+            const closeModal = () => {
+                if (modal) modal.style.display = "none";
+                resetSeminarModal();
+            };
+
+            if (btnClose)  btnClose.addEventListener("click", closeModal);
+            if (btnCancel) btnCancel.addEventListener("click", closeModal);
+            if (modal) {
+                modal.addEventListener("click", (e) => {
+                    if (e.target === modal) closeModal();
+                });
+            }
+        }
 
         function switchTab(tabName, shouldPushState = true) {
             // Hide all sections
@@ -917,7 +957,8 @@
             if (loggedInUserStr) {
                 try {
                     const user = JSON.parse(loggedInUserStr);
-                    const ADMIN_ROLES = ['admin', 'secretary', 'reviewer', 'editor', 'president'];
+                    // 학회 간사 이상만 등록/수정/삭제 가능 (reviewer 제외)
+                    const ADMIN_ROLES = ['admin', 'secretary', 'editor', 'president'];
                     const MEMBER_ROLES = ['admin', 'secretary', 'reviewer', 'editor', 'president', 'member', 'research', 'lifetime', 'group', 'special'];
 
                     isAdmin = ADMIN_ROLES.includes(user.role);
@@ -956,6 +997,9 @@
                     deleteBtnHtml = `
                         <button class="btn-share-news" onclick="shareToNews('seminar', '${seminar.id}')" title="학회소식 세미나 소식 탭에 공유">
                             <i class="fa-solid fa-bullhorn"></i> 학회소식 공유
+                        </button>
+                        <button class="btn-delete-seminar" onclick="editSeminar('${seminar.id}')" title="수정" style="background:var(--color-blue);border-color:var(--color-blue);">
+                            <i class="fa-solid fa-pen"></i>
                         </button>
                         <button class="btn-delete-seminar" onclick="deleteSeminar('${seminar.id}')" title="세미나 삭제">
                             <i class="fa-solid fa-trash-can"></i>
@@ -1082,6 +1126,25 @@
             try { await DB_deleteSeminar(id); renderSeminars(); } catch(e) { alert('삭제 실패: ' + e.message); }
         };
 
+        // 연구모임/세미나 수정
+        let _editingSeminarId = null;
+        window.editSeminar = async function(id) {
+            if (!isAdmin) return;
+            let seminars = [];
+            try { seminars = await DB_getSeminars(); } catch(e) { alert('데이터 로드 실패'); return; }
+            const s = seminars.find(x => String(x.id) === String(id));
+            if (!s) { alert('항목을 찾을 수 없습니다.'); return; }
+            _editingSeminarId = id;
+            document.getElementById('modal-title').value     = s.title || '';
+            document.getElementById('modal-badge').value     = s.badge || '';
+            document.getElementById('modal-purpose').value   = s.purpose || '';
+            document.getElementById('modal-schedule').value  = s.schedule || '';
+            document.getElementById('modal-organizer').value = s.organizer || '';
+            document.querySelector('#seminar-modal .seminar-modal-header h3').textContent = '연구모임/세미나 수정';
+            document.getElementById('btn-submit-seminar').textContent = '수정 완료';
+            document.getElementById('seminar-modal').style.display = 'flex';
+        };
+
         window.handleAddSeminar = async function(e) {
             e.preventDefault();
             if (!isAdmin) return;
@@ -1097,12 +1160,19 @@
                 return;
             }
 
-            const newSeminar = { id: "sem_" + Date.now(), title, badge, purpose, schedule, organizer };
             try {
-                await DB_addSeminar(newSeminar);
+                if (_editingSeminarId) {
+                    // 수정 모드
+                    await DB_updateSeminar(_editingSeminarId, { title, badge, purpose, schedule, organizer });
+                    _editingSeminarId = null;
+                } else {
+                    // 등록 모드
+                    const newSeminar = { id: "sem_" + Date.now(), title, badge, purpose, schedule, organizer };
+                    await DB_addSeminar(newSeminar);
+                }
                 document.getElementById("seminar-modal").style.display = "none";
                 renderSeminars();
-            } catch(e) { alert('등록 실패: ' + e.message); }
+            } catch(e) { alert((_editingSeminarId ? '수정' : '등록') + ' 실패: ' + e.message); }
         };
 
         async function renderConferences() {
@@ -1244,15 +1314,24 @@
                 const btnClose = document.getElementById("btn-close-conf-modal");
                 const btnCancel = document.getElementById("btn-cancel-conf-modal");
 
+                const resetConfModal = () => {
+                    _editingConferenceId = null;
+                    document.getElementById("conference-form").reset();
+                    document.querySelector('#conference-modal .seminar-modal-header h3').textContent = '학술대회 등록';
+                    const submitBtn = document.getElementById("btn-submit-conference");
+                    if (submitBtn) submitBtn.textContent = '학술대회 등록하기';
+                };
+
                 if (btnAdd && modal) {
                     btnAdd.addEventListener("click", () => {
-                        document.getElementById("conference-form").reset();
+                        resetConfModal();
                         modal.style.display = "flex";
                     });
                 }
 
                 const closeModal = () => {
                     if (modal) modal.style.display = "none";
+                    resetConfModal();
                 };
 
                 if (btnClose) btnClose.addEventListener("click", closeModal);
@@ -1312,6 +1391,28 @@
             try { await DB_deleteConference(id); renderConferences(); } catch(e) { alert('삭제 실패: ' + e.message); }
         };
 
+        // 학술대회 수정 모드
+        let _editingConferenceId = null;
+        window.editConference = async function(id) {
+            if (!isAdmin) return;
+            let conferences = [];
+            try { conferences = await DB_getConferences(); } catch(e) { alert('데이터 로드 실패'); return; }
+            const c = conferences.find(x => String(x.id) === String(id));
+            if (!c) { alert('항목을 찾을 수 없습니다.'); return; }
+            _editingConferenceId = id;
+            document.getElementById('conf-title').value    = c.title || '';
+            document.getElementById('conf-badge').value    = c.badge || '';
+            document.getElementById('conf-theme').value    = c.theme || '';
+            document.getElementById('conf-date').value     = c.date || '';
+            document.getElementById('conf-place').value    = c.place || '';
+            document.getElementById('conf-program').value  = c.program || '';
+            document.getElementById('conf-progLink').value = c.progLink || '';
+            document.getElementById('conf-formLink').value = c.formLink || '';
+            document.querySelector('#conference-modal .seminar-modal-header h3').textContent = '학술대회 수정';
+            document.getElementById('btn-submit-conference').textContent = '수정 완료';
+            document.getElementById('conference-modal').style.display = 'flex';
+        };
+
         window.handleAddConference = async function(e) {
             e.preventDefault();
             if (!isAdmin) return;
@@ -1330,12 +1431,17 @@
                 return;
             }
 
-            const newConf = { id: "conf_" + Date.now(), title, badge, theme, date, place, program, progLink, formLink };
             try {
-                await DB_addConference(newConf);
+                if (_editingConferenceId) {
+                    await DB_updateConference(_editingConferenceId, { title, badge, theme, date, place, program, progLink, formLink });
+                    _editingConferenceId = null;
+                } else {
+                    const newConf = { id: "conf_" + Date.now(), title, badge, theme, date, place, program, progLink, formLink };
+                    await DB_addConference(newConf);
+                }
                 document.getElementById("conference-modal").style.display = "none";
                 renderConferences();
-            } catch(e) { alert('등록 실패: ' + e.message); }
+            } catch(e) { alert((_editingConferenceId ? '수정' : '등록') + ' 실패: ' + e.message); }
         };
 
         // ============================================================
@@ -1360,11 +1466,22 @@
                 const btnClose = document.getElementById("btn-close-past-modal");
                 const btnCancel = document.getElementById("btn-cancel-past-modal");
 
-                const closeModal = () => { if (modal) modal.style.display = "none"; };
+                const resetPastModal = () => {
+                    _editingPastSeminarId = null;
+                    document.getElementById("past-seminar-form").reset();
+                    document.querySelector('#past-seminar-modal .seminar-modal-header h3').textContent = '지난 세미나 등록';
+                    const submitBtn = document.getElementById("btn-submit-past-seminar");
+                    if (submitBtn) submitBtn.textContent = '등록하기';
+                };
+
+                const closeModal = () => {
+                    if (modal) modal.style.display = "none";
+                    resetPastModal();
+                };
 
                 if (btnAdd && modal) {
                     btnAdd.addEventListener("click", () => {
-                        document.getElementById("past-seminar-form").reset();
+                        resetPastModal();
                         modal.style.display = "flex";
                     });
                 }
@@ -1373,6 +1490,7 @@
                 if (modal) modal.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
             }
         }
+
 
         async function renderPastSeminars(filterText = "", filterYear = "") {
             const container = document.getElementById("past-seminar-list-container");
@@ -1445,7 +1563,14 @@
 
                     let adminBtns = "";
                     if (isAdmin) {
-                        adminBtns = `<button class="btn-delete-seminar" onclick="deletePastSeminar('${s.id}')" title="삭제"><i class="fa-solid fa-trash-can"></i></button>`;
+                        adminBtns = `
+                            <button class="btn-delete-seminar" onclick="editPastSeminar('${s.id}')" title="수정" style="background:var(--color-blue);border-color:var(--color-blue);">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
+                            <button class="btn-delete-seminar" onclick="deletePastSeminar('${s.id}')" title="삭제">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        `;
                     }
 
                     const card = document.createElement("div");
@@ -1488,6 +1613,28 @@
             } catch(e) { alert('삭제 실패: ' + e.message); }
         };
 
+        // 지난 세미나 수정 모드
+        let _editingPastSeminarId = null;
+        window.editPastSeminar = async function(id) {
+            if (!isAdmin) return;
+            let allPasts = [];
+            try { allPasts = await DB_getPastSeminars(); } catch(e) { alert('데이터 로드 실패'); return; }
+            const s = allPasts.find(x => String(x.id) === String(id));
+            if (!s) { alert('항목을 찾을 수 없습니다.'); return; }
+            _editingPastSeminarId = id;
+            document.getElementById('past-title').value     = s.title || '';
+            document.getElementById('past-date').value      = s.date || '';
+            document.getElementById('past-category').value  = s.category || '세미나';
+            document.getElementById('past-place').value     = s.place || '';
+            document.getElementById('past-presenter').value = s.presenter || '';
+            document.getElementById('past-theme').value     = s.theme || '';
+            const notesEl = document.getElementById('past-notes');
+            if (notesEl) notesEl.value = s.notes || '';
+            document.querySelector('#past-seminar-modal .seminar-modal-header h3').textContent = '지난 세미나 수정';
+            document.getElementById('btn-submit-past-seminar').textContent = '수정 완료';
+            document.getElementById('past-seminar-modal').style.display = 'flex';
+        };
+
         window.handleAddPastSeminar = async function(e) {
             e.preventDefault();
             if (!isAdmin) return;
@@ -1505,14 +1652,27 @@
                 return;
             }
 
-            const newPast = { id: "past_" + Date.now(), title, date, category, place, presenter, theme, notes };
             try {
-                await DB_addPastSeminar(newPast);
+                if (_editingPastSeminarId) {
+                    await DB_updatePastSeminar(_editingPastSeminarId, { title, date, category, place, presenter, theme, notes });
+                    _editingPastSeminarId = null;
+                    alert("✅ 지난 세미나 기록이 수정되었습니다.");
+                } else {
+                    const newPast = { id: "past_" + Date.now(), title, date, category, place, presenter, theme, notes };
+                    await DB_addPastSeminar(newPast);
+                    alert("✅ 지난 세미나 기록이 등록되었습니다.");
+                }
+                // 모달 닫고 상태 리셋
                 document.getElementById("past-seminar-modal").style.display = "none";
-                renderPastSeminars();
-                alert("✅ 지난 세미나 기록이 등록되었습니다.");
-            } catch(e) { alert('등록 실패: ' + e.message); }
+                document.querySelector('#past-seminar-modal .seminar-modal-header h3').textContent = '지난 세미나 등록';
+                document.getElementById('btn-submit-past-seminar').textContent = '등록하기';
+                renderPastSeminars(
+                    document.getElementById("past-seminar-search")?.value || "",
+                    document.getElementById("past-seminar-year-filter")?.value || ""
+                );
+            } catch(e) { alert((_editingPastSeminarId ? '수정' : '등록') + ' 실패: ' + e.message); }
         };
+
 
         // 검색/필터 이벤트 연결 (탭 전환 시 호출됨)
         function bindPastSeminarFilters() {
