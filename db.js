@@ -326,6 +326,33 @@ window.DB_deleteJournal = async function(id) {
 };
 
 /**
+ * 특정 발행호에 논문 추가 (기존 articles 배열에 push 후 upsert)
+ * @param {string} issueId - 발행호 id
+ * @param {object} articleData - { num, category, title, enTitle, author, pdf }
+ */
+window.DB_addArticleToJournal = async function(issueId, articleData) {
+    const journals = await window.DB_getJournals();
+    const issue = journals.find(j => j.id === issueId);
+    if (!issue) throw new Error("발행호를 찾을 수 없습니다: " + issueId);
+    if (!Array.isArray(issue.articles)) issue.articles = [];
+    issue.articles.push(articleData);
+    return await _dbPostDirect({ action: "add", sheet: "journals", data: issue });
+};
+
+/**
+ * 특정 발행호의 논문 삭제 (artIdx 기준)
+ * @param {string} issueId - 발행호 id
+ * @param {number} artIdx - 삭제할 논문 배열 인덱스
+ */
+window.DB_deleteArticleFromJournal = async function(issueId, artIdx) {
+    const journals = await window.DB_getJournals();
+    const issue = journals.find(j => j.id === issueId);
+    if (!issue || !Array.isArray(issue.articles)) throw new Error("발행호 또는 논문 배열을 찾을 수 없습니다.");
+    issue.articles.splice(artIdx, 1);
+    return await _dbPostDirect({ action: "add", sheet: "journals", data: issue });
+};
+
+/**
  * 학회지 전체 PDF를 Google Drive에 업로드합니다.
  * @param {string} ho - 호 번호 (예: "8")
  * @param {string} title - 발행호 제목 (예: "한국음악문화 제8호")

@@ -422,11 +422,15 @@
                     const pdfIcon = article.pdf && article.pdf !== '#'
                         ? `<a href="#" class="icon-monitor pdf-view-btn" data-pdf="${article.pdf}" data-title="${article.title}"><i class="fa-regular fa-file-pdf"></i></a>`
                         : `<span style="color:#ccc;font-size:0.82rem;">미등록</span>`;
-                    const adminBtn = isAdminUser
-                        ? `<button type="button" class="btn-inline-edit-art" data-art-idx="${artIdx}" data-issue-id="${selectedIssue.id}"
+                    const adminBtns = isAdminUser ? `
+                        <button type="button" class="btn-inline-edit-art" data-art-idx="${artIdx}" data-issue-id="${selectedIssue.id}"
                             title="논문 정보 편집" style="margin-left:6px;background:none;border:1px solid #ccc;border-radius:3px;padding:2px 6px;font-size:0.78rem;cursor:pointer;color:var(--color-green);vertical-align:middle;">
                             <i class="fa-solid fa-pen"></i>
-                           </button>` : '';
+                        </button>
+                        <button type="button" class="btn-inline-del-art" data-art-idx="${artIdx}" data-issue-id="${selectedIssue.id}"
+                            title="논문 삭제" style="margin-left:2px;background:none;border:1px solid #fcc;border-radius:3px;padding:2px 6px;font-size:0.78rem;cursor:pointer;color:var(--color-red);vertical-align:middle;">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>` : '';
                     tr.innerHTML = `
                         <td class="col-num">${article.num}</td>
                         <td class="col-cat">${article.category}</td>
@@ -434,13 +438,31 @@
                             <a href="#">${article.title}</a>
                             <p class="article-en-title">${article.enTitle || ''}</p>
                         </td>
-                        <td class="col-year">${article.author}${adminBtn}</td>
+                        <td class="col-year">${article.author}${adminBtns}</td>
                         <td class="col-view">${pdfIcon}</td>
                     `;
                     tbody.appendChild(tr);
                 });
             } else {
                 tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-muted);">등록된 논문이 없습니다.</td></tr>';
+            }
+
+            // 관리자 툴바 (논문 추가 버튼)
+            if (isAdminUser) {
+                const existingToolbar = document.getElementById('admin-article-toolbar');
+                if (existingToolbar) existingToolbar.remove();
+                const toolbar = document.createElement('div');
+                toolbar.id = 'admin-article-toolbar';
+                toolbar.style.cssText = 'display:flex;gap:8px;justify-content:flex-end;margin-bottom:8px;';
+                toolbar.innerHTML = `
+                    <button id="btn-add-article" type="button"
+                        style="display:inline-flex;align-items:center;gap:6px;padding:7px 16px;background:var(--color-green);color:#fff;border:none;border-radius:4px;font-size:0.88rem;font-weight:700;cursor:pointer;">
+                        <i class="fa-solid fa-plus"></i> 논문 추가
+                    </button>
+                `;
+                const boardTable = document.querySelector('.board-table');
+                if (boardTable) boardTable.parentNode.insertBefore(toolbar, boardTable);
+                document.getElementById('btn-add-article').addEventListener('click', () => openArtEditModal(selectedIssue.id, -1));
             }
 
             bindPdfButtons();
@@ -682,18 +704,28 @@
 
                 saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 저장 중...';
 
-                let local = JSON.parse(localStorage.getItem('journal_db') || '[]');
-                const issueLocalIdx = local.findIndex(j => j.id === issueId);
-                if (issueLocalIdx !== -1 && local[issueLocalIdx].articles) {
-                    local[issueLocalIdx].articles[artIdx] = updatedArt;
-                    localStorage.setItem('journal_db', JSON.stringify(local));
-                    journalData = local.sort((a,b) => parseInt(b.tonggwon||0) - parseInt(a.tonggwon||0));
-                    try { await window.DB_addJournal(local[issueLocalIdx]); } catch(dbErr) { console.warn('DB 저장 실패:', dbErr); }
-                    alert('논문 정보가 저장되었습니다.');
+                // GAS에 직접 저장 (articles 배열 업데이트)
+                const issue = journalData.find(j => j.id === issueId);
+                if (!issue) { alert('저장 실패: 발행호 데이터를 찾을 수 없습니다.'); saveBtn.innerHTML = origHtml; saveBtn.disabled = false; return; }
+
+                if (!Array.isArray(issue.articles)) issue.articles = [];
+
+                if (artIdx === -1) {
+                    // 신규 논문 추가
+                    updatedArt.num = updatedArt.num || (issue.articles.length + 1);
+                    issue.articles.push(updatedArt);
+                } else {
+                    issue.articles[artIdx] = updatedArt;
+                }
+
+                try {
+                    await window.DB_addJournal(issue); // upsert (id 기반)
+                    journalData = journalData.map(j => j.id === issue.id ? issue : j);
+                    alert(artIdx === -1 ? '✅ 논문이 추가되었습니다.' : '✅ 논문 정보가 저장되었습니다.');
                     closeArtEdit();
                     await initIssuePage();
-                } else {
-                    alert('저장 실패: 발행호 데이터를 찾을 수 없습니다.');
+                } catch(dbErr) {
+                    alert('GAS 저장 실패: ' + dbErr.message);
                 }
 
                 saveBtn.innerHTML = origHtml;
@@ -706,28 +738,62 @@
         function openArtEditModal(issueId, artIdx) {
             if (!artEditModal) artEditModal = createArtEditModal();
             const issue = journalData.find(j => j.id === issueId);
-            if (!issue || !issue.articles || !issue.articles[artIdx]) {
-                alert('논문 데이터를 찾을 수 없습니다.'); return;
-            }
-            const art = issue.articles[artIdx];
+            if (!issue) { alert('발행호 데이터를 찾을 수 없습니다.'); return; }
+
             document.getElementById('art-edit-issue-id').value = issueId;
             document.getElementById('art-edit-art-idx').value  = artIdx;
-            document.getElementById('art-edit-num').value      = art.num || artIdx + 1;
-            document.getElementById('art-edit-cat').value      = art.category || '';
-            document.getElementById('art-edit-title').value    = art.title || '';
-            document.getElementById('art-edit-en-title').value = art.enTitle || '';
-            document.getElementById('art-edit-author').value   = art.author || '';
-            document.getElementById('art-edit-pdf-url').value  = (art.pdf && art.pdf !== '#') ? art.pdf : '';
+
+            if (artIdx === -1) {
+                // 신규 추가 모드
+                document.querySelector('#art-edit-modal div[style*="color:#fff"] span').textContent = '논문 추가';
+                document.getElementById('art-edit-num').value      = (issue.articles || []).length + 1;
+                document.getElementById('art-edit-cat').value      = '';
+                document.getElementById('art-edit-title').value    = '';
+                document.getElementById('art-edit-en-title').value = '';
+                document.getElementById('art-edit-author').value   = '';
+                document.getElementById('art-edit-pdf-url').value  = '';
+            } else {
+                // 수정 모드
+                if (!issue.articles || !issue.articles[artIdx]) { alert('논문 데이터를 찾을 수 없습니다.'); return; }
+                const art = issue.articles[artIdx];
+                document.querySelector('#art-edit-modal div[style*="color:#fff"] span').textContent = '논문 정보 편집';
+                document.getElementById('art-edit-num').value      = art.num || artIdx + 1;
+                document.getElementById('art-edit-cat').value      = art.category || '';
+                document.getElementById('art-edit-title').value    = art.title || '';
+                document.getElementById('art-edit-en-title').value = art.enTitle || '';
+                document.getElementById('art-edit-author').value   = art.author || '';
+                document.getElementById('art-edit-pdf-url').value  = (art.pdf && art.pdf !== '#') ? art.pdf : '';
+            }
             artEditModal.style.display = 'flex';
             document.body.style.overflow = 'hidden';
         }
 
-        // 논문 편집 버튼 이벤트 위임
+        // 논문 삭제 함수
+        async function deleteArticle(issueId, artIdx) {
+            if (!confirm('이 논문을 삭제하시겠습니까? 삭제 후 복구할 수 없습니다.')) return;
+            const issue = journalData.find(j => j.id === issueId);
+            if (!issue || !Array.isArray(issue.articles)) { alert('데이터 오류'); return; }
+            issue.articles.splice(artIdx, 1);
+            try {
+                await window.DB_addJournal(issue); // upsert
+                journalData = journalData.map(j => j.id === issue.id ? issue : j);
+                await initIssuePage();
+            } catch(e) { alert('삭제 저장 실패: ' + e.message); }
+        }
+
+        // 논문 편집/삭제 버튼 이벤트 위임
         document.getElementById('article-list-tbody').addEventListener('click', function(e) {
             const editBtn = e.target.closest('.btn-inline-edit-art');
-            if (!editBtn) return;
-            e.preventDefault();
-            openArtEditModal(editBtn.getAttribute('data-issue-id'), parseInt(editBtn.getAttribute('data-art-idx')));
+            if (editBtn) {
+                e.preventDefault();
+                openArtEditModal(editBtn.getAttribute('data-issue-id'), parseInt(editBtn.getAttribute('data-art-idx')));
+                return;
+            }
+            const delBtn = e.target.closest('.btn-inline-del-art');
+            if (delBtn) {
+                e.preventDefault();
+                deleteArticle(delBtn.getAttribute('data-issue-id'), parseInt(delBtn.getAttribute('data-art-idx')));
+            }
         });
     </script>
 

@@ -73,20 +73,12 @@ document.addEventListener("DOMContentLoaded", () => {
 // ==========================================
 // 1. Data Initialization & Storage Helpers
 // ==========================================
-const DEFAULT_NOTICES = [
-    { id: 6, type: "notice", category: "시스템", title: "[공지] 한국음악학회 공식 홈페이지 오픈 안내", file: false, date: "2026. 05. 29", views: 0, content: "안녕하십니까, 한국음악학회입니다.\n\n2026년 5월 29일부로 한국음악학회 공식 홈페이지가 새롭게 오픈하였습니다.\n\n■ 주요 서비스 안내\n\n1. 논문 온라인 투고 시스템\n   - 회원 로그인 후 논문 파일 및 연구윤리서약서를 온라인으로 간편하게 접수하실 수 있습니다.\n   - 투고 후 심사 진행 상황을 실시간으로 확인하실 수 있습니다.\n\n2. 학회지 원문 서비스\n   - 역대 학회지(한국음악문화)의 논문 원문을 홈페이지에서 열람 및 다운로드하실 수 있습니다.\n\n3. 학술활동 안내\n   - 학술대회, 연구모임, 세미나 일정을 실시간으로 확인하실 수 있습니다.\n\n4. 회원 서비스\n   - 온라인 입회 신청, 회원 정보 조회 등 다양한 회원 서비스를 제공합니다.\n\n■ 문의사항\n홈페이지 이용 중 불편사항이나 오류가 발견되실 경우, 학회 사무국으로 연락 주시기 바랍니다.\n- E-mail: skmcs@dgu.ac.kr\n- 주소: (04620) 서울특별시 중구 필동로 1길 30 동국대학교 문화관\n\n회원 여러분의 많은 관심과 이용을 부탁드립니다.\n\n한국음악학회 사무국 드림", author: "관리인", email: "admin@gugak.go.kr" },
-    { id: 5, type: "notice", category: "안내", title: "2026년 춘계 학술대회 일정 및 논문 발표 신청 안내", file: true, date: "2026. 03. 11", views: 152, content: "2026년 춘계 학술대회 일정 및 논문 발표 신청 안내입니다.\n\n대중음악콘텐츠학회지 연구윤리 검증절차에 의해 본 학회 학술지 「대중음악콘텐츠학... [중략]\n많은 관심과 투고 바랍니다.", author: "관리인", email: "admin@gugak.go.kr" },
-    { id: 4, type: "notice", category: "시스템", title: "학회 홈페이지 리뉴얼 및 온라인 투고 시스템 오픈 안내", file: false, date: "2026. 02. 20", views: 301, content: "학회 홈페이지 리뉴얼 및 온라인 투고 시스템 오픈 안내입니다.\n\n회원 여러분의 편리한 논문 투고를 돕기 위해 신규 온라인 논문투고 시스템이 도입되었습니다.\n앞으로 새로운 시스템을 이용하여 논문을 접수해 주시기 바랍니다.", author: "관리인", email: "admin@gugak.go.kr" },
-    { id: 3, type: "notice", category: "안내", title: "한국음악학회 제50권 2호 원문 서비스 오픈", file: false, date: "2026. 02. 15", views: 85, content: "안녕하십니까, 한국음악학회입니다.\n\n한국음악학회 학회지 제50권 2호의 원문 서비스가 홈페이지를 통해 개시되었습니다.\n원문은 회원 로그인 후 열람 및 다운로드 받으실 수 있습니다.", author: "관리인", email: "admin@gugak.go.kr" },
-    { id: 2, type: "notice", category: "일반", title: "2026년도 신임 임원진 선출 결과 공고", file: true, date: "2026. 01. 30", views: 120, content: "2026년도 신임 임원진 선출 결과 공고입니다.\n\n자세한 임원진 구성표는 첨부된 PDF 파일을 참조해 주시기 바랍니다.\n올해 학회를 이끌어 주실 분들께 큰 응원 부탁드립니다.", author: "관리인", email: "admin@gugak.go.kr" },
-    { id: 1, type: "notice", category: "안내", title: "학회 연회비 납부 계좌 변경 안내", file: false, date: "2026. 05. 29", views: 214, content: "학회 연회비 납부 계좌가 다음과 같이 변경되었습니다.\n\n- 은행: 신한은행\n- 계좌번호: 140-015-967840\n- 예금주: 한국음악학회 박범훈\n\n회원 여러분께서는 연회비 송금 시 착오 없으시길 바랍니다.", author: "관리인", email: "admin@gugak.go.kr" }
-];
-
-const DEFAULT_FREEBOARD = [
-    { id: 3, type: "freeboard", category: "자유", title: "안녕하세요. 신임 회원 인사드립니다.", date: "2026. 05. 28", views: 12, content: "이번에 학회에 가입하게 된 김민우입니다. 국악관현악 연구에 관심이 많습니다. 앞으로 많은 지도 편달 부탁드립니다.", author: "김민우", email: "minwoo@gmail.com" },
-    { id: 2, type: "freeboard", category: "질문", title: "2026년 춘계 학술대회 발표 자료 양식 관련 질문", date: "2026. 05. 27", views: 24, content: "춘계 학술대회 구두 발표 PPT 템플릿이나 양식이 따로 제공되는지 궁금합니다. 아니면 자유 양식으로 준비해도 되나요? 아시는 분 답변 부탁드립니다.", author: "이영희", email: "younghee@gmail.com" },
-    { id: 1, type: "freeboard", category: "정보", title: "국악 학술 정보 사이트 공유합니다.", date: "2026. 05. 20", views: 45, content: "한국음악 연구에 유용한 자료들이 모여있는 국립국악원 국악학술정보시스템 링크를 공유합니다. 연구에 참고하시기 바랍니다.\n링크: http://gugak.go.kr", author: "박철수", email: "chulsoo@gmail.com" }
-];
+// ★ 구버전 샘플 데이터 완전 제거 — GAS에서 관리자가 직접 등록 ★
+// 어떤 기기에서도 localStorage 샘플이 보이지 않도록 매번 삭제
+localStorage.removeItem('notice_posts');
+localStorage.removeItem('freeboard_posts');
+localStorage.removeItem('seminar_news_posts');
+localStorage.removeItem('seminar_news_idx');
 
 const ADMIN_ROLES = ["admin", "secretary", "editor", "president"];
 
@@ -97,32 +89,10 @@ let seminarNewsPage = 1;
 const ITEMS_PER_PAGE = 5;
 const SN_ITEMS_PER_PAGE = 6;
 
-// Search terms
 let noticeSearchQuery = "";
 let noticeSearchType = "all";
 let freeboardSearchQuery = "";
 let freeboardSearchType = "all";
-
-const DATA_VERSION = "v2026-05-29b";
-
-const DEFAULT_SEMINAR_NEWS = [
-    {
-        id: 1, category: "정기세미나",
-        title: "제12회 정기세미나 — 판소리의 현대적 계승",
-        seminarDate: "2026-05-15",
-        location: "동국대학교 문화관 3층 세미나실",
-        content: "판소리의 전통 보존과 현대적 연행 방식에 대한 발제와 토론이 진행되었습니다. 홍길동 교수(서울대)의 발제를 중심으로 활발한 논의가 이루어졌으며, 많은 회원 여러분께서 참여해 주셨습니다.",
-        link: "seminar_archive.html",
-        thumbnail: "",
-        createdAt: "2026-05-15"
-    }
-];
-
-// localStorage 초기화 불필요 — 데이터는 GAS(Google Sheets)에서 관리됩니다.
-function initStorage() {
-    // No-op: 모든 게시판 데이터는 GAS 백엔드에 저장됩니다.
-    // localStorage 기반 데이터는 더 이상 사용하지 않습니다.
-}
 
 function getLoggedInUser() {
     const userStr = localStorage.getItem("logged_in_user");
