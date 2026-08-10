@@ -791,18 +791,22 @@
         // 어떤 브라우저에서도 한 번만 실행 → 테스트 데이터 완전 삭제
         // ============================================================
         (function() {
-            const MIGRATION_KEY = 'skmcs_activities_migration_v4';
-            if (localStorage.getItem(MIGRATION_KEY)) return;
-            [
-                'seminar_activities',
-                'conference_activities',
-                'past_seminar_activities',
-                'seminar_archive_db',
-            ].forEach(k => localStorage.removeItem(k));
-            // 이전 마이그레이션 키도 정리
-            ['skmcs_activities_migration_v3', 'skmcs_activities_migration_v2'].forEach(k => localStorage.removeItem(k));
-            localStorage.setItem(MIGRATION_KEY, '1');
-            console.log('[Migration v4] activities localStorage 데이터 정리 완료');
+            // v5: seminar_archive_db는 페이지 로드마다 항상 삭제 (구버전 주입 완전 차단)
+            localStorage.removeItem('seminar_archive_db');
+
+            // 기타 테스트 데이터도 1회성 정리
+            const MIGRATION_KEY = 'skmcs_activities_migration_v5';
+            if (!localStorage.getItem(MIGRATION_KEY)) {
+                [
+                    'seminar_activities',
+                    'conference_activities',
+                    'past_seminar_activities',
+                ].forEach(k => localStorage.removeItem(k));
+                ['skmcs_activities_migration_v4','skmcs_activities_migration_v3','skmcs_activities_migration_v2']
+                    .forEach(k => localStorage.removeItem(k));
+                localStorage.setItem(MIGRATION_KEY, '1');
+                console.log('[Migration v5] activities localStorage 정리 완료');
+            }
         })();
         // Tab switching logic for activities page
         document.addEventListener("DOMContentLoaded", async () => {
@@ -1730,8 +1734,8 @@
             if (container) container.innerHTML = `<div style="text-align:center;padding:60px 0;color:var(--text-muted);"><i class="fa-solid fa-spinner fa-spin" style="font-size:2rem;"></i><p>불러오는 중...</p></div>`;
             try {
                 _archiveAllRecords = await window.DB_getSeminarArchive();
-                // detail 페이지 호환: localStorage도 동기화
-                localStorage.setItem(SA_KEY, JSON.stringify(_archiveAllRecords));
+                // localStorage 저장 제거 — 구버전 데이터로 다시 주입되는 것을 방지
+                localStorage.removeItem(SA_KEY);
             } catch(err) {
                 if (container) container.innerHTML = `<div style="text-align:center;padding:60px 0;color:var(--color-red);"><i class="fa-solid fa-triangle-exclamation"></i><p>데이터를 불러오지 못했습니다.<br><small>${err.message}</small></p></div>`;
                 return;

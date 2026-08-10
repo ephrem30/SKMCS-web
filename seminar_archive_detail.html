@@ -447,9 +447,12 @@
     <img id="lb-img" src="" alt="">
 </div>
 
+<script src="db.js?v=20260810170006"></script>
 <script src="share.js?v=20260810170006"></script>
 <script>
-const SA_KEY = "seminar_archive_db";
+// 어문 삭제: localStorage 이제 참조 안 함
+localStorage.removeItem('seminar_archive_db');
+
 const TYPE_MAP = {
     "정기세미나": "badge-regular",
     "특별세미나": "badge-special",
@@ -457,7 +460,6 @@ const TYPE_MAP = {
     "기타":       "badge-other",
 };
 
-function getAll()  { return JSON.parse(localStorage.getItem(SA_KEY) || "[]"); }
 function escHtml(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 
 window.closeLB = function() {
@@ -471,11 +473,20 @@ function openLB(src) {
     document.getElementById("lightbox").style.display = "flex";
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
     const id = new URLSearchParams(location.search).get("id");
-    const records = getAll();
-    const r = records.find(x => x.id === id);
     const body = document.getElementById("detail-body");
+
+    body.innerHTML = `<div style="text-align:center;padding:80px 0;color:var(--text-muted);"><i class="fa-solid fa-spinner fa-spin" style="font-size:1.5rem;"></i><p>데이터를 불러오는 중...</p></div>`;
+
+    let records = [];
+    try { records = await window.DB_getSeminarArchive(); }
+    catch(e) {
+        body.innerHTML = `<div style="text-align:center;padding:80px 0;color:var(--text-muted);"><p>데이터를 불러오지 못했습니다.<br><small>${e.message}</small></p></div>`;
+        return;
+    }
+
+    const r = records.find(x => x.id === id);
 
     if (!r) {
         body.innerHTML = `<div style="text-align:center;padding:80px 0;color:var(--text-muted);"><p>해당 세미나 기록을 찾을 수 없습니다.</p><a href="seminar_archive.html" class="btn-solid" style="display:inline-flex;align-items:center;gap:7px;margin-top:16px;">목록으로</a></div>`;
