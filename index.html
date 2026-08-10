@@ -741,7 +741,21 @@
                 link: "activities.html?tab=seminar"
             }));
 
-            const allCards = [...confCards, ...seminarCards];
+            // 세미나 아카이브 최신 1개
+            let archive = [];
+            try { archive = await window.DB_getSeminarArchive(); } catch(e) {}
+            archive.sort((a,b) => new Date(b.date||0) - new Date(a.date||0));
+            const archiveCards = archive.slice(0, 1).map(a => ({
+                badge: a.seminar_type || "아카이브",
+                badgeColor: "var(--color-blue)",
+                title: a.title,
+                date: a.date ? a.date.replace(/-/g,". ")+"." : "",
+                location: a.location || "",
+                desc: a.summary ? a.summary.substring(0, 80) + (a.summary.length > 80 ? "…" : "") : "",
+                link: "activities.html?tab=archive"
+            }));
+
+            const allCards = [...confCards, ...seminarCards, ...archiveCards];
 
             if (allCards.length === 0) {
                 grid.innerHTML = '<p style="color:var(--text-muted);padding:20px 0;">등록된 학술활동이 없습니다.</p>';

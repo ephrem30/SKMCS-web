@@ -1556,8 +1556,8 @@
         // ═══════════════════════════════════════════════
         //  세미나 아카이브 (Archive Tab) JS
         // ═══════════════════════════════════════════════
-        const SA_KEY = "seminar_archive_db";
-        // 테스트 샘플 데이터 제거 — 관리자가 직접 등록
+        const SA_KEY = "seminar_archive_db"; // detail 페이지 호환용
+        let _archiveAllRecords = [];
 
         const SA_TYPE_MAP = {
             "정기세미나": { top:"", badge:"sa-badge-regular" },
@@ -1568,13 +1568,6 @@
 
         let archiveEditingId = null;
 
-        function initArchiveDB() {
-            // 기본 데이터 없음 — localStorage가 비어있어도 빈 상태로 시작
-            // (SA_SAMPLE 자동 주입 완전 제거)
-        }
-
-        function getAllArchive() { return JSON.parse(localStorage.getItem(SA_KEY) || "[]"); }
-        function saveArchive(records) { localStorage.setItem(SA_KEY, JSON.stringify(records)); }
         function escA(s) { return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 
         function renderArchive() {
@@ -1584,9 +1577,9 @@
             const container = document.getElementById("archive-list-container");
             if (!container) return;
 
-            let records = getAllArchive().sort((a,b) => new Date(b.date) - new Date(a.date));
+            // GAS에서 로드된 캐시로부터 필터링
+            let records = [..._archiveAllRecords].sort((a,b) => new Date(b.date) - new Date(a.date));
 
-            // 연도 드롭다운 채우기
             const yearSel = document.getElementById("archive-year-filter");
             if (yearSel) {
                 const curY = yearSel.value;
@@ -1599,13 +1592,11 @@
             if (type) records = records.filter(r => r.seminar_type === type);
 
             container.innerHTML = "";
-
             if (!records.length) {
-                container.innerHTML = `<div style="text-align:center;padding:60px 0;color:var(--text-muted);"><i class="fa-solid fa-box-open" style="font-size:2.5rem;margin-bottom:14px;display:block;opacity:0.3;"></i><p>검색 결과가 없습니다.</p></div>`;
+                container.innerHTML = `<div style="text-align:center;padding:60px 0;color:var(--text-muted);">검색 결과가 없습니다.</div>`;
                 return;
             }
 
-            // 연도별 그룹
             const groups = {};
             records.forEach(r => {
                 const y = String(r.year || (r.date||"").slice(0,4) || "미상");
@@ -1614,51 +1605,30 @@
             });
 
             Object.keys(groups).sort((a,b)=>b-a).forEach(y => {
-                // 연도 헤더
                 const yBar = document.createElement("div");
                 yBar.style.cssText = "display:flex;align-items:center;gap:12px;margin:28px 0 16px;padding-bottom:10px;border-bottom:2px solid var(--border-color);";
-                yBar.innerHTML = `<span style="font-size:1.4rem;font-weight:900;color:var(--text-dark);">${y}년</span><span style="font-size:0.82rem;background:var(--color-green);color:white;padding:3px 10px;border-radius:100px;font-weight:700;">${groups[y].length}건</span>`;
+                yBar.innerHTML = `<span style="font-size:1.4rem;font-weight:900;color:var(--text-dark);">${y}년</span><span style="font-size:0.82rem;background:var(--color-green);color:white;padding:3px 10px;border-radius:100px;">${groups[y].length}건</span>`;
                 container.appendChild(yBar);
 
-                // 카드 그리드
                 const grid = document.createElement("div");
                 grid.style.cssText = "display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));gap:16px;margin-bottom:8px;";
 
                 groups[y].forEach(r => {
-                    const t = SA_TYPE_MAP[r.seminar_type] || SA_TYPE_MAP["기타"];
-                    const dateStr = r.date ? r.date.replace(/-/g,". ")+"." : "-";
-                    const hasPdf = r.attachment_file && r.attachment_file !== "#" && r.attachment_file !== "";
-
                     const topColor = r.seminar_type === "특별세미나" ? "var(--color-blue)" : r.seminar_type === "기획세미나" ? "var(--color-yellow)" : "var(--color-green)";
-                    const badgeColor = r.seminar_type === "특별세미나" ? "var(--color-blue)" : r.seminar_type === "기획세미나" ? "#b8860b" : "var(--color-green)";
-                    const badgeTextColor = r.seminar_type === "기획세미나" ? "#333" : "white";
-
                     const card = document.createElement("div");
-                    card.style.cssText = "background:white;border:1px solid var(--border-color);border-radius:8px;overflow:hidden;display:flex;flex-direction:column;transition:all 0.2s ease;box-shadow:0 2px 6px rgba(0,0,0,0.04);cursor:pointer;";
-                    card.onmouseenter = () => { card.style.transform="translateY(-2px)"; card.style.boxShadow="0 8px 22px rgba(0,0,0,0.1)"; card.style.borderColor=topColor; };
-                    card.onmouseleave = () => { card.style.transform=""; card.style.boxShadow="0 2px 6px rgba(0,0,0,0.04)"; card.style.borderColor="var(--border-color)"; };
+                    card.style.cssText = "background:white;border:1px solid var(--border-color);border-radius:8px;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;";
                     card.onclick = () => { window.location.href = `seminar_archive_detail.html?id=${r.id}`; };
-
                     card.innerHTML = `
-                        <div style="height:5px;background:${topColor};flex-shrink:0;"></div>
-                        <div style="padding:18px 20px;flex:1;display:flex;flex-direction:column;">
-                            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;gap:8px;">
-                                <span style="font-size:0.7rem;font-weight:800;padding:3px 9px;border-radius:100px;background:${badgeColor};color:${badgeTextColor};white-space:nowrap;">${escA(r.seminar_type)}</span>
-                                <span style="font-size:0.77rem;color:var(--text-muted);font-weight:600;display:flex;align-items:center;gap:4px;"><i class="fa-regular fa-calendar" style="font-size:0.8em;"></i> ${escA(dateStr)}</span>
-                            </div>
-                            <div style="font-size:1rem;font-weight:800;color:var(--text-dark);line-height:1.45;margin-bottom:9px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${escA(r.title)}</div>
-                            ${r.presenter ? `<div style="font-size:0.84rem;color:var(--text-muted);margin-bottom:12px;display:flex;align-items:center;gap:5px;"><i class="fa-solid fa-microphone-lines" style="font-size:0.8em;color:var(--color-green);"></i> ${escA(r.presenter)}</div>` : ""}
-                            <div style="margin-top:auto;padding-top:10px;border-top:1px solid var(--border-color);display:flex;gap:7px;align-items:center;flex-wrap:wrap;">
-                                ${r.location ? `<div style="font-size:0.79rem;color:var(--text-muted);display:flex;align-items:center;gap:4px;flex:1;overflow:hidden;"><i class="fa-solid fa-location-dot" style="font-size:0.8em;flex-shrink:0;"></i><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escA(r.location)}</span></div>` : ""}
-                                ${hasPdf
-                                    ? `<a href="${escA(r.attachment_file)}" target="_blank" onclick="event.stopPropagation();" style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;font-size:0.77rem;font-weight:700;border:1.5px solid var(--color-green);color:var(--color-green);border-radius:4px;background:white;text-decoration:none;flex-shrink:0;"><i class="fa-solid fa-download" style="font-size:0.8em;"></i> 자료집</a>`
-                                    : `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;font-size:0.77rem;font-weight:700;border:1.5px solid var(--border-color);color:var(--text-muted);border-radius:4px;flex-shrink:0;"><i class="fa-solid fa-file-slash" style="font-size:0.8em;"></i> 자료없음</span>`}
-                            </div>
+                        <div style="height:5px;background:${topColor};"></div>
+                        <div style="padding:18px 20px;">
+                            <div style="font-weight:800;margin-bottom:8px;">${escA(r.title)}</div>
+                            <div style="font-size:0.8rem;color:var(--text-muted);">${escA(r.date)} | ${escA(r.seminar_type)}</div>
                         </div>
-                        <div style="display:flex;gap:6px;justify-content:flex-end;padding:8px 14px;border-top:1px solid var(--border-color);background:#fafaf8;">
-                            <button onclick="event.stopPropagation();openArchiveEdit('${r.id}')" style="padding:4px 11px;font-size:0.78rem;font-weight:700;border:1.5px solid var(--color-green);color:var(--color-green);background:white;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;"><i class="fa-solid fa-pen"></i> 수정</button>
-                            <button onclick="event.stopPropagation();deleteArchive('${r.id}')" style="padding:4px 11px;font-size:0.78rem;font-weight:700;border:1.5px solid var(--color-red);color:var(--color-red);background:white;border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;"><i class="fa-solid fa-trash-can"></i> 삭제</button>
-                        </div>
+                        ${isAdmin ? `
+                        <div style="padding:8px 14px;border-top:1px solid var(--border-color);text-align:right;">
+                            <button onclick="event.stopPropagation();openArchiveEdit('${r.id}')" style="padding:4px 10px;font-size:0.75rem;">수정</button>
+                            <button onclick="event.stopPropagation();deleteArchive('${r.id}')" style="padding:4px 10px;font-size:0.75rem;">삭제</button>
+                        </div>` : ""}
                     `;
                     grid.appendChild(card);
                 });
@@ -1670,28 +1640,26 @@
             const search = document.getElementById("archive-search");
             const yearSel = document.getElementById("archive-year-filter");
             const typeSel = document.getElementById("archive-type-filter");
-            if (search && !search._bound) {
+            if (search) {
                 search.addEventListener("input", renderArchive);
                 yearSel?.addEventListener("change", renderArchive);
                 typeSel?.addEventListener("change", renderArchive);
-                search._bound = true;
             }
-            // 등록 버튼
             const btnNew = document.getElementById("btn-add-archive");
-            if (btnNew && !btnNew._bound) {
-                btnNew.addEventListener("click", () => openArchiveModal());
-                btnNew._bound = true;
-            }
+            if (btnNew) btnNew.addEventListener("click", () => openArchiveModal());
         }
 
-        window.deleteArchive = function(id) {
+        window.deleteArchive = async function(id) {
+            if (!isAdmin) return;
             if (!confirm("이 세미나 기록을 삭제하시겠습니까?")) return;
-            saveArchive(getAllArchive().filter(r => r.id !== id));
-            renderArchive();
+            try {
+                await window.DB_deleteSeminarArchive(id);
+                await loadAndRenderArchive();
+            } catch(e) { alert('삭제 실패: ' + e.message); }
         };
 
         window.openArchiveEdit = function(id) {
-            const r = getAllArchive().find(r => r.id === id);
+            const r = _archiveAllRecords.find(x => x.id === id);
             if (!r) return;
             archiveEditingId = id;
             document.getElementById("a-title").value        = r.title || "";
@@ -1702,7 +1670,6 @@
             document.getElementById("a-moderator").value    = r.moderator || "";
             document.getElementById("a-summary").value      = r.summary || "";
             document.getElementById("a-attachment").value   = r.attachment_file || "";
-            // 기존 사진 로드
             window._archivePhotos = Array.isArray(r.photos) ? [...r.photos] : [];
             renderPhotoPreview();
             document.getElementById("archive-modal-title").textContent = "세미나 수정";
@@ -1726,8 +1693,9 @@
             archiveEditingId = null;
         }
 
-        window.handleArchiveSubmit = function(e) {
+        window.handleArchiveSubmit = async function(e) {
             e.preventDefault();
+            if (!isAdmin) return;
             const dateVal = document.getElementById("a-date").value;
             const rec = {
                 id:             archiveEditingId || ("sa_" + Date.now()),
@@ -1743,15 +1711,33 @@
                 photos:         window._archivePhotos || [],
             };
             if (!rec.title || !rec.date || !rec.summary) { alert("필수 항목을 입력해 주세요."); return; }
-            let records = getAllArchive();
-            if (archiveEditingId) { const i = records.findIndex(r=>r.id===archiveEditingId); if(i!==-1) records[i]=rec; }
-            else records.unshift(rec);
-            saveArchive(records);
-            window._archivePhotos = [];
-            closeArchiveModal();
-            renderArchive();
-            alert(archiveEditingId ? "✅ 수정되었습니다." : "✅ 등록되었습니다.");
+            try {
+                if (archiveEditingId) {
+                    await window.DB_updateSeminarArchive(archiveEditingId, rec);
+                } else {
+                    await window.DB_addSeminarArchive(rec);
+                }
+                window._archivePhotos = [];
+                closeArchiveModal();
+                await loadAndRenderArchive();
+                alert(archiveEditingId ? "✅ 수정되었습니다." : "✅ 등록되었습니다.");
+            } catch(err) { alert("저장 실패: " + err.message); }
         };
+
+        // GAS에서 아카이브 전체 로드 후 캐시하고 렌더링
+        async function loadAndRenderArchive() {
+            const container = document.getElementById("archive-list-container");
+            if (container) container.innerHTML = `<div style="text-align:center;padding:60px 0;color:var(--text-muted);"><i class="fa-solid fa-spinner fa-spin" style="font-size:2rem;"></i><p>불러오는 중...</p></div>`;
+            try {
+                _archiveAllRecords = await window.DB_getSeminarArchive();
+                // detail 페이지 호환: localStorage도 동기화
+                localStorage.setItem(SA_KEY, JSON.stringify(_archiveAllRecords));
+            } catch(err) {
+                if (container) container.innerHTML = `<div style="text-align:center;padding:60px 0;color:var(--color-red);"><i class="fa-solid fa-triangle-exclamation"></i><p>데이터를 불러오지 못했습니다.<br><small>${err.message}</small></p></div>`;
+                return;
+            }
+            renderArchive();
+        }
 
         // 이미지 Canvas 압축 함수
         function compressImage(file, maxW=800, q=0.72) {

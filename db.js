@@ -446,6 +446,35 @@ window.DB_deletePastSeminar = async function(id) {
     return await _dbPost({ action: "delete", sheet: "past_seminars", key: "id", value: String(id) });
 };
 
+// ============================================================
+// 12. 세미나 아카이브 (seminar_archive)
+// ============================================================
+
+window.DB_getSeminarArchive = async function() {
+    const rows = await _dbGet("seminar_archive");
+    // photos 필드가 JSON 문자열로 저장된 경우 파싱
+    return rows.map(r => {
+        if (typeof r.photos === "string") {
+            try { r.photos = JSON.parse(r.photos); } catch(e) { r.photos = []; }
+        }
+        if (!Array.isArray(r.photos)) r.photos = [];
+        return r;
+    });
+};
+window.DB_addSeminarArchive = async function(data) {
+    const d = { ...data };
+    if (Array.isArray(d.photos)) d.photos = JSON.stringify(d.photos);
+    return await _dbPost({ action: "add", sheet: "seminar_archive", data: d });
+};
+window.DB_updateSeminarArchive = async function(id, data) {
+    const d = { ...data };
+    if (Array.isArray(d.photos)) d.photos = JSON.stringify(d.photos);
+    return await _dbPost({ action: "update", sheet: "seminar_archive", key: "id", value: String(id), data: d });
+};
+window.DB_deleteSeminarArchive = async function(id) {
+    return await _dbPost({ action: "delete", sheet: "seminar_archive", key: "id", value: String(id) });
+};
+
 console.log("[db.js] 데이터베이스 클라이언트 로드 완료 →", DB_URL.substring(0, 60) + "...");
 
 
