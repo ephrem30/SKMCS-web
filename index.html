@@ -419,6 +419,7 @@
             </div>
         </footer>
     </div>
+    <script src="db.js?v=20260810163237"></script>
     <script src="journal_data.js?v=20260810163237"></script>
     <script>
         // Load latest issue from journalData
@@ -693,43 +694,7 @@
             }).join('');
         }
 
-        // Activities – 실제 데이터 (activities.html과 공유하는 localStorage + 기본값)
-        const DEFAULT_CONFERENCES_MAIN = [
-            {
-                id: "conf_1",
-                badge: "종료",
-                badgeColor: "var(--bg-charcoal)",
-                title: "2026년 한국음악학회 춘계 학술대회",
-                date: "2026. 04. 25 (토) 13:00–18:00",
-                location: "동국대학교 문화관 학술회의실",
-                desc: "국악의 현대적 변용과 디지털 아카이빙을 주제로 기조 강연 및 5편의 연구 논문 발표가 진행되었습니다.",
-                link: "activities.html?tab=conference"
-            },
-            {
-                id: "conf_2",
-                badge: "접수중",
-                badgeColor: "var(--color-green)",
-                title: "2026년 한국음악학회 추계 전국학술대회",
-                date: "2026. 10. 24 (토) 10:00–18:00",
-                location: "국립국악원 우면당 및 세미나실",
-                desc: "동아시아 음악 교류사 속의 한국음악을 주제로 개최됩니다. 발표 초록 접수 마감: 2026년 8월 31일.",
-                link: "activities.html?tab=conference"
-            }
-        ];
-
-        const DEFAULT_SEMINARS_MAIN = [
-            {
-                id: "default_1",
-                badge: "매월 운영",
-                badgeColor: "var(--color-blue)",
-                title: "국악 문헌 사료 강독 연구회",
-                date: "매월 둘째 주 금요일 18:30",
-                location: "비대면 Zoom 진행",
-                desc: "『악학궤범』, 『고려사』 악지 등 조선·고려 고문헌 사료의 번역 강독 및 현대적 해석 연구를 진행합니다.",
-                link: "activities.html?tab=seminar"
-            }
-        ];
-
+        // Activities – GAS 백엔드에서 실시간 연동
         function getBadgeColor(badge) {
             if (badge === "접수중") return "var(--color-green)";
             if (badge === "종료") return "var(--bg-charcoal)";
@@ -738,19 +703,21 @@
             return "var(--color-red)";
         }
 
-        function renderMainActivities() {
+        async function renderMainActivities() {
             const grid = document.getElementById('main-activities-grid');
             if (!grid) return;
 
-            // localStorage에서 실제 데이터 읽기 (activities.html과 공유)
+            grid.innerHTML = '<p style="color:var(--text-muted);padding:20px 0;"><i class="fa-solid fa-spinner fa-spin"></i> 불러오는 중...</p>';
+
             let conferences = [];
             let seminars = [];
             try {
-                conferences = JSON.parse(localStorage.getItem("conference_activities") || "null") || DEFAULT_CONFERENCES_MAIN;
-                seminars = JSON.parse(localStorage.getItem("seminar_activities") || "null") || DEFAULT_SEMINARS_MAIN;
+                [conferences, seminars] = await Promise.all([
+                    window.DB_getConferences(),
+                    window.DB_getSeminars()
+                ]);
             } catch(e) {
-                conferences = DEFAULT_CONFERENCES_MAIN;
-                seminars = DEFAULT_SEMINARS_MAIN;
+                console.warn('[Main] 학술활동 데이터 로드 실패:', e);
             }
 
             // 학술대회 최신 2개 + 연구모임 1개 (총 3개 표시)

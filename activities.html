@@ -803,7 +803,7 @@
             console.log('[Migration v3] activities localStorage 데이터 정리 완료');
         })();
         // Tab switching logic for activities page
-        document.addEventListener("DOMContentLoaded", () => {
+        document.addEventListener("DOMContentLoaded", async () => {
             const tabs = document.querySelectorAll('.sub-tabs a');
             tabs.forEach(tab => {
                 tab.addEventListener('click', (e) => {
@@ -819,15 +819,16 @@
             if (!['conference','seminar','past-seminar','archive'].includes(activeTab)) {
                 activeTab = 'conference';
             }
-            switchTab(activeTab, false);
 
-            // --- Seminar & Conference Database & Access Control Init ---
+            // --- 권한 선 확인 훈 렌더링 ---
             initializeSeminarDB();
             initializeConferenceDB();
             initializePastSeminarDB();
-            checkUserPermissions();
-            renderSeminars();
-            renderConferences();
+            checkUserPermissions(); // 동기 함수: isAdmin/isMember 세팅
+
+            // 권한 확인 이후 렌더링 (isAdmin 값이 조기화된 상태)
+            await Promise.all([renderSeminars(), renderConferences()]);
+            switchTab(activeTab, false);
             setupAdminControls();
             setupAdminConferenceControls();
             setupAdminPastSeminarControls();
@@ -871,7 +872,13 @@
             }
 
             // 탭 전환 시 렌더링
-            if (tabName === 'archive') {
+            if (tabName === 'past-seminar') {
+                renderPastSeminars(
+                    document.getElementById('past-seminar-search')?.value || '',
+                    document.getElementById('past-seminar-year-filter')?.value || ''
+                );
+                bindPastSeminarFilters();
+            } else if (tabName === 'archive') {
                 initArchiveDB();
                 renderArchive();
                 bindArchiveFilters();
