@@ -395,6 +395,57 @@ window.DB_deleteSeminarNews = async function(id) {
     });
 };
 
+// ============================================================
+// 9. 연구모임/세미나 (seminars)
+// ============================================================
+
+window.DB_getSeminars = async function() {
+    return await _dbGet("seminars");
+};
+window.DB_addSeminar = async function(data) {
+    return await _dbPost({ action: "add", sheet: "seminars", data });
+};
+window.DB_updateSeminar = async function(id, data) {
+    return await _dbPost({ action: "update", sheet: "seminars", key: "id", value: String(id), data });
+};
+window.DB_deleteSeminar = async function(id) {
+    return await _dbPost({ action: "delete", sheet: "seminars", key: "id", value: String(id) });
+};
+
+// ============================================================
+// 10. 학술대회 (conferences)
+// ============================================================
+
+window.DB_getConferences = async function() {
+    return await _dbGet("conferences");
+};
+window.DB_addConference = async function(data) {
+    return await _dbPost({ action: "add", sheet: "conferences", data });
+};
+window.DB_updateConference = async function(id, data) {
+    return await _dbPost({ action: "update", sheet: "conferences", key: "id", value: String(id), data });
+};
+window.DB_deleteConference = async function(id) {
+    return await _dbPost({ action: "delete", sheet: "conferences", key: "id", value: String(id) });
+};
+
+// ============================================================
+// 11. 지난 세미나 (past_seminars)
+// ============================================================
+
+window.DB_getPastSeminars = async function() {
+    return await _dbGet("past_seminars");
+};
+window.DB_addPastSeminar = async function(data) {
+    return await _dbPost({ action: "add", sheet: "past_seminars", data });
+};
+window.DB_updatePastSeminar = async function(id, data) {
+    return await _dbPost({ action: "update", sheet: "past_seminars", key: "id", value: String(id), data });
+};
+window.DB_deletePastSeminar = async function(id) {
+    return await _dbPost({ action: "delete", sheet: "past_seminars", key: "id", value: String(id) });
+};
+
 console.log("[db.js] 데이터베이스 클라이언트 로드 완료 →", DB_URL.substring(0, 60) + "...");
 
 

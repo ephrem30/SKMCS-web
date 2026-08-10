@@ -4,13 +4,16 @@
 // ============================================================
 
 const SHEET_NAMES = {
-  users:        "회원목록",
-  notices:      "공지사항",
-  freeboard:    "자유게시판",
-  seminar_news: "세미나소식",
-  submissions:  "논문투고",
-  forms:        "양식파일",
-  journals:     "학회지",
+  users:         "회원목록",
+  notices:       "공지사항",
+  freeboard:     "자유게시판",
+  seminar_news:  "세미나소식",
+  seminars:      "연구모임세미나",
+  conferences:   "학술대회",
+  past_seminars: "지난세미나",
+  submissions:   "논문투고",
+  forms:         "양식파일",
+  journals:      "학회지",
 };
 
 const DRIVE_FOLDER = {
@@ -45,6 +48,12 @@ function getOrCreateSheet(name) {
       sheet.appendRow(["id","volume","number","tonggwon","title","fullTitle","label","bannerInfo","date","cover","pdf","desc","articles","created_at"]);
     } else if (name === SHEET_NAMES.seminar_news) {
       sheet.appendRow(["id","category","title","seminarDate","location","content","link","thumbnail","createdAt","created_at"]);
+    } else if (name === SHEET_NAMES.seminars) {
+      sheet.appendRow(["id","title","badge","purpose","schedule","organizer","created_at"]);
+    } else if (name === SHEET_NAMES.conferences) {
+      sheet.appendRow(["id","title","badge","theme","date","place","program","progLink","formLink","created_at"]);
+    } else if (name === SHEET_NAMES.past_seminars) {
+      sheet.appendRow(["id","title","date","category","place","presenter","theme","notes","created_at"]);
     }
   }
   return sheet;
