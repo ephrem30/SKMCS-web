@@ -1342,43 +1342,12 @@
         // 지난 세미나 기록 시스템
         // ============================================================
 
-        const DEFAULT_PAST_SEMINARS = [
-            {
-                id: "past_1",
-                title: "한국 전통음악의 현대적 재해석 세미나",
-                date: "2024-11-15",
-                category: "세미나",
-                place: "동국대학교 문화관 세미나실",
-                presenter: "김영재 교수, 박소연 박사",
-                theme: "판소리와 현대 대중음악의 접점: 음악적 어법의 계승과 변용 방식을 중심으로",
-                notes: "참가인원 약 35명"
-            },
-            {
-                id: "past_2",
-                title: "동아시아 음악 교류사 연구모임",
-                date: "2024-09-21",
-                category: "연구모임",
-                place: "국립국악원 세미나실",
-                presenter: "윤소희 박사",
-                theme: "고려 아악의 중국 대성악 수용 과정과 독자적 변용 — 『고려사』 악지 재검토",
-                notes: ""
-            },
-            {
-                id: "past_3",
-                title: "국악관현악 편성법 워크숍",
-                date: "2024-06-08",
-                category: "워크숍",
-                place: "예술의전당 음악아카데미",
-                presenter: "정지훈 작곡가",
-                theme: "B♭대금과 E♭대금의 조율 기법 및 오케스트레이션 실습",
-                notes: "악보 자료 배부"
-            }
-        ];
+        // 테스트 샘플 데이터 제거 — GAS에서 관리자가 직접 등록
+        // past_seminar_activities는 매번 삭제 (구버전 데이터 완전 차단)
+        localStorage.removeItem("past_seminar_activities");
 
         function initializePastSeminarDB() {
-            if (!localStorage.getItem("past_seminar_activities")) {
-                localStorage.setItem("past_seminar_activities", JSON.stringify(DEFAULT_PAST_SEMINARS));
-            }
+            // 빈 함수 — localStorage 주입 없음, GAS에서 로드
         }
 
         function setupAdminPastSeminarControls() {
