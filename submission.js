@@ -66,19 +66,8 @@ window.downloadDriveFile = function(url, displayName) {
 };
 
 
-function initRegisteredUsers() {
-    const data = localStorage.getItem("registered_users");
-    const mockUsers = [
-        { email: "admin@gmail.com", password: "admin123", name: "최고관리자", role: "admin", affiliation: "한국음악학회", phone: "010-1234-5678", birth: "1980-01-01" },
-        { email: "secretary@gmail.com", password: "sec123", name: "학회간사", role: "secretary", affiliation: "한국음악학회", phone: "010-2345-6789", birth: "1985-05-15" },
-        { email: "reviewer@gmail.com", password: "rev123", name: "심사위원", role: "reviewer", affiliation: "한국음악학회", phone: "010-3456-7890", birth: "1975-08-20" },
-        { email: "editor@gmail.com", password: "edi123", name: "편집위원장", role: "editor", affiliation: "한국음악학회", phone: "010-4567-8901", birth: "1972-11-30" },
-        { email: "president@gmail.com", password: "pre123", name: "학회회장", role: "president", affiliation: "한국음악학회", phone: "010-5678-9012", birth: "1965-03-25" }
-    ];
-    if (!data) {
-        localStorage.setItem("registered_users", JSON.stringify(mockUsers));
-    }
-}
+// initRegisteredUsers() 제거됨 — GAS 백엔드(DB_getUsers)로 전환 완료
+
 
 function initUploadedMaterials() {
     const data = localStorage.getItem("uploaded_materials");
@@ -122,8 +111,9 @@ function initUploadedMaterials() {
 }
 
 // Immediately initialize databases when script is loaded to prevent timing issues
-initRegisteredUsers();
+// initRegisteredUsers() — GAS 전환으로 제거됨
 initUploadedMaterials();
+
 
 // 파일 Base64 인코딩 헬퍼 함수
 function getBase64(file) {
@@ -161,8 +151,8 @@ async function initPageData() {
 
 
 document.addEventListener("DOMContentLoaded", () => {
-    // 0. Initialize databases (redundant check for safety)
-    initRegisteredUsers();
+    // 0. Initialize databases
+    // initRegisteredUsers() — GAS 전환으로 제거됨
     initUploadedMaterials();
 
     // 1. Initialize submissions database from Sheets API
@@ -1322,12 +1312,13 @@ function openDetailModal(id) {
         
         const reviewerSelect = document.getElementById("admin-reviewer-select");
         if (reviewerSelect) {
-            // Populate reviewer options dynamically from registered_users (allow reviewers and administrators)
+            // GAS DB에서 심사위원/관리자 목록 로드
             reviewerSelect.innerHTML = '<option value="">미배정</option>';
-            const registeredUsersStr = localStorage.getItem("registered_users");
-            if (registeredUsersStr) {
+            reviewerSelect.value = sub.reviewer_email || "";
+            const _savedReviewerEmail = sub.reviewer_email || "";
+            (async () => {
                 try {
-                    const users = JSON.parse(registeredUsersStr);
+                    const users = await window.DB_getUsers();
                     const reviewers = users.filter(u => u.role === 'reviewer' || ADMIN_ROLES.includes(u.role));
                     reviewers.forEach(r => {
                         const opt = document.createElement("option");
@@ -1335,9 +1326,9 @@ function openDetailModal(id) {
                         opt.textContent = `${r.name} (${r.email})`;
                         reviewerSelect.appendChild(opt);
                     });
-                } catch(e) {}
-            }
-            reviewerSelect.value = sub.reviewer_email || "";
+                    reviewerSelect.value = _savedReviewerEmail;
+                } catch(e) { console.warn("심사위원 목록 로드 실패:", e.message); }
+            })();
         }
         
         const btnDeleteSub = document.getElementById("btn-delete-submission");
@@ -1796,56 +1787,66 @@ function initAdminSpace() {
 }
 
 // Render Admin Space: Sub-Tab 2 - 회원 관리
-window.renderAdminUsersTable = function(searchQuery = "") {
+// ── 회원 목록 캐시 (renderAdminUsersTable 내부용) ──
+let _adminUserCache = null;
+
+window.renderAdminUsersTable = async function(searchQuery = "") {
     const tbody = document.getElementById("admin-users-tbody");
     const countEl = document.getElementById("admin-users-count");
     if (!tbody) return;
-    
-    tbody.innerHTML = "";
-    
-    initRegisteredUsers();
-    const users = JSON.parse(localStorage.getItem("registered_users")) || [];
-    
-    const q = searchQuery.toLowerCase();
-    const filteredUsers = users.filter(u => 
-        u.name.toLowerCase().includes(q) || 
-        u.email.toLowerCase().includes(q)
+
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:20px 0;color:var(--text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> 회원 목록 불러오는 중...</td></tr>`;
+
+    try {
+        // GAS에서 최신 회원 목록 조회
+        _adminUserCache = await window.DB_getUsers();
+    } catch(e) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:20px 0;color:#cb3c31;">회원 목록 조회 실패: ${e.message}</td></tr>`;
+        return;
+    }
+
+    const users = _adminUserCache || [];
+    const q = (searchQuery || "").toLowerCase();
+    const filteredUsers = users.filter(u =>
+        (u.name || "").toLowerCase().includes(q) ||
+        (u.email || "").toLowerCase().includes(q)
     );
-    
+
     if (countEl) countEl.textContent = filteredUsers.length;
-    
+
     if (filteredUsers.length === 0) {
         tbody.innerHTML = `
             <tr>
                 <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 20px 0;">
-                    검색 결과와 일치하는 회원이 없습니다.
+                    ${q ? '검색 결과와 일치하는 회원이 없습니다.' : '등록된 회원이 없습니다.'}
                 </td>
             </tr>
         `;
         return;
     }
-    
+
+    tbody.innerHTML = "";
     filteredUsers.forEach((usr, idx) => {
         const row = document.createElement("tr");
-        
+
         let selectHtml = `<select onchange="changeUserRole('${usr.email}', this.value)" style="padding: 5px; border: 1px solid var(--border-color); border-radius: 4px; font-family: inherit; font-size: 0.85rem; font-weight: 600; background: white;">`;
         const roles = [
-            { val: "admin", lbl: "관리인" },
+            { val: "admin",     lbl: "관리인" },
             { val: "secretary", lbl: "간사" },
-            { val: "reviewer", lbl: "심사위원" },
-            { val: "editor", lbl: "편집장" },
+            { val: "reviewer",  lbl: "심사위원" },
+            { val: "editor",    lbl: "편집장" },
             { val: "president", lbl: "회장" },
-            { val: "member", lbl: "일반회원" }
+            { val: "member",    lbl: "일반회원" }
         ];
         roles.forEach(r => {
             selectHtml += `<option value="${r.val}" ${usr.role === r.val ? 'selected' : ''}>${r.lbl}</option>`;
         });
         selectHtml += `</select>`;
-        
+
         row.innerHTML = `
             <td style="font-family: 'Poppins', sans-serif;">${idx + 1}</td>
-            <td style="font-weight: 700; color: var(--text-dark);">${escapeHtml(usr.name)}</td>
-            <td style="font-family: 'Poppins', sans-serif;">${escapeHtml(usr.email)}</td>
+            <td style="font-weight: 700; color: var(--text-dark);">${escapeHtml(usr.name || '')}</td>
+            <td style="font-family: 'Poppins', sans-serif;">${escapeHtml(usr.email || '')}</td>
             <td>${escapeHtml(usr.phone || '-')}</td>
             <td>${escapeHtml(usr.affiliation || '-')}</td>
             <td style="text-align: center;">${selectHtml}</td>
@@ -1853,38 +1854,38 @@ window.renderAdminUsersTable = function(searchQuery = "") {
                 <button type="button" onclick="deleteUser('${usr.email}')" style="padding: 4px 8px; font-size: 0.8rem; background-color: #cb3c31; border: 1px solid #cb3c31; color: white; border-radius: 4px; cursor: pointer; font-family: inherit; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#b03228'; this.style.borderColor='#b03228';" onmouseout="this.style.backgroundColor='#cb3c31'; this.style.borderColor='#cb3c31';">삭제</button>
             </td>
         `;
-        
         tbody.appendChild(row);
     });
 };
 
-window.changeUserRole = function(email, newRole) {
-    const users = JSON.parse(localStorage.getItem("registered_users")) || [];
-    const idx = users.findIndex(u => u.email.toLowerCase() === email.toLowerCase());
-    if (idx === -1) return;
-    
-    users[idx].role = newRole;
-    localStorage.setItem("registered_users", JSON.stringify(users));
-    
-    const loggedInUserStr = localStorage.getItem("logged_in_user");
-    if (loggedInUserStr) {
-        const loggedInUser = JSON.parse(loggedInUserStr);
-        if (loggedInUser.email.toLowerCase() === email.toLowerCase()) {
-            loggedInUser.role = newRole;
-            localStorage.setItem("logged_in_user", JSON.stringify(loggedInUser));
-            
-            alert("본인의 권한이 변경되어 세션을 갱신합니다. 페이지가 새로고침됩니다.");
-            window.location.reload();
-            return;
+window.changeUserRole = async function(email, newRole) {
+    try {
+        const res = await window.DB_updateUserRole(email, newRole);
+        if (!res || !res.ok) throw new Error(res ? res.error : '응답 없음');
+
+        // 현재 로그인 사용자 세션 갱신
+        const loggedInUserStr = localStorage.getItem("logged_in_user");
+        if (loggedInUserStr) {
+            const loggedInUser = JSON.parse(loggedInUserStr);
+            if (loggedInUser.email.toLowerCase() === email.toLowerCase()) {
+                loggedInUser.role = newRole;
+                localStorage.setItem("logged_in_user", JSON.stringify(loggedInUser));
+                alert("본인의 권한이 변경되어 세션을 갱신합니다. 페이지가 새로고침됩니다.");
+                window.location.reload();
+                return;
+            }
         }
+
+        const roleLabels = { admin:"관리인", secretary:"간사", reviewer:"심사위원", editor:"편집장", president:"회장", member:"일반회원" };
+        alert(`[권한 변경] ${email}님의 권한이 [${roleLabels[newRole] || newRole}]으로 변경되었습니다.`);
+        const userSearchInput = document.getElementById("admin-users-search");
+        renderAdminUsersTable(userSearchInput ? userSearchInput.value.trim() : "");
+    } catch(e) {
+        alert("권한 변경 실패: " + e.message);
     }
-    
-    alert(`[권한 변경] ${users[idx].name}님의 권한이 [${newRole}]으로 변경되었습니다.`);
-    const userSearchInput = document.getElementById("admin-users-search");
-    renderAdminUsersTable(userSearchInput ? userSearchInput.value.trim() : "");
 };
 
-window.deleteUser = function(email) {
+window.deleteUser = async function(email) {
     const loggedInUserStr = localStorage.getItem("logged_in_user");
     if (loggedInUserStr) {
         const loggedInUser = JSON.parse(loggedInUserStr);
@@ -1893,16 +1894,18 @@ window.deleteUser = function(email) {
             return;
         }
     }
-    
+
     if (!confirm(`정말로 해당 회원(${email})을 삭제하시겠습니까?`)) return;
-    
-    const users = JSON.parse(localStorage.getItem("registered_users")) || [];
-    const filtered = users.filter(u => u.email.toLowerCase() !== email.toLowerCase());
-    localStorage.setItem("registered_users", JSON.stringify(filtered));
-    
-    alert("회원이 삭제되었습니다.");
-    const userSearchInput = document.getElementById("admin-users-search");
-    renderAdminUsersTable(userSearchInput ? userSearchInput.value.trim() : "");
+
+    try {
+        const res = await window.DB_deleteUser(email);
+        if (!res || !res.ok) throw new Error(res ? res.error : '응답 없음');
+        alert("회원이 삭제되었습니다.");
+        const userSearchInput = document.getElementById("admin-users-search");
+        renderAdminUsersTable(userSearchInput ? userSearchInput.value.trim() : "");
+    } catch(e) {
+        alert("회원 삭제 실패: " + e.message);
+    }
 };
 
 // Render Admin Space: Sub-Tab 3 - 게시판 관리

@@ -1,63 +1,12 @@
-// 1. Immediately Initialize Database to solve timing bug
-// This MUST run at script load time (not inside DOMContentLoaded) so that
-// other inline scripts on pages like member_admin.html can read the data immediately.
+// share.js — GAS 백엔드 전환 완료. registered_users localStorage 초기화 제거됨.
+// 로그인 세션(logged_in_user)은 localStorage를 그대로 사용합니다.
 (function() {
-    const registeredUsersStr = localStorage.getItem("registered_users");
-    const defaultMockUsers = [
-        { email: "admin@gmail.com", password: "admin123", name: "최고관리자", role: "admin", affiliation: "한국음악학회", phone: "010-1234-5678", birth: "1980-01-01" },
-        { email: "secretary@gmail.com", password: "sec123", name: "학회간사", role: "secretary", affiliation: "한국음악학회", phone: "010-2345-6789", birth: "1985-05-15" },
-        { email: "reviewer@gmail.com", password: "rev123", name: "심사위원", role: "reviewer", affiliation: "한국음악학회", phone: "010-3456-7890", birth: "1975-08-20" },
-        { email: "editor@gmail.com", password: "edi123", name: "편집위원장", role: "editor", affiliation: "한국음악학회", phone: "010-4567-8901", birth: "1972-11-30" },
-        { email: "president@gmail.com", password: "pre123", name: "학회회장", role: "president", affiliation: "한국음악학회", phone: "010-5678-9012", birth: "1965-03-25" }
-    ];
-    
-    if (!registeredUsersStr) {
-        // No data at all — initialize with defaults
-        localStorage.setItem("registered_users", JSON.stringify(defaultMockUsers));
-    } else {
-        try {
-            let users = JSON.parse(registeredUsersStr);
-            if (!Array.isArray(users)) {
-                localStorage.setItem("registered_users", JSON.stringify(defaultMockUsers));
-            } else {
-                // Ensure all default admin/staff accounts exist (merge, don't overwrite)
-                let changed = false;
-                defaultMockUsers.forEach(mock => {
-                    const exists = users.some(u => u.email && u.email.toLowerCase() === mock.email.toLowerCase());
-                    if (!exists) {
-                        users.push(mock);
-                        changed = true;
-                    }
-                });
-                if (changed) {
-                    localStorage.setItem("registered_users", JSON.stringify(users));
-                }
-            }
-        } catch (e) {
-            localStorage.setItem("registered_users", JSON.stringify(defaultMockUsers));
-        }
-    }
-
-    // Automatically grant full admin authority to the user named "최우창"
-    const currentUsersStr = localStorage.getItem("registered_users");
-    if (currentUsersStr) {
-        try {
-            let users = JSON.parse(currentUsersStr);
-            let updated = false;
-            users.forEach(u => {
-                if (u.name === "최우창" && u.role !== "admin") {
-                    u.role = "admin";
-                    updated = true;
-                }
-            });
-            if (updated) {
-                localStorage.setItem("registered_users", JSON.stringify(users));
-            }
-        } catch (e) {
-            console.error("Error updating 최우창 user role:", e);
-        }
-    }
+    // GAS 전환 후 불필요해진 registered_users localStorage 잔여 데이터 정리
+    // (데이터 충돌 방지를 위해 기존 로컬 유저 목록 삭제)
+    localStorage.removeItem("registered_users");
 })();
+
+
 
 // 2. Global Helpers for Special Admin & Database Reset
 window.isSpecialAdmin = function(user) {
