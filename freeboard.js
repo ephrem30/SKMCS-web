@@ -1,5 +1,22 @@
 // freeboard.js - Functional Free Board & Notice Board CRUD with User Roles
 
+// ============================================================
+// 구버전 localStorage 데이터 정리 (GAS 전환 마이그레이션)
+// 어떤 브라우저에서 접속해도 한 번만 실행됨
+// ============================================================
+(function() {
+    const MIGRATION_KEY = 'skmcs_gas_migration_v3';
+    if (localStorage.getItem(MIGRATION_KEY)) return;
+    // GAS 전환 전 테스트 데이터가 저장된 localStorage 키 전당 삭제
+    [
+        'notice_posts', 'notice_posts_idx', 'notice_posts_version',
+        'freeboard_posts', 'freeboard_posts_idx',
+        'seminar_news_posts', 'seminar_news_idx',
+    ].forEach(k => localStorage.removeItem(k));
+    localStorage.setItem(MIGRATION_KEY, '1');
+    console.log('[Migration v3] 게시판 localStorage 데이터 정리 완료');
+})();
+
 // Force administrator session for full page access and verification - DISABLED FOR PRODUCTION ROLE-BASED ACCESS
 /*
 (function() {

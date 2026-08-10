@@ -350,38 +350,21 @@
 </div>
 
 <script src="share.js?v=20260810162314"></script>
+<script src="db.js?v=20260810162314"></script>
 <script>
-    const STORAGE_KEY = "past_seminar_activities";
-    const DEFAULT_RECORDS = [
-        { id:"past_1", title:"한국 전통음악의 현대적 재해석 세미나", date:"2024-11-15", category:"세미나",
-          place:"동국대학교 문화관 세미나실", presenter:"김영재 교수, 박소연 박사",
-          theme:"판소리와 현대 대중음악의 접점: 음악적 어법의 계승과 변용 방식을 중심으로", notes:"참가인원 약 35명" },
-        { id:"past_2", title:"동아시아 음악 교류사 연구모임", date:"2024-09-21", category:"연구모임",
-          place:"국립국악원 세미나실", presenter:"윤소희 박사",
-          theme:"고려 아악의 중국 대성악 수용 과정과 독자적 변용 — 고려사 악지 재검토", notes:"" },
-        { id:"past_3", title:"국악관현악 편성법 워크숍", date:"2024-06-08", category:"워크숍",
-          place:"예술의전당 음악아카데미", presenter:"정지훈 작곡가",
-          theme:"B♭대금과 E♭대금의 조율 기법 및 오케스트레이션 실습", notes:"악보 자료 배부" },
-        { id:"past_4", title:"판소리 사설의 문학적 해석 특강", date:"2023-10-14", category:"특강",
-          place:"한국예술종합학교 강의실", presenter:"이상은 교수",
-          theme:"판소리 사설에 나타난 구비문학적 특성과 조선시대 시가 전통과의 관계 고찰", notes:"" },
-        { id:"past_5", title:"국악 디지털 아카이빙 연구모임", date:"2023-05-20", category:"연구모임",
-          place:"국립국악원 연구실", presenter:"박진우 박사",
-          theme:"전통 음악 음반의 디지털화 표준 및 메타데이터 구축 방안 논의", notes:"자료집 배부" }
-    ];
+    // ── 구버전 localStorage 정리 (한 번만 실행) ──
+    (function() {
+        const KEY = 'skmcs_past_seminar_migration_v3';
+        if (localStorage.getItem(KEY)) return;
+        localStorage.removeItem('past_seminar_activities');
+        localStorage.setItem(KEY, '1');
+        console.log('[Migration v3] past_seminars localStorage 정리 완료');
+    })();
 
     let isAdmin = false;
     let editingId = null;
+    let _allRecords = []; // GAS에서 로드한 전체 데이터 캐시
 
-    function initDB() { if (!localStorage.getItem(STORAGE_KEY)) localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_RECORDS)); }
-    function checkAdmin() {
-        try {
-            const u = JSON.parse(localStorage.getItem("logged_in_user") || "null");
-            if (!u) return;
-            isAdmin = ['admin','secretary','reviewer','editor','president'].includes(u.role);
-        } catch(e) {}
-    }
-    function getAll() { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
     function escHtml(s) { return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 
     const CAT_STYLES = {
@@ -392,13 +375,33 @@
         "기타":     { card:"cat-etc",      badge:"cat-badge-etc" },
     };
 
+    function checkAdmin() {
+        try {
+            const u = JSON.parse(localStorage.getItem("logged_in_user") || "null");
+            if (!u) return;
+            isAdmin = ['admin','secretary','reviewer','editor','president'].includes(u.role);
+        } catch(e) {}
+    }
+
+    async function loadAndRender() {
+        const container = document.getElementById("ps-list-container");
+        container.innerHTML = `<div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><p>데이터를 불러오는 중...</p></div>`;
+        try {
+            _allRecords = await window.DB_getPastSeminars();
+        } catch(e) {
+            container.innerHTML = `<div class="empty-state"><i class="fa-solid fa-triangle-exclamation"></i><p>데이터를 불러오지 못했습니다.<br><small>${e.message}</small></p></div>`;
+            return;
+        }
+        render();
+    }
+
     function render() {
         const q    = document.getElementById("ps-search").value.toLowerCase();
         const year = document.getElementById("ps-year-filter").value;
         const cat  = document.getElementById("ps-cat-filter").value;
         const container = document.getElementById("ps-list-container");
 
-        let records = getAll();
+        let records = [..._allRecords];
 
         // 연도 드롭다운
         const yearSel = document.getElementById("ps-year-filter");
@@ -426,7 +429,7 @@
 
         container.innerHTML = "";
         if (records.length === 0) {
-            container.innerHTML = `<div class="empty-state"><i class="fa-solid fa-clock-rotate-left"></i><p>검색 결과가 없습니다.</p></div>`;
+            container.innerHTML = `<div class="empty-state"><i class="fa-solid fa-clock-rotate-left"></i><p>등록된 지난 세미나 기록이 없습니다.</p></div>`;
             return;
         }
 
@@ -478,7 +481,7 @@
         });
     }
 
-    window.handleAddRecord = function(e) {
+    window.handleAddRecord = async function(e) {
         e.preventDefault();
         if (!isAdmin) return;
         const rec = {
@@ -492,24 +495,29 @@
             notes:     document.getElementById("r-notes").value.trim(),
         };
         if (!rec.title||!rec.date||!rec.theme) { alert("필수 항목을 모두 입력해 주세요."); return; }
-        let records = getAll();
-        if (editingId) { const idx=records.findIndex(r=>r.id===editingId); if(idx!==-1) records[idx]=rec; }
-        else { records.push(rec); }
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
-        closeModal();
-        render();
-        alert(editingId?"✅ 수정되었습니다.":"✅ 등록되었습니다.");
+        try {
+            if (editingId) {
+                await window.DB_updatePastSeminar(editingId, rec);
+            } else {
+                await window.DB_addPastSeminar(rec);
+            }
+            closeModal();
+            await loadAndRender();
+            alert(editingId?"✅ 수정되었습니다.":"✅ 등록되었습니다.");
+        } catch(e) { alert("저장 실패: " + e.message); }
     };
 
-    window.deleteRecord = function(id) {
+    window.deleteRecord = async function(id) {
         if (!isAdmin) return;
         if (!confirm("이 세미나 기록을 삭제하시겠습니까?")) return;
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(getAll().filter(r=>r.id!==id)));
-        render();
+        try {
+            await window.DB_deletePastSeminar(id);
+            await loadAndRender();
+        } catch(e) { alert("삭제 실패: " + e.message); }
     };
 
     window.openEditModal = function(id) {
-        const rec = getAll().find(r=>r.id===id);
+        const rec = _allRecords.find(r=>r.id===id);
         if (!rec) return;
         editingId = id;
         document.getElementById("r-title").value     = rec.title||"";
@@ -530,8 +538,7 @@
         document.getElementById("modal-title-text").innerHTML = `<i class="fa-solid fa-clock-rotate-left" style="color:var(--color-green); margin-right:7px;"></i>지난 세미나 기록 등록`;
     }
 
-    document.addEventListener("DOMContentLoaded", ()=>{
-        initDB();
+    document.addEventListener("DOMContentLoaded", async ()=>{
         checkAdmin();
         if (isAdmin) document.getElementById("admin-panel").style.display = "flex";
 
@@ -548,7 +555,7 @@
         document.getElementById("btn-cancel-modal").addEventListener("click", closeModal);
         document.getElementById("add-modal").addEventListener("click", e=>{ if(e.target===document.getElementById("add-modal")) closeModal(); });
 
-        render();
+        await loadAndRender();
     });
 </script>
 </body>

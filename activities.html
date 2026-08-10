@@ -786,6 +786,22 @@
 
     <script src="share.js?v=20260810162314"></script>
     <script>
+        // ============================================================
+        // 구버전 localStorage 데이터 정리 (GAS 전환 마이그레이션)
+        // 어떤 브라우저에서도 한 번만 실행 → 테스트 데이터 완전 삭제
+        // ============================================================
+        (function() {
+            const MIGRATION_KEY = 'skmcs_activities_migration_v3';
+            if (localStorage.getItem(MIGRATION_KEY)) return;
+            [
+                'seminar_activities',
+                'conference_activities',
+                'past_seminar_activities',
+                'seminar_archive_db',
+            ].forEach(k => localStorage.removeItem(k));
+            localStorage.setItem(MIGRATION_KEY, '1');
+            console.log('[Migration v3] activities localStorage 데이터 정리 완료');
+        })();
         // Tab switching logic for activities page
         document.addEventListener("DOMContentLoaded", () => {
             const tabs = document.querySelectorAll('.sub-tabs a');
