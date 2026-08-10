@@ -8,7 +8,7 @@
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>한국음악학회 - 학술활동</title>
-    <link rel="stylesheet" href="styles_v2.css?v=20260810234934">
+    <link rel="stylesheet" href="styles_v2.css?v=20260811000706">
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -816,7 +816,7 @@
         </div>
     </div>
 
-    <script src="share.js?v=20260810234934"></script>
+    <script src="share.js?v=20260811000706"></script>
     <script>
         // ============================================================
         // 구버전 localStorage 데이터 정리 (GAS 전환 마이그레이션)
@@ -1210,14 +1210,19 @@
                     // 수정 모드
                     await DB_updateSeminar(_editingSeminarId, { title, badge, purpose, schedule, organizer });
                     _editingSeminarId = null;
+                    alert('✅ 세미나/연구모임 정보가 수정되었습니다.');
                 } else {
                     // 등록 모드
                     const newSeminar = { id: "sem_" + Date.now(), title, badge, purpose, schedule, organizer };
                     await DB_addSeminar(newSeminar);
+                    alert('✅ 세미나/연구모임이 등록되었습니다.');
                 }
                 document.getElementById("seminar-modal").style.display = "none";
+                document.querySelector('#seminar-modal .seminar-modal-header h3').textContent = '새 세미나/연구모임 등록';
+                document.getElementById('btn-submit-seminar').textContent = '등록하기';
                 renderSeminars();
             } catch(e) { alert((_editingSeminarId ? '수정' : '등록') + ' 실패: ' + e.message); }
+
         };
 
         async function renderConferences() {
@@ -1252,11 +1257,15 @@
                         <button onclick="openProgBookModal('${conf.id}')" title="프로그램북 및 신청양식 링크 등록/수정" class="btn-outline" style="padding: 4px 10px; font-size: 0.78rem; border-color: var(--color-red); color: var(--color-red); display: inline-flex; align-items: center; gap: 4px;">
                             <i class="fa-solid fa-file-pdf"></i> 프로그램북 등록/수정
                         </button>
+                        <button class="btn-delete-seminar" onclick="editConference('${conf.id}')" title="수정" style="background:var(--color-blue);border-color:var(--color-blue);">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
                         <button class="btn-delete-seminar" onclick="deleteConference('${conf.id}')" title="학술대회 삭제">
                             <i class="fa-solid fa-trash-can"></i>
                         </button>
                     `;
                 }
+
 
                 let detailsHtml = "";
                 if (isMember) {
@@ -1485,13 +1494,18 @@
                 if (_editingConferenceId) {
                     await DB_updateConference(_editingConferenceId, { title, badge, theme, date, place, program, progLink, formLink });
                     _editingConferenceId = null;
+                    alert('✅ 학술대회 정보가 수정되었습니다.');
                 } else {
                     const newConf = { id: "conf_" + Date.now(), title, badge, theme, date, place, program, progLink, formLink };
                     await DB_addConference(newConf);
+                    alert('✅ 학술대회가 등록되었습니다.');
                 }
                 document.getElementById("conference-modal").style.display = "none";
+                document.querySelector('#conference-modal .seminar-modal-header h3').textContent = '학술대회 등록';
+                document.getElementById('btn-submit-conference').textContent = '학술대회 등록하기';
                 renderConferences();
             } catch(e) { alert((_editingConferenceId ? '수정' : '등록') + ' 실패: ' + e.message); }
+
         };
 
         // ============================================================
