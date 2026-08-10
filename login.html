@@ -14,7 +14,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <!-- Google Sheets DB Client -->
-    <script src="db.js?v=20260810160808"></script>
+    <script src="db.js?v=20260810161454"></script>
 
     <style>
         /* ── Design Tokens (matching styles_v2.css) ── */
@@ -570,6 +570,13 @@
         /* ── Input focus icon fix ── */
         .input-wrap:focus-within i.field-icon { color: var(--color-red); }
     </style>
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("./sw.js").then(() => {
+          console.log("[SW] 등록 완료");
+        }).catch(err => console.warn("[SW] 등록 실패:", err));
+      }
+    </script>
 </head>
 
 <body>

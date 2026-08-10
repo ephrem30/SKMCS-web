@@ -37,6 +37,13 @@
         .back{display:inline-flex;align-items:center;gap:5px;color:#4285F4;font-size:.85rem;font-weight:700;text-decoration:none;margin-bottom:18px;}
         .back:hover{text-decoration:underline;}
     </style>
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("./sw.js").then(() => {
+          console.log("[SW] 등록 완료");
+        }).catch(err => console.warn("[SW] 등록 실패:", err));
+      }
+    </script>
 </head>
 <body>
 <div class="wrap">

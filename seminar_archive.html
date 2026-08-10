@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>세미나 아카이브 · 한국음악학회</title>
     <meta name="description" content="한국음악학회가 개최한 정기세미나·특별세미나·기획세미나의 기록을 연도별로 아카이브합니다.">
-    <link rel="stylesheet" href="styles_v2.css?v=20260810160808">
+    <link rel="stylesheet" href="styles_v2.css?v=20260810161454">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
@@ -470,6 +470,13 @@
             .fgrp-row { grid-template-columns: 1fr; }
         }
     </style>
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("./sw.js").then(() => {
+          console.log("[SW] 등록 완료");
+        }).catch(err => console.warn("[SW] 등록 실패:", err));
+      }
+    </script>
 </head>
 <body>
 <div class="layout-wrapper">
@@ -784,8 +791,8 @@
     </div>
 </div>
 
-<script src="db.js?v=20260810160808"></script>
-<script src="share.js?v=20260810160808"></script>
+<script src="db.js?v=20260810161454"></script>
+<script src="share.js?v=20260810161454"></script>
 <script>
 // ── 데이터 ──────────────────────────────────────────────────
 const SA_KEY = "seminar_archive_db";

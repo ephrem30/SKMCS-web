@@ -8,9 +8,16 @@
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>한국음악학회 - 학회 정관</title>
-    <link rel="stylesheet" href="styles_v2.css?v=20260810160808">
+    <link rel="stylesheet" href="styles_v2.css?v=20260810161454">
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("./sw.js").then(() => {
+          console.log("[SW] 등록 완료");
+        }).catch(err => console.warn("[SW] 등록 실패:", err));
+      }
+    </script>
 </head>
 
 <body>
@@ -616,7 +623,7 @@
             }
         });
     </script>
-    <script src="share.js?v=20260810160808"></script>
+    <script src="share.js?v=20260810161454"></script>
 </body>
 </html>
 

@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>한국음악학회 - 지난 세미나 기록</title>
     <meta name="description" content="한국음악학회가 개최한 지난 세미나·연구모임의 기록을 아카이브합니다.">
-    <link rel="stylesheet" href="styles_v2.css?v=20260810160808">
+    <link rel="stylesheet" href="styles_v2.css?v=20260810161454">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* ── 카드 ── */
@@ -75,6 +75,13 @@
         .empty-state { text-align:center; padding:80px 20px; color:var(--text-muted); }
         .empty-state i { font-size:3rem; margin-bottom:16px; opacity:0.3; display:block; }
     </style>
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("./sw.js").then(() => {
+          console.log("[SW] 등록 완료");
+        }).catch(err => console.warn("[SW] 등록 실패:", err));
+      }
+    </script>
 </head>
 
 <body>
@@ -342,7 +349,7 @@
     </div>
 </div>
 
-<script src="share.js?v=20260810160808"></script>
+<script src="share.js?v=20260810161454"></script>
 <script>
     const STORAGE_KEY = "past_seminar_activities";
     const DEFAULT_RECORDS = [
