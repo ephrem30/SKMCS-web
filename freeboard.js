@@ -101,22 +101,10 @@ const DEFAULT_SEMINAR_NEWS = [
     }
 ];
 
+// localStorage 초기화 불필요 — 데이터는 GAS(Google Sheets)에서 관리됩니다.
 function initStorage() {
-    if (!localStorage.getItem("notice_posts")) {
-        localStorage.setItem("notice_posts", JSON.stringify(DEFAULT_NOTICES));
-        localStorage.setItem("notice_posts_idx", "7");
-    }
-    localStorage.setItem("notice_posts_version", DATA_VERSION);
-
-    if (!localStorage.getItem("freeboard_posts")) {
-        localStorage.setItem("freeboard_posts", JSON.stringify(DEFAULT_FREEBOARD));
-        localStorage.setItem("freeboard_posts_idx", "4");
-    }
-
-    if (!localStorage.getItem("seminar_news_posts")) {
-        localStorage.setItem("seminar_news_posts", JSON.stringify(DEFAULT_SEMINAR_NEWS));
-        localStorage.setItem("seminar_news_idx", "2");
-    }
+    // No-op: 모든 게시판 데이터는 GAS 백엔드에 저장됩니다.
+    // localStorage 기반 데이터는 더 이상 사용하지 않습니다.
 }
 
 function getLoggedInUser() {
@@ -218,10 +206,45 @@ function renderActiveTab() {
 // ==========================================
 // 3. Board Rendering & Filtering
 // ==========================================
-function renderNoticeBoard() {
-    const notices = JSON.parse(localStorage.getItem("notice_posts") || "[]");
+// ── 로딩 스피너 헬퍼 ──
+function showBoardLoading(tbodyId, colSpan) {
+    const tbody = document.getElementById(tbodyId);
+    if (tbody) tbody.innerHTML = `<tr><td colspan="${colSpan}" style="text-align:center;padding:30px;color:var(--text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> 불러오는 중...</td></tr>`;
+}
+
+async function renderNoticeBoard() {
     const user = getLoggedInUser();
     const isAdmin = user && ADMIN_ROLES.includes(user.role);
+
+    // 테이블 헤더 먼저 렌더
+    const table = document.querySelector("#section-notice .board-table");
+    if (table) {
+        const thead = table.querySelector("thead");
+        if (thead) {
+            if (isAdmin) {
+                thead.innerHTML = `<tr><th class="col-select" style="width: 40px; text-align: center;"><input type="checkbox" id="notice-select-all"></th><th class="col-num">번호</th><th class="col-cat">구분</th><th class="col-title">제목</th><th class="col-file">첨부</th><th class="col-year">등록일</th><th class="col-view">조회수</th></tr>`;
+            } else {
+                thead.innerHTML = `<tr><th class="col-num">번호</th><th class="col-cat">구분</th><th class="col-title">제목</th><th class="col-file">첨부</th><th class="col-year">등록일</th><th class="col-view">조회수</th></tr>`;
+            }
+        }
+    }
+
+    showBoardLoading("notice-list-tbody", isAdmin ? 7 : 6);
+
+    let notices = [];
+    try {
+        notices = await DB_getNotices();
+    } catch (e) {
+        const tbody = document.getElementById("notice-list-tbody");
+        if (tbody) tbody.innerHTML = `<tr><td colspan="${isAdmin ? 7 : 6}" style="text-align:center;padding:30px;color:#cb3c31;"><i class="fa-solid fa-triangle-exclamation"></i> 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.</td></tr>`;
+        return;
+    }
+
+    // 나머지 renderNoticeBoard 로직 (필터/정렬/페이지네이션)
+    _renderNoticeBoardData(notices, user, isAdmin);
+}
+
+function _renderNoticeBoardData(notices, user, isAdmin) {
 
     // Toggle thead checkboxes
     const table = document.querySelector("#section-notice .board-table");
@@ -323,8 +346,7 @@ function renderNoticeBoard() {
     renderPagination("notice", filtered.length, noticePage);
 }
 
-function renderFreeBoard() {
-    const posts = JSON.parse(localStorage.getItem("freeboard_posts") || "[]");
+async function renderFreeBoard() {
     const user = getLoggedInUser();
     const isAdmin = user && ADMIN_ROLES.includes(user.role);
 
@@ -358,6 +380,17 @@ function renderFreeBoard() {
                 `;
             }
         }
+    }
+
+    showBoardLoading("freeboard-list-tbody", isAdmin ? 7 : 6);
+
+    let posts = [];
+    try {
+        posts = await DB_getFreeboard();
+    } catch (e) {
+        const tbody = document.getElementById("freeboard-list-tbody");
+        if (tbody) tbody.innerHTML = `<tr><td colspan="${isAdmin ? 7 : 6}" style="text-align:center;padding:30px;color:#cb3c31;"><i class="fa-solid fa-triangle-exclamation"></i> 데이터를 불러오지 못했습니다.</td></tr>`;
+        return;
     }
 
     // Filter
@@ -480,10 +513,20 @@ window.changePage = function (type, page, event) {
 // ==========================================
 // 세미나 소식 — 렌더링 & CRUD
 // ==========================================
-function renderSeminarNews() {
-    const posts   = JSON.parse(localStorage.getItem("seminar_news_posts") || "[]");
+async function renderSeminarNews() {
     const user    = getLoggedInUser();
     const isAdmin = user && ADMIN_ROLES.includes(user.role);
+
+    const grid = document.getElementById("seminar-news-grid");
+    if (grid) grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> 불러오는 중...</div>`;
+
+    let posts = [];
+    try {
+        posts = await DB_getSeminarNews();
+    } catch (e) {
+        if (grid) grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:30px;color:#cb3c31;"><i class="fa-solid fa-triangle-exclamation"></i> 데이터를 불러오지 못했습니다.</div>`;
+        return;
+    }
 
     // 최신 세미나 일자 순 정렬
     const sorted = [...posts].sort((a, b) => {
@@ -573,7 +616,7 @@ function renderSeminarNews() {
     }
 }
 
-window.openSnModal = function(editId) {
+window.openSnModal = async function(editId) {
     const overlay = document.getElementById('sn-modal-overlay');
     if (!overlay) return;
     document.getElementById('sn-write-form').reset();
@@ -582,7 +625,8 @@ window.openSnModal = function(editId) {
     document.querySelector('#sn-write-form .btn-submit').textContent = '등록';
 
     if (editId !== undefined) {
-        const posts = JSON.parse(localStorage.getItem('seminar_news_posts') || '[]');
+        let posts = [];
+        try { posts = await DB_getSeminarNews(); } catch(e) {}
         const p = posts.find(x => x.id === editId);
         if (!p) return;
         document.getElementById('sn-post-id').value    = p.id;
@@ -595,6 +639,7 @@ window.openSnModal = function(editId) {
         document.getElementById('sn-thumbnail').value  = p.thumbnail || '';
         document.getElementById('sn-modal-title').textContent = '세미나 소식 수정';
         document.querySelector('#sn-write-form .btn-submit').textContent = '수정';
+
     }
     overlay.style.display = 'flex';
 };
@@ -605,7 +650,7 @@ function closeSnModal() {
     document.getElementById('sn-write-form').reset();
 }
 
-window.handleSnSubmit = function(e) {
+window.handleSnSubmit = async function(e) {
     e.preventDefault();
     const user = getLoggedInUser();
     if (!user || !ADMIN_ROLES.includes(user.role)) {
@@ -614,11 +659,10 @@ window.handleSnSubmit = function(e) {
     }
 
     const editId = parseInt(document.getElementById('sn-post-id').value) || null;
-    const posts  = JSON.parse(localStorage.getItem('seminar_news_posts') || '[]');
     const today  = new Date().toISOString().slice(0, 10);
 
     const rec = {
-        id:          editId || parseInt(localStorage.getItem('seminar_news_idx') || '2'),
+        id:          editId || Date.now(),
         category:    document.getElementById('sn-category').value,
         title:       document.getElementById('sn-title').value.trim(),
         seminarDate: document.getElementById('sn-date-input').value,
@@ -629,28 +673,35 @@ window.handleSnSubmit = function(e) {
         createdAt:   today,
     };
 
-    if (editId) {
-        const idx = posts.findIndex(p => p.id === editId);
-        if (idx !== -1) posts[idx] = rec;
-    } else {
-        posts.unshift(rec);
-        localStorage.setItem('seminar_news_idx', String(rec.id + 1));
-    }
+    const btn = document.querySelector('#sn-write-form .btn-submit');
+    if (btn) { btn.disabled = true; btn.textContent = '저장 중...'; }
 
-    localStorage.setItem('seminar_news_posts', JSON.stringify(posts));
-    closeSnModal();
-    renderSeminarNews();
-    alert(editId ? '✅ 수정되었습니다.' : '✅ 세미나 소식이 등록되었습니다.');
+    try {
+        if (editId) {
+            await DB_updateSeminarNews(editId, rec);
+        } else {
+            await DB_addSeminarNews(rec);
+        }
+        closeSnModal();
+        await renderSeminarNews();
+        alert(editId ? '✅ 수정되었습니다.' : '✅ 세미나 소식이 등록되었습니다.');
+    } catch(err) {
+        alert('저장에 실패했습니다: ' + err.message);
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = editId ? '수정' : '등록'; }
+    }
 };
 
-window.deleteSnPost = function(id) {
+window.deleteSnPost = async function(id) {
     const user = getLoggedInUser();
     if (!user || !ADMIN_ROLES.includes(user.role)) return;
     if (!confirm('이 세미나 소식을 삭제하시겠습니까?')) return;
-    const posts    = JSON.parse(localStorage.getItem('seminar_news_posts') || '[]');
-    const filtered = posts.filter(p => p.id !== id);
-    localStorage.setItem('seminar_news_posts', JSON.stringify(filtered));
-    renderSeminarNews();
+    try {
+        await DB_deleteSeminarNews(id);
+        await renderSeminarNews();
+    } catch(err) {
+        alert('삭제에 실패했습니다: ' + err.message);
+    }
 };
 
 // ==========================================
@@ -761,7 +812,7 @@ let currentDetailPostId = null;
 let currentDetailPostType = null;
 
 // Opening Write Modal
-function openWriteModal(type, editPostId = null) {
+async function openWriteModal(type, editPostId = null) {
     const user = getLoggedInUser();
 
     // 1. Permission checks
@@ -834,23 +885,25 @@ function openWriteModal(type, editPostId = null) {
     const writeModalTitle = document.getElementById("write-modal-title");
 
     if (editPostId) {
-        // Edit mode: fetch post data and prefill
-        const postsKey = type === "notice" ? "notice_posts" : "freeboard_posts";
-        const posts = JSON.parse(localStorage.getItem(postsKey) || "[]");
-        const post = posts.find(p => p.id === parseInt(editPostId));
+        // Edit mode: GAS에서 최신 데이터 가져와서 채우기
+        writeModalTitle.textContent = type === "notice" ? "공지사항 수정" : "자유게시판 글 수정";
+        try {
+            const allPosts = type === "notice" ? await DB_getNotices() : await DB_getFreeboard();
+            const post = allPosts.find(p => p.id === parseInt(editPostId));
+            if (post) {
+                categorySelect.value = post.category;
+                document.getElementById("post-author").value = post.author;
+                document.getElementById("post-title").value = post.title;
+                document.getElementById("post-content").value = post.content;
 
-        if (post) {
-            writeModalTitle.textContent = type === "notice" ? "공지사항 수정" : "자유게시판 글 수정";
-            categorySelect.value = post.category;
-            document.getElementById("post-author").value = post.author;
-            document.getElementById("post-title").value = post.title;
-            document.getElementById("post-content").value = post.content;
-
-            if (dateDisplayEl) dateDisplayEl.value = post.date;
-            if (dateInputEl) {
-                const isoVal = parseDateToISOString(post.date);
-                dateInputEl.value = isoVal || localISOTime;
+                if (dateDisplayEl) dateDisplayEl.value = post.date;
+                if (dateInputEl) {
+                    const isoVal = parseDateToISOString(post.date);
+                    dateInputEl.value = isoVal || localISOTime;
+                }
             }
+        } catch(e) {
+            // 데이터 로드 실패해도 모달은 열어둠
         }
     } else {
         // Create mode: clear fields
@@ -869,15 +922,15 @@ function closeWriteModal() {
 }
 
 // Submitting Post Submit Form
-window.handlePostSubmit = function (event) {
+window.handlePostSubmit = async function (event) {
     event.preventDefault();
 
-    const type = document.getElementById("write-post-type").value;
-    const idInput = document.getElementById("write-post-id").value;
+    const type     = document.getElementById("write-post-type").value;
+    const idInput  = document.getElementById("write-post-id").value;
     const category = document.getElementById("post-category").value;
-    const author = document.getElementById("post-author").value;
-    const title = document.getElementById("post-title").value.trim();
-    const content = document.getElementById("post-content").value.trim();
+    const author   = document.getElementById("post-author").value;
+    const title    = document.getElementById("post-title").value.trim();
+    const content  = document.getElementById("post-content").value.trim();
 
     const user = getLoggedInUser();
     if (!user) {
@@ -886,93 +939,93 @@ window.handlePostSubmit = function (event) {
     }
 
     const isAdmin = ADMIN_ROLES.includes(user.role);
-    const postsKey = type === "notice" ? "notice_posts" : "freeboard_posts";
-    const posts = JSON.parse(localStorage.getItem(postsKey) || "[]");
 
-    if (idInput) {
-        // 1. UPDATE EXISTING POST
-        const postId = parseInt(idInput);
-        const post = posts.find(p => p.id === postId);
+    // 저장 버튼 비활성화
+    const submitBtn = document.querySelector("#write-post-form .btn-submit") ||
+                      document.querySelector(".write-modal-footer .btn-submit");
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = "저장 중..."; }
 
-        if (post) {
-            // Check authorization before edit
-            const isAuthorized = isAdmin || post.email === user.email;
-            if (!isAuthorized) {
-                alert("권한이 없습니다. 본인의 글만 수정할 수 있습니다.");
-                return;
+    try {
+        if (idInput) {
+            // 1. UPDATE EXISTING POST
+            const postId = parseInt(idInput);
+            const updateData = { category, title, content };
+
+            if (isAdmin) {
+                const inputDateVal = document.getElementById("post-date-input").value;
+                if (inputDateVal) updateData.date = formatDateStringToCustom(inputDateVal);
             }
 
-            post.category = category;
-            post.title = title;
-            post.content = content;
-
-            // If admin, update post date from input datetime-local value
+            if (type === "notice") {
+                await DB_updateNotice(postId, updateData);
+            } else {
+                await DB_updateFreePost(postId, updateData);
+            }
+            alert("수정되었습니다.");
+        } else {
+            // 2. CREATE NEW POST
+            let formattedDate = "";
             if (isAdmin) {
                 const inputDateVal = document.getElementById("post-date-input").value;
                 if (inputDateVal) {
-                    post.date = formatDateStringToCustom(inputDateVal);
+                    formattedDate = formatDateStringToCustom(inputDateVal);
                 }
             }
-
-            localStorage.setItem(postsKey, JSON.stringify(posts));
-            alert("수정되었습니다.");
-        }
-    } else {
-        // 2. CREATE NEW POST
-        const idxKey = type === "notice" ? "notice_posts_idx" : "freeboard_posts_idx";
-        const currentIdx = parseInt(localStorage.getItem(idxKey) || "1");
-
-        let formattedDate = "";
-        if (isAdmin) {
-            const inputDateVal = document.getElementById("post-date-input").value;
-            if (inputDateVal) {
-                formattedDate = formatDateStringToCustom(inputDateVal);
-            } else {
+            if (!formattedDate) {
                 const dateObj = new Date();
                 formattedDate = `${dateObj.getFullYear()}. ${String(dateObj.getMonth() + 1).padStart(2, '0')}. ${String(dateObj.getDate()).padStart(2, '0')}`;
             }
-        } else {
-            const dateObj = new Date();
-            formattedDate = `${dateObj.getFullYear()}. ${String(dateObj.getMonth() + 1).padStart(2, '0')}. ${String(dateObj.getDate()).padStart(2, '0')}`;
+
+            const newPost = {
+                id:       Date.now(),
+                type:     type,
+                category: category,
+                title:    title,
+                content:  content,
+                author:   author,
+                email:    user.email,
+                date:     formattedDate,
+                views:    0
+            };
+
+            if (type === "notice") {
+                await DB_addNotice(newPost);
+            } else {
+                await DB_addFreePost(newPost);
+            }
+            alert("등록되었습니다.");
         }
 
-        const newPost = {
-            id: currentIdx,
-            type: type,
-            category: category,
-            title: title,
-            content: content,
-            author: author,
-            email: user.email,
-            date: formattedDate,
-            views: 0
-        };
-
-        posts.unshift(newPost);
-        localStorage.setItem(postsKey, JSON.stringify(posts));
-        localStorage.setItem(idxKey, (currentIdx + 1).toString());
-        alert("등록되었습니다.");
-    }
-
-    // Close write modal and refresh
-    closeWriteModal();
-    if (type === "notice") {
-        noticePage = 1;
-        renderNoticeBoard();
-    } else {
-        freeboardPage = 1;
-        renderFreeBoard();
+        // 성공 시 모달 닫고 목록 새로고침
+        closeWriteModal();
+        if (type === "notice") {
+            noticePage = 1;
+            await renderNoticeBoard();
+        } else {
+            freeboardPage = 1;
+            await renderFreeBoard();
+        }
+    } catch (err) {
+        alert("저장에 실패했습니다: " + err.message);
+    } finally {
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "등록"; }
     }
 };
 
 // Opening Detail View Modal
-window.openDetailModal = function (id, type, event) {
+window.openDetailModal = async function (id, type, event) {
     if (event) event.preventDefault();
 
-    const postsKey = type === "notice" ? "notice_posts" : "freeboard_posts";
-    const posts = JSON.parse(localStorage.getItem(postsKey) || "[]");
-    const post = posts.find(p => p.id === id);
+    // GAS에서 최신 데이터 가져오기
+    let posts = [];
+    try {
+        posts = type === "notice" ? await DB_getNotices() : await DB_getFreeboard();
+    } catch(e) {
+        alert("게시글을 불러오지 못했습니다.");
+        return;
+    }
 
+    const post = posts.find(p => p.id === id);
     if (!post) {
         alert("해당 게시글이 존재하지 않습니다.");
         return;
@@ -981,16 +1034,20 @@ window.openDetailModal = function (id, type, event) {
     currentDetailPostId = id;
     currentDetailPostType = type;
 
-    // 1. Increment Views Counter
-    post.views = parseInt(post.views || 0) + 1;
-    localStorage.setItem(postsKey, JSON.stringify(posts));
+    // 1. 조회수 증가 (GAS 업데이트, 화면만 먼저 반영)
+    const newViews = (parseInt(post.views || 0) + 1);
+    post.views = newViews;
+    if (type === "notice") {
+        DB_updateNotice(id, { views: newViews }).catch(() => {});
+    } else {
+        DB_updateFreePost(id, { views: newViews }).catch(() => {});
+    }
 
     // 2. Render Details
     const catBadge = document.getElementById("detail-category");
     catBadge.textContent = post.category;
     catBadge.className = `badge cat-${post.category}`;
 
-    // Set dynamic style for categories
     const badgeStyle = getCategoryBadgeStyle(post.category);
     catBadge.style.backgroundColor = badgeStyle.bg;
     catBadge.style.color = badgeStyle.color;
@@ -998,39 +1055,25 @@ window.openDetailModal = function (id, type, event) {
     document.getElementById("detail-title").textContent = post.title;
     document.getElementById("detail-author").textContent = post.author;
     document.getElementById("detail-date").textContent = post.date;
-    document.getElementById("detail-views").textContent = post.views;
+    document.getElementById("detail-views").textContent = newViews;
     document.getElementById("detail-content").textContent = post.content;
 
-    // 3. Permission controls for Edit/Delete actions buttons
+    // 3. Permission controls
     const actionButtons = document.getElementById("detail-action-buttons");
     const user = getLoggedInUser();
 
     let canEditDelete = false;
     if (user) {
         if (ADMIN_ROLES.includes(user.role)) {
-            // Admin can edit/delete everything
             canEditDelete = true;
         } else if (type === "freeboard") {
-            // Members can edit/delete their own posts
             canEditDelete = (post.email === user.email);
         }
     }
-
-    if (canEditDelete) {
-        actionButtons.style.display = "flex";
-    } else {
-        actionButtons.style.display = "none";
-    }
+    actionButtons.style.display = canEditDelete ? "flex" : "none";
 
     // Show Modal
     document.getElementById("detail-modal-overlay").classList.add("active");
-
-    // Re-render board below to update views count in real-time
-    if (type === "notice") {
-        renderNoticeBoard();
-    } else {
-        renderFreeBoard();
-    }
 };
 
 function closeDetailModal() {
@@ -1052,10 +1095,10 @@ function handleEditClick() {
 }
 
 // Handling Delete Request inside Detail Modal
-function handleDeleteClick() {
+async function handleDeleteClick() {
     if (!currentDetailPostId || !currentDetailPostType) return;
 
-    const postId = currentDetailPostId;
+    const postId   = currentDetailPostId;
     const postType = currentDetailPostType;
 
     if (!confirm("정말로 이 글을 삭제하시겠습니까?")) return;
@@ -1066,31 +1109,23 @@ function handleDeleteClick() {
         return;
     }
 
-    const postsKey = postType === "notice" ? "notice_posts" : "freeboard_posts";
-    const posts = JSON.parse(localStorage.getItem(postsKey) || "[]");
-
-    const postIndex = posts.findIndex(p => p.id === postId);
-    if (postIndex === -1) {
-        alert("게시글을 찾을 수 없습니다.");
-        return;
-    }
-
-    const post = posts[postIndex];
-    const isAuthorized = ADMIN_ROLES.includes(user.role) || post.email === user.email;
-    if (!isAuthorized) {
-        alert("삭제 권한이 없습니다.");
-        return;
-    }
-
-    posts.splice(postIndex, 1);
-    localStorage.setItem(postsKey, JSON.stringify(posts));
-    alert("삭제되었습니다.");
-
-    closeDetailModal();
-    if (postType === "notice") {
-        renderNoticeBoard();
-    } else {
-        renderFreeBoard();
+    try {
+        if (postType === "notice") {
+            await DB_deleteNotice(postId);
+        } else {
+            await DB_deleteFreePost(postId);
+        }
+        alert("삭제되었습니다.");
+        closeDetailModal();
+        if (postType === "notice") {
+            noticePage = 1;
+            await renderNoticeBoard();
+        } else {
+            freeboardPage = 1;
+            await renderFreeBoard();
+        }
+    } catch(err) {
+        alert("삭제에 실패했습니다: " + err.message);
     }
 }
 
@@ -1105,8 +1140,8 @@ function escapeHtml(text) {
         .replace(/'/g, "&#039;");
 }
 
-window.deletePostDirectly = function (postId, postType, event) {
-    if (event) event.stopPropagation(); // Prevent modal opening on click
+window.deletePostDirectly = async function (postId, postType, event) {
+    if (event) event.stopPropagation();
 
     if (!confirm("정말로 이 글을 삭제하시겠습니까?")) return;
 
@@ -1116,23 +1151,22 @@ window.deletePostDirectly = function (postId, postType, event) {
         return;
     }
 
-    const postsKey = postType === "notice" ? "notice_posts" : "freeboard_posts";
-    const posts = JSON.parse(localStorage.getItem(postsKey) || "[]");
-
-    const postIndex = posts.findIndex(p => p.id === postId);
-    if (postIndex === -1) {
-        alert("게시글을 찾을 수 없습니다.");
-        return;
-    }
-
-    posts.splice(postIndex, 1);
-    localStorage.setItem(postsKey, JSON.stringify(posts));
-    alert("삭제되었습니다.");
-
-    if (postType === "notice") {
-        renderNoticeBoard();
-    } else {
-        renderFreeBoard();
+    try {
+        if (postType === "notice") {
+            await DB_deleteNotice(postId);
+        } else {
+            await DB_deleteFreePost(postId);
+        }
+        alert("삭제되었습니다.");
+        if (postType === "notice") {
+            noticePage = 1;
+            await renderNoticeBoard();
+        } else {
+            freeboardPage = 1;
+            await renderFreeBoard();
+        }
+    } catch(err) {
+        alert("삭제에 실패했습니다: " + err.message);
     }
 };
 
@@ -1180,7 +1214,7 @@ function formatDateStringToCustom(isoStr) {
     return isoStr;
 }
 
-window.deleteSelectedPosts = function (postType) {
+window.deleteSelectedPosts = async function (postType) {
     const user = getLoggedInUser();
     if (!user || !ADMIN_ROLES.includes(user.role)) {
         alert("삭제 권한이 없습니다.");
@@ -1199,14 +1233,18 @@ window.deleteSelectedPosts = function (postType) {
         return;
     }
 
-    const postsKey = postType === "notice" ? "notice_posts" : "freeboard_posts";
-    const posts = JSON.parse(localStorage.getItem(postsKey) || "[]");
-
     const idsToDelete = Array.from(checkedBoxes).map(chk => parseInt(chk.getAttribute("data-id")));
-    const filteredPosts = posts.filter(p => !idsToDelete.includes(p.id));
 
-    localStorage.setItem(postsKey, JSON.stringify(filteredPosts));
-    alert("선택한 글들이 삭제되었습니다.");
+    try {
+        // 선택된 글들을 병렬로 삭제
+        const deletePromises = idsToDelete.map(id =>
+            postType === "notice" ? DB_deleteNotice(id) : DB_deleteFreePost(id)
+        );
+        await Promise.all(deletePromises);
+        alert("선택한 글들이 삭제되었습니다.");
+    } catch(err) {
+        alert("일부 삭제에 실패했습니다: " + err.message);
+    }
 
     // Uncheck select all checkbox
     const selectAllCheckbox = document.getElementById(postType === "notice" ? "notice-select-all" : "freeboard-select-all");
@@ -1215,9 +1253,9 @@ window.deleteSelectedPosts = function (postType) {
     // Refresh board
     if (postType === "notice") {
         noticePage = 1;
-        renderNoticeBoard();
+        await renderNoticeBoard();
     } else {
         freeboardPage = 1;
-        renderFreeBoard();
+        await renderFreeBoard();
     }
 };

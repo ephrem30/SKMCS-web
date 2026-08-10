@@ -4,12 +4,13 @@
 // ============================================================
 
 const SHEET_NAMES = {
-  users:       "회원목록",
-  notices:     "공지사항",
-  freeboard:   "자유게시판",
-  submissions: "논문투고",
-  forms:       "양식파일",
-  journals:    "학회지",
+  users:        "회원목록",
+  notices:      "공지사항",
+  freeboard:    "자유게시판",
+  seminar_news: "세미나소식",
+  submissions:  "논문투고",
+  forms:        "양식파일",
+  journals:     "학회지",
 };
 
 const DRIVE_FOLDER = {
@@ -42,6 +43,8 @@ function getOrCreateSheet(name) {
       sheet.appendRow(["id","name","category","date","view_url","download_url","file_ext","created_at"]);
     } else if (name === SHEET_NAMES.journals) {
       sheet.appendRow(["id","volume","number","tonggwon","title","fullTitle","label","bannerInfo","date","cover","pdf","desc","articles","created_at"]);
+    } else if (name === SHEET_NAMES.seminar_news) {
+      sheet.appendRow(["id","category","title","seminarDate","location","content","link","thumbnail","createdAt","created_at"]);
     }
   }
   return sheet;

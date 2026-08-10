@@ -364,7 +364,39 @@ window.DB_uploadSeminarFiles = async function(opts) {
     return await _dbPostDirect(payload);
 };
 
+
+// ============================================================
+// 8. 세미나 소식 (seminar_news)
+// ============================================================
+
+window.DB_getSeminarNews = async function() {
+    const posts = await _dbGet("seminar_news");
+    return posts.map(p => ({
+        ...p,
+        id: Number(p.id) || 0,
+    }));
+};
+
+window.DB_addSeminarNews = async function(postData) {
+    return await _dbPost({ action: "add", sheet: "seminar_news", data: postData });
+};
+
+window.DB_updateSeminarNews = async function(id, data) {
+    return await _dbPost({
+        action: "update", sheet: "seminar_news",
+        key: "id", value: String(id), data
+    });
+};
+
+window.DB_deleteSeminarNews = async function(id) {
+    return await _dbPost({
+        action: "delete", sheet: "seminar_news",
+        key: "id", value: String(id)
+    });
+};
+
 console.log("[db.js] 데이터베이스 클라이언트 로드 완료 →", DB_URL.substring(0, 60) + "...");
+
 
 
 window.DB_seedAdminAccounts = async function() {
@@ -384,6 +416,29 @@ window.DB_seedAdminAccounts = async function() {
         }
     }
     console.log("[DB] 관리자 초기 계정 시드 완료");
+};
+
+/** 공지사항 초기 데이터 시딩 (GAS 시트가 비어있을 때 한 번만 실행) */
+window.DB_seedDefaultNotices = async function() {
+    const existing = await window.DB_getNotices();
+    if (existing.length > 0) {
+        console.log("[DB] 공지사항 데이터가 이미 있습니다. 시딩 건너뜀.");
+        return;
+    }
+
+    const defaultNotices = [
+        { id: Date.now() + 1, type: "notice", category: "시스템", title: "[공지] 한국음악학회 공식 홈페이지 오픈 안내", file: false, date: "2026. 05. 29", views: 0, content: "안녕하십니까, 한국음악학회입니다.\n\n2026년 5월 29일부로 한국음악학회 공식 홈페이지가 새롭게 오픈하였습니다.\n\n■ 주요 서비스 안내\n\n1. 논문 온라인 투고 시스템\n   - 회원 로그인 후 논문 파일 및 연구윤리서약서를 온라인으로 간편하게 접수하실 수 있습니다.\n   - 투고 후 심사 진행 상황을 실시간으로 확인하실 수 있습니다.\n\n2. 학회지 원문 서비스\n   - 역대 학회지(한국음악문화)의 논문 원문을 홈페이지에서 열람 및 다운로드하실 수 있습니다.\n\n3. 학술활동 안내\n   - 학술대회, 연구모임, 세미나 일정을 실시간으로 확인하실 수 있습니다.\n\n4. 회원 서비스\n   - 온라인 입회 신청, 회원 정보 조회 등 다양한 회원 서비스를 제공합니다.\n\n■ 문의사항\n홈페이지 이용 중 불편사항이나 오류가 발견되실 경우, 학회 사무국으로 연락 주시기 바랍니다.\n- E-mail: skmcs@dgu.ac.kr\n- 주소: (04620) 서울특별시 중구 필동로 1길 30 동국대학교 문화관\n\n회원 여러분의 많은 관심과 이용을 부탁드립니다.\n\n한국음악학회 사무국 드림", author: "관리인", email: "admin@gugak.go.kr" },
+        { id: Date.now() + 2, type: "notice", category: "안내", title: "2026년 춘계 학술대회 일정 및 논문 발표 신청 안내", file: false, date: "2026. 03. 11", views: 0, content: "2026년 춘계 학술대회 일정 및 논문 발표 신청 안내입니다.", author: "관리인", email: "admin@gugak.go.kr" },
+        { id: Date.now() + 3, type: "notice", category: "시스템", title: "학회 홈페이지 리뉴얼 및 온라인 투고 시스템 오픈 안내", file: false, date: "2026. 02. 20", views: 0, content: "학회 홈페이지 리뉴얼 및 온라인 투고 시스템 오픈 안내입니다.", author: "관리인", email: "admin@gugak.go.kr" },
+        { id: Date.now() + 4, type: "notice", category: "안내", title: "학회 연회비 납부 계좌 변경 안내", file: false, date: "2026. 05. 29", views: 0, content: "학회 연회비 납부 계좌가 다음과 같이 변경되었습니다.\n\n- 은행: 신한은행\n- 계좌번호: 140-015-967840\n- 예금주: 한국음악학회 박범훈\n\n회원 여러분께서는 연회비 송금 시 착오 없으시길 바랍니다.", author: "관리인", email: "admin@gugak.go.kr" },
+    ];
+
+    for (const notice of defaultNotices) {
+        await window.DB_addNotice(notice);
+        await new Promise(r => setTimeout(r, 300)); // GAS 과부하 방지
+    }
+    console.log("[DB] 공지사항 초기 데이터 시딩 완료");
+    alert("✅ 공지사항 초기 데이터가 등록되었습니다.");
 };
 
 console.log("[db.js] 데이터베이스 클라이언트 로드 완료 →", DB_URL.substring(0, 60) + "...");
