@@ -817,6 +817,7 @@
     </div>
 
     <script src="share.js?v=20260811012323"></script>
+    <script src="db.js?v=20260811012323"></script>
     <script>
         // ============================================================
         // 구버전 localStorage 데이터 정리 (GAS 전환 마이그레이션)
@@ -858,18 +859,23 @@
                 activeTab = 'conference';
             }
 
-            // --- 권한 선 확인 훈 렌더링 ---
+            // --- 권한 선 확인 후 렌더링 ---
             initializeSeminarDB();
             initializeConferenceDB();
             initializePastSeminarDB();
-            checkUserPermissions(); // 동기 함수: isAdmin/isMember 세팅
 
-            // 권한 확인 이후 렌더링 (isAdmin 값이 조기화된 상태)
+            // 1단계: localStorage 기반 즉시 권한 세팅 (빠른 렌더링)
+            checkUserPermissions();
+
+            // 권한 확인 이후 렌더링
             await Promise.all([renderSeminars(), renderConferences()]);
             switchTab(activeTab, false);
             setupAdminControls();
             setupAdminConferenceControls();
             setupAdminPastSeminarControls();
+
+            // 2단계: GAS에서 최신 role 가져와 세션 갱신 후 UI 재적용
+            await refreshSessionRoleAndRerender();
         });
 
         // ── 연구모임/세미나 등록 버튼 & 모달 이벤트 ──
@@ -1003,6 +1009,67 @@
                 console.log('[권한체크] isAdmin:', isAdmin, '/ isMember:', isMember);
             } catch (err) {
                 console.error("Error parsing logged_in_user:", err);
+            }
+        }
+
+        /**
+         * GAS에서 최신 사용자 정보를 가져와 localStorage 세션을 갱신한 뒤
+         * 권한이 변경된 경우 UI를 재렌더링합니다.
+         * → role이 바뀐 후 재로그인 없이도 즉시 권한이 반영됩니다.
+         */
+        async function refreshSessionRoleAndRerender() {
+            const loggedInUserStr = localStorage.getItem("logged_in_user");
+            if (!loggedInUserStr) return;
+            let sessionUser;
+            try { sessionUser = JSON.parse(loggedInUserStr); } catch(e) { return; }
+            if (!sessionUser || !sessionUser.email) return;
+
+            try {
+                if (!window.DB_getUsers) return; // db.js 미로드 시 skip
+                const users = await window.DB_getUsers();
+                const freshUser = users.find(u =>
+                    (u.email || '').toLowerCase().trim() === sessionUser.email.toLowerCase().trim()
+                );
+                if (!freshUser) return;
+
+                const oldRole = (sessionUser.role || '').trim().toLowerCase();
+                const newRole = (freshUser.role || '').trim().toLowerCase();
+
+                if (oldRole !== newRole) {
+                    console.log(`[세션갱신] role 변경 감지: ${oldRole} → ${newRole}`);
+                    // 세션 업데이트 (비밀번호 제외)
+                    const updatedUser = Object.assign({}, sessionUser, { role: freshUser.role });
+                    localStorage.setItem("logged_in_user", JSON.stringify(updatedUser));
+
+                    // 권한 재계산
+                    const prevAdmin = isAdmin;
+                    isAdmin  = window.isWriteAdmin(updatedUser);
+                    isMember = window.isMemberUser(updatedUser);
+                    console.log('[세션갱신] isAdmin:', isAdmin, '/ isMember:', isMember);
+
+                    if (prevAdmin !== isAdmin) {
+                        // 관리자 컨트롤 및 카드 재렌더링
+                        await Promise.all([renderSeminars(), renderConferences()]);
+                        setupAdminControls();
+                        setupAdminConferenceControls();
+                        setupAdminPastSeminarControls();
+                        const currentTab = document.querySelector('.sub-tabs a.active')?.getAttribute('data-tab') || 'conference';
+                        if (currentTab === 'past-seminar') {
+                            renderPastSeminars(
+                                document.getElementById('past-seminar-search')?.value || '',
+                                document.getElementById('past-seminar-year-filter')?.value || ''
+                            );
+                        } else if (currentTab === 'archive') {
+                            renderArchive();
+                            if (isAdmin) {
+                                const archiveAdminCtrl = document.getElementById('admin-archive-controls');
+                                if (archiveAdminCtrl) archiveAdminCtrl.style.display = 'block';
+                            }
+                        }
+                    }
+                }
+            } catch(e) {
+                console.warn('[세션갱신] 최신 사용자 정보 조회 실패:', e.message);
             }
         }
 

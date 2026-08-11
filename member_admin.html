@@ -503,6 +503,23 @@
                 const res = await window.DB_updateUserRole(email, newRole);
                 if (!res.ok) { alert("오류: " + res.error); return; }
                 registeredUsers[userIndex].role = newRole;
+
+                // ── 현재 로그인 세션도 즉시 갱신 (재로그인 없이 권한 반영) ──
+                // 변경 대상이 현재 로그인한 사용자 본인이거나,
+                // 다음 방문 시 activities.html의 refreshSessionRoleAndRerender()가 자동 갱신함
+                try {
+                    const sessionUser = window.SESSION_get ? window.SESSION_get() : JSON.parse(localStorage.getItem('logged_in_user') || 'null');
+                    if (sessionUser && (sessionUser.email||'').toLowerCase() === email.toLowerCase()) {
+                        const updatedUser = Object.assign({}, sessionUser, { role: newRole });
+                        if (window.SESSION_set) {
+                            window.SESSION_set(updatedUser);
+                        } else {
+                            localStorage.setItem('logged_in_user', JSON.stringify(updatedUser));
+                        }
+                        console.log('[권한변경] 현재 로그인 세션 role 즉시 갱신:', newRole);
+                    }
+                } catch(se) { /* 세션 갱신 실패는 무시 — 다음 페이지 방문 시 자동 갱신 */ }
+
                 alert(`${userName}님의 권한이 '${newRole}'(으)로 변경되었습니다.`);
                 renderStats();
                 renderUserList();
