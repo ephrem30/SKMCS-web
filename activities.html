@@ -990,6 +990,17 @@
         // --- Seminar Database & Access Control Logic ---
         const DEFAULT_SEMINARS = []; // 기본 데이터 없음 — GAS에서 관리자가 직접 등록
 
+        // XSS 방지용 HTML 이스케이프 유틸리티
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
         let isAdmin = false;
         let isMember = false;
 
