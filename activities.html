@@ -820,6 +820,19 @@
     <script src="db.js?v=20260811154326"></script>
     <script>
         // ============================================================
+        // 로그인 체크: 로그인 안 된 상태로 직접 접속 시 로그인 페이지로 이동
+        // (로그인 후 자동으로 학술활동 페이지로 돌아옴)
+        // ============================================================
+        (function() {
+            const session = localStorage.getItem('logged_in_user');
+            if (!session) {
+                // 현재 URL을 redirect 파라미터로 전달하여 로그인 후 돌아오게 함
+                const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+                window.location.replace('login.html?redirect=' + returnUrl);
+            }
+        })();
+
+        // ============================================================
         // 구버전 localStorage 데이터 정리 (GAS 전환 마이그레이션)
         // 어떤 브라우저에서도 한 번만 실행 → 테스트 데이터 완전 삭제
         // ============================================================
