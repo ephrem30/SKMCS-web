@@ -1026,15 +1026,34 @@
                 const user = JSON.parse(loggedInUserStr);
                 console.log('[권한체크] 로그인 사용자:', { name: user.name, role: user.role, email: user.email });
 
-                // share.js의 전역 유틸 함수 사용 (단일 소스 관리)
-                isAdmin  = window.isWriteAdmin(user);
-                isMember = window.isMemberUser(user);
+                if (typeof window.isWriteAdmin === 'function') {
+                    // share.js 로드된 경우: 통합 권한 함수 사용
+                    isAdmin  = window.isWriteAdmin(user);
+                    isMember = typeof window.isMemberUser === 'function'
+                                ? window.isMemberUser(user)
+                                : isAdmin;
+                } else {
+                    // share.js 미로드 시 자체 폴백 로직
+                    const ADMIN_ROLES = ['admin', 'secretary', 'editor', 'president'];
+                    const NAMED_ADMINS = ['박세라', '최우창', '윤소희'];
+                    const SPECIAL_EMAILS = ['admin@gmail.com', 'skmcs@dgu.ac.kr'];
+                    const role  = (user.role  || '').trim().toLowerCase();
+                    const name  = (user.name  || '').trim();
+                    const email = (user.email || '').trim().toLowerCase();
+                    isAdmin = ADMIN_ROLES.includes(role)
+                           || NAMED_ADMINS.includes(name)
+                           || SPECIAL_EMAILS.includes(email);
+                    const MEMBER_ROLES = ['member', 'research', 'lifetime', 'group', 'special', 'reviewer'];
+                    isMember = isAdmin || MEMBER_ROLES.includes(role);
+                    console.warn('[권한체크] share.js 미로드 → 폴백 로직 사용');
+                }
 
                 console.log('[권한체크] isAdmin:', isAdmin, '/ isMember:', isMember);
             } catch (err) {
-                console.error("Error parsing logged_in_user:", err);
+                console.error('[권한체크] 오류:', err);
             }
         }
+
 
         /**
          * GAS에서 최신 사용자 정보를 가져와 localStorage 세션을 갱신한 뒤
