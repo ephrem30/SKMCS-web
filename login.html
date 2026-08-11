@@ -728,6 +728,21 @@
     </div>
 
     <script>
+        // ── 이미 로그인된 경우 자동 리다이렉트 ──
+        (function() {
+            const session = localStorage.getItem('logged_in_user');
+            if (session) {
+                try {
+                    JSON.parse(session); // 유효한 JSON인지 확인
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const redirectUrl = urlParams.get('redirect');
+                    window.location.replace(redirectUrl || 'index.html');
+                } catch(e) {
+                    localStorage.removeItem('logged_in_user'); // 손상된 세션 제거
+                }
+            }
+        })();
+
         // Password toggle
         const pwToggle = document.getElementById('pw-toggle');
         const pwInput  = document.getElementById('user-pw');
@@ -744,6 +759,39 @@
         const rememberCb = document.getElementById('remember');
         const saved      = localStorage.getItem('saved_id');
         if (saved) { idInput.value = saved; rememberCb.checked = true; }
+
+        // ── 브라우저 자동완성(저장된 비밀번호 / 지문인식) 자동 로그인 ──
+        // 브라우저가 autofill로 이메일+비밀번호를 채워준 경우 자동 submit
+        function tryAutoLogin() {
+            const emailVal = idInput.value.trim();
+            const pwVal    = pwInput.value;
+            if (emailVal && pwVal) {
+                console.log('[자동로그인] 자동완성 감지 → 로그인 시도');
+                document.getElementById('login-form').dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+            }
+        }
+
+        // 방법 1: input 이벤트 (사용자가 직접 입력하거나 autofill 시)
+        let _autoLoginTimer = null;
+        function scheduleAutoLogin() {
+            clearTimeout(_autoLoginTimer);
+            _autoLoginTimer = setTimeout(tryAutoLogin, 800);
+        }
+        idInput.addEventListener('input', scheduleAutoLogin);
+        pwInput.addEventListener('input', scheduleAutoLogin);
+
+        // 방법 2: 페이지 로드 후 1초 대기 → 자동완성으로 채워진 값 감지
+        // (일부 브라우저는 load 이후에 autofill을 적용)
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const emailVal = idInput.value.trim();
+                const pwVal    = pwInput.value;
+                if (emailVal && pwVal) {
+                    console.log('[자동로그인] 페이지 로드 후 자동완성 값 감지 → 로그인 시도');
+                    document.getElementById('login-form').dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                }
+            }, 1000);
+        });
 
         // Login form submit (Google Sheets DB 기반)
         async function handleLogin(e) {
