@@ -511,7 +511,7 @@
                 <div class="sub-tabs">
                     <a href="?tab=conference" class="tab-item active" data-tab="conference">학술대회 일정</a>
                     <a href="?tab=seminar" class="tab-item" data-tab="seminar">연구모임/세미나</a>
-                    <a href="seminar_archive.html" class="tab-item" data-tab="archive" style="display:inline-flex;align-items:center;gap:5px;">
+                    <a href="?tab=archive" class="tab-item" data-tab="archive" style="display:inline-flex;align-items:center;gap:5px;">
                         <i class="fa-solid fa-box-archive" style="font-size:0.85em;"></i> 세미나 아카이브
                     </a>
                 </div>
@@ -859,8 +859,9 @@
             const tabs = document.querySelectorAll('.sub-tabs a');
             tabs.forEach(tab => {
                 tab.addEventListener('click', (e) => {
-                    e.preventDefault();
                     const tabName = tab.getAttribute('data-tab');
+                    if (!tabName) return; // href 그대로 이동
+                    e.preventDefault();
                     switchTab(tabName);
                 });
             });
@@ -976,8 +977,12 @@
                 );
                 bindPastSeminarFilters();
             } else if (tabName === 'archive') {
-                initArchiveDB();
-                renderArchive();
+                // 처음 방문이거나 데이터가 없으면 GAS에서 로드, 아니면 바로 렌더링
+                if (_archiveAllRecords.length === 0) {
+                    loadAndRenderArchive();
+                } else {
+                    renderArchive();
+                }
                 bindArchiveFilters();
                 // 관리자인 경우 archive 관리자 컨트롤 표시
                 if (isAdmin) {

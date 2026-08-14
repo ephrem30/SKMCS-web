@@ -79,6 +79,18 @@ localStorage.removeItem('seminar_news_idx');
 
 const ADMIN_ROLES = ["admin", "secretary", "editor", "president"];
 
+/**
+ * Google Drive URL을 직접 표시 가능한 img src로 변환
+ */
+function toImgSrc(url) {
+    if (!url) return url;
+    let m = url.match(/\/file\/d\/([^\/\?&]+)/);
+    if (m) return `https://drive.google.com/thumbnail?id=${m[1]}&sz=w800`;
+    m = url.match(/[?&]id=([^&]+)/);
+    if (m && url.includes('drive.google.com')) return `https://drive.google.com/thumbnail?id=${m[1]}&sz=w800`;
+    return url;
+}
+
 let currentTab = "notice"; // 'notice' | 'freeboard' | 'seminar_news'
 let noticePage = 1;
 let freeboardPage = 1;
@@ -545,7 +557,7 @@ async function renderSeminarNews() {
             ? new Date(p.seminarDate).toLocaleDateString('ko-KR', {year:'numeric', month:'long', day:'numeric'})
             : '';
         const thumbHtml = p.thumbnail
-            ? `<img src="${escapeHtml(p.thumbnail)}" alt="세미나 이미지" onerror="this.style.display='none'">`
+            ? `<img src="${escapeHtml(toImgSrc(p.thumbnail))}" alt="세미나 이미지" onerror="this.style.display='none'">`
             : `<i class="fa-solid fa-music"></i>`;
         const linkHtml = p.link
             ? `<a href="${escapeHtml(p.link)}" class="sn-card-link"

@@ -279,7 +279,7 @@
         <nav class="sidebar-nav">
             <a href="news.html" class="side-link"><i class="fa-solid fa-bullhorn"></i><span class="side-text">공지사항</span></a>
             <a href="activities.html" class="side-link"><i class="fa-solid fa-calendar-days"></i><span class="side-text">학술대회 세미나</span></a>
-            <a href="seminar_archive.html" class="side-link"><i class="fa-solid fa-box-archive"></i><span class="side-text">세미나 아카이브</span></a>
+            <a href="activities.html?tab=archive" class="side-link"><i class="fa-solid fa-box-archive"></i><span class="side-text">세미나 아카이브</span></a>
         </nav>
     </aside>
 
@@ -390,7 +390,7 @@
                     <i class="fa-solid fa-house"></i>
                     <a href="activities.html" style="color:inherit;text-decoration:none;"><span class="depth">학술활동</span></a>
                     <i class="fa-solid fa-angle-right divider"></i>
-                    <a href="seminar_archive.html" style="color:inherit;text-decoration:none;"><span class="depth">세미나 아카이브</span></a>
+                    <a href="activities.html?tab=archive" style="color:inherit;text-decoration:none;"><span class="depth">세미나 아카이브</span></a>
                     <i class="fa-solid fa-angle-right divider"></i>
                     <span class="depth current" id="bc-title">상세보기</span>
                 </div>
@@ -402,7 +402,7 @@
 
         <div class="detail-wrap">
             <!-- 뒤로가기 -->
-            <a href="seminar_archive.html" class="back-btn">
+            <a href="activities.html?tab=archive" class="back-btn">
                 <i data-lucide="arrow-left" style="width:15px;height:15px;"></i> 목록으로
             </a>
 
@@ -462,6 +462,24 @@ const TYPE_MAP = {
 
 function escHtml(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 
+/**
+ * Google Drive URL을 직접 표시 가능한 img src로 변환
+ * - https://drive.google.com/file/d/FILE_ID/view  → /thumbnail?id=FILE_ID&sz=w800
+ * - https://drive.google.com/open?id=FILE_ID      → /thumbnail?id=FILE_ID&sz=w800
+ * - https://drive.google.com/uc?id=FILE_ID        → 그대로
+ * - 그 외 URL                                     → 그대로
+ */
+function toImgSrc(url) {
+    if (!url) return url;
+    // /file/d/ID/view 또는 /file/d/ID
+    let m = url.match(/\/file\/d\/([^\/\?&]+)/);
+    if (m) return `https://drive.google.com/thumbnail?id=${m[1]}&sz=w800`;
+    // ?id=ID 형태 (open?id= 또는 uc?id= 등)
+    m = url.match(/[?&]id=([^&]+)/);
+    if (m && url.includes('drive.google.com')) return `https://drive.google.com/thumbnail?id=${m[1]}&sz=w800`;
+    return url;
+}
+
 window.closeLB = function() {
     document.getElementById("lightbox").style.display = "none";
     document.getElementById("lb-img").src = "";
@@ -489,7 +507,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const r = records.find(x => x.id === id);
 
     if (!r) {
-        body.innerHTML = `<div style="text-align:center;padding:80px 0;color:var(--text-muted);"><p>해당 세미나 기록을 찾을 수 없습니다.</p><a href="seminar_archive.html" class="btn-solid" style="display:inline-flex;align-items:center;gap:7px;margin-top:16px;">목록으로</a></div>`;
+        body.innerHTML = `<div style="text-align:center;padding:80px 0;color:var(--text-muted);"><p>해당 세미나 기록을 찾을 수 없습니다.</p><a href="activities.html?tab=archive" class="btn-solid" style="display:inline-flex;align-items:center;gap:7px;margin-top:16px;">목록으로</a></div>`;
         lucide.createIcons();
         return;
     }
@@ -570,8 +588,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             </div>
             ${photos.length > 0
                 ? `<div class="photo-grid">${photos.map(src=>`
-                    <div class="photo-item" onclick="openLB('${escHtml(src)}')">
-                        <img src="${escHtml(src)}" alt="세미나 현장 사진" onerror="this.parentElement.style.display='none';">
+                    <div class="photo-item" onclick="openLB('${escHtml(toImgSrc(src))}')">
+                        <img src="${escHtml(toImgSrc(src))}" alt="세미나 현장 사진" onerror="this.parentElement.style.display='none';">
                     </div>`).join("")}</div>`
                 : `<div class="no-photos"><i data-lucide="image-off" style="width:16px;height:16px;"></i> 등록된 사진이 없습니다.</div>`}
         </div>
