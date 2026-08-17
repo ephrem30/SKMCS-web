@@ -3,7 +3,7 @@
 // git push 할 때 add_cache_busting.sh가 SW_VERSION을 자동 갱신합니다.
 // ============================================================
 
-const SW_VERSION = '20260817200757';
+const SW_VERSION = '20260817211750';
 const CACHE_NAME = 'skmcs-cache-v' + SW_VERSION;
 
 // ── 설치: 즉시 활성화 ──
