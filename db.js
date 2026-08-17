@@ -491,12 +491,14 @@ window.DB_getSeminarArchive = async function() {
 window.DB_addSeminarArchive = async function(data) {
     const d = { ...data };
     if (Array.isArray(d.photos)) d.photos = JSON.stringify(d.photos);
-    return await _dbPost({ action: "add", sheet: "seminar_archive", data: d });
+    // 사진 URL 데이터가 크므로 GET 방식 URL 한도를 초과하지 않도록 POST 직접 전송
+    return await _dbPostDirect({ action: "add", sheet: "seminar_archive", data: d });
 };
 window.DB_updateSeminarArchive = async function(id, data) {
     const d = { ...data };
     if (Array.isArray(d.photos)) d.photos = JSON.stringify(d.photos);
-    return await _dbPost({ action: "update", sheet: "seminar_archive", key: "id", value: String(id), data: d });
+    // 사진 URL 데이터가 크므로 GET 방식 URL 한도를 초과하지 않도록 POST 직접 전송
+    return await _dbPostDirect({ action: "update", sheet: "seminar_archive", key: "id", value: String(id), data: d });
 };
 window.DB_deleteSeminarArchive = async function(id) {
     return await _dbPost({ action: "delete", sheet: "seminar_archive", key: "id", value: String(id) });
