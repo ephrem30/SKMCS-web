@@ -2033,9 +2033,10 @@
             e.preventDefault();
             if (!isAdmin) return;
             const dateVal = document.getElementById("a-date").value;
-            // 사진 URL: textarea에서 줄바꿈 구분으로 읽기
+            // 사진: 파일 업로드(base64) + Drive URL 합산
             const photoUrlsRaw = (document.getElementById("a-photo-urls")?.value || "");
-            const photoUrls = photoUrlsRaw.split('\n').map(s => s.trim()).filter(Boolean);
+            const urlPhotos = photoUrlsRaw.split('\n').map(s => s.trim()).filter(Boolean);
+            const photoUrls = [...(window._archivePhotos || []), ...urlPhotos];
             const rec = {
                 id:             archiveEditingId || ("sa_" + Date.now()),
                 title:          document.getElementById("a-title").value.trim(),
@@ -2078,25 +2079,86 @@
             renderArchive();
         }
 
-        // ── 사진 URL 미리보기 렌더링 (Google Drive URL textarea 기반) ──
+        // ── 이미지 압축 (200px 썸네일, q=0.5 → Sheets 한도 내 저장 가능) ──
+        function compressImage(file, maxW=200, q=0.5) {
+            return new Promise(resolve => {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const img = new Image();
+                    img.onload = () => {
+                        let w = img.width, h = img.height;
+                        if (w > maxW) { h = Math.round(h * maxW / w); w = maxW; }
+                        const canvas = document.createElement('canvas');
+                        canvas.width = w; canvas.height = h;
+                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                        resolve(canvas.toDataURL('image/jpeg', q));
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        window.handlePhotoUpload = async function(files) {
+            if (!files || !files.length) return;
+            const MAX_PHOTOS = 6;
+            const grid = document.getElementById('photo-preview-grid');
+            const current = (window._archivePhotos || []).length;
+            if (current >= MAX_PHOTOS) {
+                alert(`사진은 최대 ${MAX_PHOTOS}장까지 등록 가능합니다.`);
+                return;
+            }
+            const spinner = document.createElement('div');
+            spinner.style.cssText = 'grid-column:1/-1;text-align:center;color:var(--text-muted);font-size:0.85rem;padding:8px;';
+            spinner.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> 사진 압축 중...';
+            grid.appendChild(spinner);
+
+            const compressed = [];
+            for (const file of Array.from(files)) {
+                if (current + compressed.length >= MAX_PHOTOS) break;
+                try { compressed.push(await compressImage(file)); }
+                catch(e) { console.warn('압축 실패:', file.name, e); }
+            }
+            spinner.remove();
+            if (!window._archivePhotos) window._archivePhotos = [];
+            window._archivePhotos.push(...compressed);
+            renderPhotoPreview();
+        };
+
+        window._archivePhotos = [];
+
+        // ── 미리보기 렌더링: base64 업로드 + Google Drive URL 혼합 지원 ──
         function renderPhotoPreview() {
             const grid = document.getElementById('photo-preview-grid');
-            const textarea = document.getElementById('a-photo-urls');
             if (!grid) return;
-            const urls = textarea ? textarea.value.split('\n').map(s => s.trim()).filter(Boolean) : (window._archivePhotos || []);
+            // base64 업로드 목록
+            const b64List = (window._archivePhotos || []);
+            // URL textarea 목록
+            const ta = document.getElementById('a-photo-urls');
+            const urlList = ta ? ta.value.split('\n').map(s => s.trim()).filter(Boolean) : [];
+            const allPhotos = [...b64List, ...urlList];
             grid.innerHTML = '';
-            if (urls.length === 0) return;
-            urls.forEach((url, idx) => {
-                const thumbUrl = toImgSrcA(url);
+            if (allPhotos.length === 0) return;
+            allPhotos.forEach((src, idx) => {
+                const thumbSrc = src.startsWith('data:') ? src : toImgSrcA(src);
+                const isB64 = src.startsWith('data:');
                 const wrap = document.createElement('div');
                 wrap.style.cssText = 'position:relative;aspect-ratio:1;border-radius:6px;overflow:hidden;border:1.5px solid var(--border-color);background:#f4f4f4;';
                 wrap.innerHTML = `
-                    <img src="${thumbUrl}" style="width:100%;height:100%;object-fit:cover;" onerror="this.src='';this.parentElement.style.background='#ffe0e0';this.parentElement.title='URL 오류';">
-                    <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.55);color:white;font-size:0.6rem;padding:2px 4px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${idx+1}번 사진</div>
+                    <img src="${thumbSrc}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.style.background='#ffe0e0';">
+                    <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.55);color:white;font-size:0.6rem;padding:2px 4px;text-align:center;">${idx+1}번</div>
+                    ${isB64 ? `<button type="button" onclick="removePhoto(${idx})" style="position:absolute;top:3px;right:3px;background:rgba(0,0,0,0.65);border:none;color:white;border-radius:50%;width:18px;height:18px;font-size:0.65rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>` : ''}
                 `;
                 grid.appendChild(wrap);
             });
         }
+
+        window.removePhoto = function(idx) {
+            if (idx < (window._archivePhotos||[]).length) {
+                window._archivePhotos.splice(idx, 1);
+            }
+            renderPhotoPreview();
+        };
 
     </script>
 
@@ -2152,18 +2214,26 @@
                 <!-- 현장 사진 URL 등록 (Google Drive) -->
                 <div style="display:flex;flex-direction:column;gap:8px;">
                     <label style="font-size:0.83rem;font-weight:700;color:var(--text-dark);">
-                        현장 사진 링크 (Google Drive)
+                        현장 사진 등록 <span style="font-size:0.75rem;font-weight:400;color:var(--text-muted);">최대 6장</span>
                     </label>
-                    <p style="font-size:0.8rem;color:var(--text-muted);margin:0 0 6px 0;line-height:1.5;">
-                        <i class="fa-solid fa-circle-info" style="color:var(--color-green);"></i>
-                        Google Drive에 사진을 올리고 <strong>공유 링크</strong>를 한 줄에 하나씩 입력하세요.<br>
-                        <span style="font-size:0.75rem;">예: https://drive.google.com/file/d/XXXXX/view</span>
-                    </p>
-                    <textarea id="a-photo-urls" rows="4"
-                        placeholder="https://drive.google.com/file/d/파일ID/view&#10;https://drive.google.com/file/d/파일ID2/view&#10;(한 줄에 URL 하나씩 입력)"
-                        style="padding:9px 12px;border:1.5px solid var(--border-color);border-radius:5px;font-size:0.85rem;font-family:inherit;resize:vertical;outline:none;line-height:1.6;"
+                    <!-- 파일 직접 업로드 -->
+                    <label for="a-photo-upload" style="display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border:2px dashed var(--border-color);border-radius:7px;cursor:pointer;color:var(--text-muted);font-size:0.88rem;font-weight:600;background:var(--bg-offwhite);transition:all 0.2s;" onmouseenter="this.style.borderColor='var(--color-green)';this.style.color='var(--color-green)';" onmouseleave="this.style.borderColor='var(--border-color)';this.style.color='var(--text-muted)';">
+                        <i class="fa-solid fa-images" style="font-size:1.1rem;"></i>
+                        사진 파일 선택 (여러 장 가능)
+                    </label>
+                    <input type="file" id="a-photo-upload" accept="image/*" multiple style="display:none;" onchange="handlePhotoUpload(this.files)">
+                    <p style="font-size:0.77rem;color:var(--text-muted);margin:2px 0 6px;"><i class="fa-solid fa-circle-info"></i> 썸네일 크기(200px)로 자동 압축됩니다.</p>
+                    <!-- 또는 Google Drive URL 입력 -->
+                    <div style="display:flex;align-items:center;gap:8px;margin:4px 0;">
+                        <div style="flex:1;height:1px;background:var(--border-color);"></div>
+                        <span style="font-size:0.75rem;color:var(--text-muted);">또는 Google Drive URL</span>
+                        <div style="flex:1;height:1px;background:var(--border-color);"></div>
+                    </div>
+                    <textarea id="a-photo-urls" rows="2"
+                        placeholder="https://drive.google.com/file/d/파일ID/view (한 줄에 하나씩)"
+                        style="padding:9px 12px;border:1.5px solid var(--border-color);border-radius:5px;font-size:0.82rem;font-family:inherit;resize:vertical;outline:none;line-height:1.6;"
                         oninput="renderPhotoPreview()"></textarea>
-                    <div id="photo-preview-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;margin-top:4px;"></div>
+                    <div id="photo-preview-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-top:6px;"></div>
                 </div>
                 <div style="display:flex;justify-content:flex-end;gap:10px;padding-top:12px;border-top:1px solid var(--border-color);">
                     <button type="button" onclick="closeArchiveModal()" class="btn-outline">취소</button>
